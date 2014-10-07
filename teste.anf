@@ -28,7 +28,11 @@
     </globals>
     
     <!-- bloco de camaras: o atributo "initial" identifica a camara/ponto de vista inicial, que tem de existir -->
+<<<<<<< HEAD
     <cameras initial="ss" >
+=======
+    <cameras initial="1" >
+>>>>>>> fad5900f3e23902573acb015bc986c773acaca32
         <!-- tem de existir, pelo menos uma camara dos tipos seguintes (perspective ou ortho) -->
         <!-- no caso da camara ortho, o atributo "direction" define o eixo segundo o qual se efetua a projecao -->
 
@@ -49,12 +53,21 @@
 
             </light>
 
+<<<<<<< HEAD
             <light id="2" type="spot" enabled="tt" marker="tt" pos="ff ff ff" target="ff ff ff"  
                 angle="ff" exponent="ff" >
 
                <component type="ambient" value="ff ff ff ff" />
                <component type="diffuse" value="ff ff ff ff" />
                <component type="specular" value="ff ff ff ff" />
+=======
+            <light id="2" type="spot" enabled="true" marker="false" pos="2 2 2" target="1 0 1"  
+                angle="30" exponent="1" >
+
+               <component type="ambient" value="0 0.5 0.5 0.3" />
+               <component type="diffuse" value="0 0 0 1" />
+               <component type="specular" value="0.2 0.1 0.3 0.4" />
+>>>>>>> fad5900f3e23902573acb015bc986c773acaca32
 
             </light>
     </lights>
@@ -62,19 +75,32 @@
     <!-- bloco de texturas. Este bloco tem de existir mas pode estar vazio, se nao forem usadas texturas -->
     <!--   ver topico 'Notas finais' no enunciado sobre os parametros texlength_... -->
     <textures>       
+<<<<<<< HEAD
           <texture id="ss" file="ss" texlength_s="ff" texlength_t="ff" />
     </textures>
 
 
+=======
+          <texture id="1" file="example.jpg" texlength_s="2" texlength_t="1" />
+    </textures>
+
+>>>>>>> fad5900f3e23902573acb015bc986c773acaca32
     <!-- bloco de materiais; -->
     <appearances>
         <!-- deve existir um ou mais blocos "appearance" -->
         <!-- IMPORTANTE: -->
         <!--   textureref e opcional, a utilizar caso haja textura associada a esta aparencia --> 
+<<<<<<< HEAD
         <appearance id="01" shininess="0.5" textureref="1" >
                <component type="ambient" value="0.0 0.3 0.3 0.5" />
                <component type="diffuse" value="0.6 0.5 0.2 0.7" />
                <component type="specular" value="0.5 0.5 0.5 0.2" />
+=======
+        <appearance id="ss" shininess="ff" textureref="ss" >
+               <component type="ambient" value="ff ff ff ff" />
+               <component type="diffuse" value="ff ff ff ff" />
+               <component type="specular" value="ff ff ff ff" />
+>>>>>>> fad5900f3e23902573acb015bc986c773acaca32
         </appearance>
     </appearances>
 

@@ -18,7 +18,12 @@ protected:
 	TiXmlElement* globalsElement; 
 	TiXmlElement* lightsElement;
 	TiXmlElement* camerasElement;
+<<<<<<< HEAD
 	TiXmlElement* appearancesElement;
+=======
+	TiXmlElement* textureElement;
+
+>>>>>>> fad5900f3e23902573acb015bc986c773acaca32
 };
 
 #endif
