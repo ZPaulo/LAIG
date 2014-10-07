@@ -28,6 +28,8 @@ ANFScene::ANFScene(char *filename)
 
 	globalsElement = anfElement->FirstChildElement( "globals" );
 	lightsElement = anfElement->FirstChildElement( "lights" );
+	camerasElement = anfElement->FirstChildElement( "cameras" );
+	textureElement = anfElement->FirstChildElement( "textures" );
 
 
 	//Globals
@@ -87,7 +89,6 @@ ANFScene::ANFScene(char *filename)
 	}
 
 	//Cameras
-	camerasElement = anfElement->FirstChildElement( "cameras" );
 	if (camerasElement == NULL)
 		printf("Cameras block not found!\n");
 	else
@@ -181,6 +182,24 @@ ANFScene::ANFScene(char *filename)
 
 		}
 	}
+
+	//Textures
+
+	if(textureElement == NULL)
+		printf("Textures block not found!\n");
+	else
+	{
+		TiXmlElement *texture = textureElement->FirstChildElement();
+		while(texture)
+		{
+			printf("Texture - %s\n", texture->Attribute("id"));
+			printf("\tfile: %s\n",texture->Attribute("file"));
+
+			texture = texture->NextSiblingElement();
+		}
+	}
+
+	//Graph
 
 }
 

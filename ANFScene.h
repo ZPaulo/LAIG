@@ -18,6 +18,8 @@ protected:
 	TiXmlElement* globalsElement; 
 	TiXmlElement* lightsElement;
 	TiXmlElement* camerasElement;
+	TiXmlElement* textureElement;
+
 };
 
 #endif
