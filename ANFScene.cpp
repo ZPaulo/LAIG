@@ -251,7 +251,21 @@ ANFScene::ANFScene(char *filename)
 					}
 				}
 
-				TiXmlElement *transforms = node->FirstChildElement("transforms");
+				TiXmlElement *appearance = node->FirstChildElement("appearanceref");
+				if(appearance->Attribute("id") == "inherit")
+				{
+					//appearance = node->Parent.FirstChildElement("appearanceref");
+				}
+
+				TiXmlElement *descendants = node->FirstChildElement("descendants");
+
+				TiXmlElement *descendant = descendants->FirstChildElement();
+				while(descendant)
+				{
+					printf("Descendant id: %s", descendant->Attribute("id"));
+
+					descendant = descendant->NextSiblingElement();
+				}
 
 				node = node->NextSiblingElement();
 			}
