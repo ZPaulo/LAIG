@@ -185,7 +185,6 @@ ANFScene::ANFScene(char *filename)
 		}
 	}
 
-<<<<<<< HEAD
 	//appearances
 	float shininess;
 	if (appearancesElement==NULL)
@@ -204,7 +203,6 @@ ANFScene::ANFScene(char *filename)
 		}
 	}
 
-=======
 	//Textures
 
 	if(textureElement == NULL)
@@ -222,7 +220,6 @@ ANFScene::ANFScene(char *filename)
 	}
 
 	//Graph
->>>>>>> fad5900f3e23902573acb015bc986c773acaca32
 
 }
 
