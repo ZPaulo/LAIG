@@ -97,66 +97,67 @@ ANFScene::ANFScene(char *filename)
 	{
 		printf("Processing camerass:\n");
 
-		//TiXmlElement* camera=camerasElement->FirstChildElement();
-
-		//while(camera)
-		//	{
-		TiXmlElement* perspectiveElement=camerasElement->FirstChildElement("perspective");
+		TiXmlElement* perspective=camerasElement->FirstChildElement("perspective");
+		TiXmlElement* ortho=camerasElement->FirstChildElement("ortho");
 
 		printf("Camera %s\n",camerasElement->Attribute("initial"));
-		printf("Perspective %s\n",perspectiveElement->Attribute("id"));
 
-		float near, far, angle, posx, posy, posz, targetx, targety, targetz;
-		char *pos=NULL, *target=NULL;
+		while(perspective){
+			printf("Perspective %s\n",perspective->Attribute("id"));
 
-		if(perspectiveElement->QueryFloatAttribute("near",&near)==TIXML_SUCCESS)
-			printf("\tNear: %f\n",near);
-		if(perspectiveElement->QueryFloatAttribute("far",&far)==TIXML_SUCCESS)
-			printf("\tFar: %f\n",far);
-		if(perspectiveElement->QueryFloatAttribute("angle",&angle)==TIXML_SUCCESS)
-			printf("\tAngle: %f\n",angle);
+			float near, far, angle, posx, posy, posz, targetx, targety, targetz;
+			char *pos=NULL, *target=NULL;
 
-		pos=(char *) perspectiveElement->Attribute("pos");
+			if(perspective->QueryFloatAttribute("near",&near)==TIXML_SUCCESS)
+				printf("\tNear: %f\n",near);
+			if(perspective->QueryFloatAttribute("far",&far)==TIXML_SUCCESS)
+				printf("\tFar: %f\n",far);
+			if(perspective->QueryFloatAttribute("angle",&angle)==TIXML_SUCCESS)
+				printf("\tAngle: %f\n",angle);
 
-		if(pos && sscanf(pos,"%f %f %f",&posx, &posy, &posz)==3)
-		{
-			printf("\tPosition: %f %f %f\n", posx, posy, posz);
-		}
-		else
-			printf("\tError reading position\n");
-		target=(char *) perspectiveElement->Attribute("target");
+			pos=(char *) perspective->Attribute("pos");
 
-		if(target && sscanf(target,"%f %f %f",&targetx, &targety, &targetz)==3)
-		{
-			printf("\tTarget: %f %f %f\n", targetx, targety, targetz);
-		}
-		else
-			printf("\tError reading target\n");
+			if(pos && sscanf(pos,"%f %f %f",&posx, &posy, &posz)==3)
+			{
+				printf("\tPosition: %f %f %f\n", posx, posy, posz);
+			}
+			else
+				printf("\tError reading position\n");
+			target=(char *) perspective->Attribute("target");
 
+			if(target && sscanf(target,"%f %f %f",&targetx, &targety, &targetz)==3)
+			{
+				printf("\tTarget: %f %f %f\n", targetx, targety, targetz);
+			}
+			else
+				printf("\tError reading target\n");
 
+			perspective=perspective->NextSiblingElement("perspective");
+			}
+			
+			
 
-		TiXmlElement* orthoElement=camerasElement->FirstChildElement("ortho");
-		printf("Ortho %s\n",orthoElement->Attribute("id"));
-
-		float direction,near1,far1,left,right,top,bottom;
-
-		if(orthoElement->QueryFloatAttribute("direction",&direction)==TIXML_SUCCESS)
+			float direction,near1,far1,left,right,top,bottom;
+			while(ortho){
+			printf("Ortho %s\n",ortho->Attribute("id"));
+			if(ortho->QueryFloatAttribute("direction",&direction)==TIXML_SUCCESS)
 			printf("\tDirection: %f\n",direction);
-		if(orthoElement->QueryFloatAttribute("near",&near1)==TIXML_SUCCESS)
+			if(ortho->QueryFloatAttribute("near",&near1)==TIXML_SUCCESS)
 			printf("\tNear: %f\n",near1);
-		if(orthoElement->QueryFloatAttribute("far",&far1)==TIXML_SUCCESS)
+			if(ortho->QueryFloatAttribute("far",&far1)==TIXML_SUCCESS)
 			printf("\tFar: %f\n",far1);
-		if(orthoElement->QueryFloatAttribute("left",&left)==TIXML_SUCCESS)
+			if(ortho->QueryFloatAttribute("left",&left)==TIXML_SUCCESS)
 			printf("\tLeft: %f\n",left);
-		if(orthoElement->QueryFloatAttribute("right",&right)==TIXML_SUCCESS)
+			if(ortho->QueryFloatAttribute("right",&right)==TIXML_SUCCESS)
 			printf("\tRight: %f\n",right);
-		if(orthoElement->QueryFloatAttribute("top",&top)==TIXML_SUCCESS)
+			if(ortho->QueryFloatAttribute("top",&top)==TIXML_SUCCESS)
 			printf("\tTop: %f\n",top);
-		if(orthoElement->QueryFloatAttribute("bottom",&bottom)==TIXML_SUCCESS)
+			if(ortho->QueryFloatAttribute("bottom",&bottom)==TIXML_SUCCESS)
 			printf("\tBottom: %f\n",bottom);
 
-		//		camera=camera->NextSiblingElement();
-		//	}
+		
+			ortho=ortho->NextSiblingElement("ortho");
+			}
 	}
 
 
@@ -257,6 +258,43 @@ ANFScene::ANFScene(char *filename)
 					//appearance = node->Parent.FirstChildElement("appearanceref");
 				}
 
+				TiXmlElement *primitives = node->FirstChildElement("primitives");
+				if(primitives == NULL)
+				{
+					printf("Primitives block not found!\n");
+					break;
+				}
+				else
+				{
+					TiXmlElement *rectangle = primitives->FirstChildElement("rectangle");
+					TiXmlElement *triangle = primitives->FirstChildElement("triangle");
+					TiXmlElement *cylinder = primitives->FirstChildElement("cylinder");
+					TiXmlElement *sphere = primitives->FirstChildElement("sphere");
+					TiXmlElement *torus = primitives->FirstChildElement("torus");
+
+					while(rectangle){
+						printf("Rectangle: \n");
+						rectangle=rectangle->NextSiblingElement("rectangle");
+					}
+					while(triangle){
+						printf("Triangle: \n");
+						triangle=triangle->NextSiblingElement("triangle");
+					}
+					while(cylinder){
+						printf("Cylinder: \n");
+						cylinder=cylinder->NextSiblingElement("cylinder");
+					}
+					while(sphere){
+						printf("Sphere: \n");
+						sphere=sphere->NextSiblingElement("sphere");
+					}
+					while(torus){
+						printf("Torus: \n");
+						torus=torus->NextSiblingElement("torus");
+					}
+
+				}
+				
 				TiXmlElement *descendants = node->FirstChildElement("descendants");
 
 				TiXmlElement *descendant = descendants->FirstChildElement();
