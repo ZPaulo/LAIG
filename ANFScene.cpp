@@ -31,6 +31,8 @@ ANFScene::ANFScene(char *filename)
 	camerasElement = anfElement->FirstChildElement( "cameras" );
 	textureElement = anfElement->FirstChildElement( "textures" );
 
+	appearancesElement= anfElement->FirstChildElement("appearances");
+
 
 	//Globals
 
@@ -183,6 +185,26 @@ ANFScene::ANFScene(char *filename)
 		}
 	}
 
+<<<<<<< HEAD
+	//appearances
+	float shininess;
+	if (appearancesElement==NULL)
+		printf("Appearances Block not found!\n");
+	else
+	{
+		TiXmlElement *appearance=appearancesElement->FirstChildElement();
+		while (appearance)
+		{
+			printf("Appearance - %s\n", appearance->Attribute("id"));
+			appearance->QueryFloatAttribute("shininess",&shininess);
+			printf("\tShininess: %f\n", shininess);
+			printf("\tTextureRef: %s\n", appearance->Attribute("textureref"));
+
+			appearance=appearance->NextSiblingElement();
+		}
+	}
+
+=======
 	//Textures
 
 	if(textureElement == NULL)
@@ -200,6 +222,7 @@ ANFScene::ANFScene(char *filename)
 	}
 
 	//Graph
+>>>>>>> fad5900f3e23902573acb015bc986c773acaca32
 
 }
 
