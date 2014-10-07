@@ -18,6 +18,7 @@ protected:
 	TiXmlElement* globalsElement; 
 	TiXmlElement* lightsElement;
 	TiXmlElement* camerasElement;
+	TiXmlElement* appearancesElement;
 };
 
 #endif
