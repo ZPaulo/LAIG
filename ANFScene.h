@@ -19,6 +19,7 @@ protected:
 	TiXmlElement* lightsElement;
 	TiXmlElement* camerasElement;
 	TiXmlElement* textureElement;
+	TiXmlElement* graphElement;
 
 };
 
