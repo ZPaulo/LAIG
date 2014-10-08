@@ -5,7 +5,7 @@ using namespace std;
 
 ANFScene::ANFScene(char *filename)
 {
-	// Read XML from file
+	// Read ANF  from file
 
 	doc=new TiXmlDocument( filename );
 	bool loadOkay = doc->LoadFile();
@@ -255,7 +255,7 @@ ANFScene::ANFScene(char *filename)
 				TiXmlElement *appearance = node->FirstChildElement("appearanceref");
 				if(appearance->Attribute("id") == "inherit")
 				{
-					//appearance = node->Parent.FirstChildElement("appearanceref");
+					appearance = node->Parent.FirstChildElement("appearanceref");
 				}
 
 				TiXmlElement *primitives = node->FirstChildElement("primitives");
