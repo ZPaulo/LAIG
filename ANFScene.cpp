@@ -1,5 +1,6 @@
 #include "ANFScene.h"
 #include <string>
+#include <iostream>
 
 using namespace std;
 
@@ -25,6 +26,7 @@ ANFScene::ANFScene(char *filename)
 		exit(1);
 	}
 
+	parser = new Parser();
 
 	globalsElement = anfElement->FirstChildElement( "globals" );
 	lightsElement = anfElement->FirstChildElement( "lights" );
@@ -49,11 +51,18 @@ ANFScene::ANFScene(char *filename)
 			char *valString=NULL;
 			float b1,b2,b3,b4;
 
+			parser->globals->drawing.mode = drawingElement->Attribute("mode");
+			parser->globals->drawing.shading = drawingElement->Attribute("shading");
+
+
 			valString=(char *) drawingElement->Attribute("background");
 
 			if(valString && sscanf(valString,"%f %f %f %f",&b1, &b2, &b3, &b4)==4)
 			{
-				printf("Background values : %f %f %f %f\n", b1, b2, b3,b4);
+				parser->globals->drawing.background[0] = b1;
+				parser->globals->drawing.background[1] = b2;
+				parser->globals->drawing.background[2] = b3;
+				parser->globals->drawing.background[3] = b4;
 			}
 			else
 				printf("Error parsing background");
@@ -64,7 +73,8 @@ ANFScene::ANFScene(char *filename)
 		TiXmlElement* cullingElement=globalsElement->FirstChildElement("culling");
 		if (cullingElement)
 		{
-
+			parser->globals->culling.face = cullingElement->Attribute("face");
+			parser->globals->culling.order = cullingElement->Attribute("order");
 		}
 		else
 			printf("culling not found\n");	
@@ -73,6 +83,10 @@ ANFScene::ANFScene(char *filename)
 		if (lightingElement)
 		{
 
+			parser->globals->lighting.local = lightingElement->Attribute("local");
+			parser->globals->lighting.doublesdd = lightingElement->Attribute("doublesided");
+			parser->globals->lighting.enabled = lightingElement->Attribute("enabled");
+
 			char *valString=NULL;
 			float b1,b2,b3,b4;
 
@@ -80,7 +94,10 @@ ANFScene::ANFScene(char *filename)
 
 			if(valString && sscanf(valString,"%f %f %f %f",&b1, &b2, &b3, &b4)==4)
 			{
-				printf("Ambient values : %f %f %f %f\n", b1, b2, b3,b4);
+				parser->globals->lighting.ambient[0] = b1;
+				parser->globals->lighting.ambient[1] = b2;
+				parser->globals->lighting.ambient[2] = b3;
+				parser->globals->lighting.ambient[3] = b4;
 			}
 			else
 				printf("Error parsing ambient");
@@ -98,28 +115,33 @@ ANFScene::ANFScene(char *filename)
 		printf("Processing camerass:\n");
 
 		TiXmlElement* perspective=camerasElement->FirstChildElement("perspective");
+		CPerspective cPer;
 		TiXmlElement* ortho=camerasElement->FirstChildElement("ortho");
+		COrtho cOrt;
 
-		printf("Camera %s\n",camerasElement->Attribute("initial"));
+		parser->initCam = camerasElement->Attribute("initial");
+		parser->activeCam = parser->initCam;
 
 		while(perspective){
-			printf("Perspective %s\n",perspective->Attribute("id"));
+			cPer.id = perspective->Attribute("id");
 
 			float near, far, angle, posx, posy, posz, targetx, targety, targetz;
 			char *pos=NULL, *target=NULL;
 
 			if(perspective->QueryFloatAttribute("near",&near)==TIXML_SUCCESS)
-				printf("\tNear: %f\n",near);
+				cPer.near = near;
 			if(perspective->QueryFloatAttribute("far",&far)==TIXML_SUCCESS)
-				printf("\tFar: %f\n",far);
+				cPer.far = far;
 			if(perspective->QueryFloatAttribute("angle",&angle)==TIXML_SUCCESS)
-				printf("\tAngle: %f\n",angle);
+				cPer.angle = angle;
 
 			pos=(char *) perspective->Attribute("pos");
 
 			if(pos && sscanf(pos,"%f %f %f",&posx, &posy, &posz)==3)
 			{
-				printf("\tPosition: %f %f %f\n", posx, posy, posz);
+				cPer.pos[0] = posx;
+				cPer.pos[1] = posy;
+				cPer.pos[2] = posz;
 			}
 			else
 				printf("\tError reading position\n");
@@ -127,39 +149,49 @@ ANFScene::ANFScene(char *filename)
 
 			if(target && sscanf(target,"%f %f %f",&targetx, &targety, &targetz)==3)
 			{
-				printf("\tTarget: %f %f %f\n", targetx, targety, targetz);
+				cPer.target[0] = targetx;
+				cPer.target[1] = targety;
+				cPer.target[2] = targetz;
 			}
 			else
 				printf("\tError reading target\n");
 
+			parser->cameras[cPer.id] = cPer;
 			perspective=perspective->NextSiblingElement("perspective");
-			}
-			
-			
+		}
 
-			float direction,near1,far1,left,right,top,bottom;
-			while(ortho){
-			printf("Ortho %s\n",ortho->Attribute("id"));
+
+
+		float direction,near1,far1,left,right,top,bottom;
+		while(ortho)
+		{
+			cOrt.id = ortho->Attribute("id");
+
 			if(ortho->QueryFloatAttribute("direction",&direction)==TIXML_SUCCESS)
-			printf("\tDirection: %f\n",direction);
+				cOrt.direction = direction;
+
 			if(ortho->QueryFloatAttribute("near",&near1)==TIXML_SUCCESS)
-			printf("\tNear: %f\n",near1);
+				cOrt.near = near1;
+
 			if(ortho->QueryFloatAttribute("far",&far1)==TIXML_SUCCESS)
-			printf("\tFar: %f\n",far1);
+				cOrt.far = far1;
+
 			if(ortho->QueryFloatAttribute("left",&left)==TIXML_SUCCESS)
-			printf("\tLeft: %f\n",left);
+				cOrt.left = left;
+
 			if(ortho->QueryFloatAttribute("right",&right)==TIXML_SUCCESS)
-			printf("\tRight: %f\n",right);
+				cOrt.right = right;
+
 			if(ortho->QueryFloatAttribute("top",&top)==TIXML_SUCCESS)
-			printf("\tTop: %f\n",top);
+				cOrt.top = top;
+
 			if(ortho->QueryFloatAttribute("bottom",&bottom)==TIXML_SUCCESS)
-			printf("\tBottom: %f\n",bottom);
+				cOrt.bottom = bottom;
 
-		
+			parser->cameras[cOrt.id] = cOrt;
 			ortho=ortho->NextSiblingElement("ortho");
-			}
+		}
 	}
-
 
 
 	//Lights
@@ -168,19 +200,84 @@ ANFScene::ANFScene(char *filename)
 		printf("Lights block not found!\n");
 	else
 	{
+		printf("Processing Lights:\n");
 		TiXmlElement *light=lightsElement->FirstChildElement();
 
 		while (light)
 		{
-			printf("Light - %s\n", light->Attribute("id"));
-			printf("\ttype: %s\n",light->Attribute("type"));
-			printf("\tenabled: %s\n",light->Attribute("enabled"));
-			printf("\tmarker: %s\n",light->Attribute("marker"));
+			Light lt;
+			lt.id = light->Attribute("id");
+			lt.type = light->Attribute("type");
+			lt.enabled =light->Attribute("enabled");
+			lt.marker = light->Attribute("marker");
+			if(lt.type == "spot")
+			{
+				float angle, exponent,targetx, targety, targetz;
+				char *target=NULL;
+				if(light->QueryFloatAttribute("angle",&angle)==TIXML_SUCCESS)
+					lt.angle = angle;
 
-			TiXmlElement* ambient=light->FirstChildElement("ambient");
-			TiXmlElement* diffuse=light->FirstChildElement("diffuse");
-			TiXmlElement* specular=light->FirstChildElement("specular");
+				if(light->QueryFloatAttribute("exponent",&exponent)==TIXML_SUCCESS)
+					lt.exponent = exponent;
 
+				target=(char *) light->Attribute("target");
+
+				if(target && sscanf(target,"%f %f %f",&targetx, &targety, &targetz)==3)
+				{
+					lt.target[0] = targetx;
+					lt.target[1] = targety;
+					lt.target[2] = targetz;
+				}
+				else
+					printf("\tError reading target\n");
+			}
+
+			char *valString=NULL;
+			float b1,b2,b3,b4;
+			TiXmlElement *component = light->FirstChildElement();
+
+			valString=(char *) component->Attribute("value");
+
+			if(valString && sscanf(valString,"%f %f %f %f",&b1, &b2, &b3, &b4)==4)
+			{
+				lt.ambient[0] = b1;
+				lt.ambient[1] = b2;
+				lt.ambient[2] = b3;
+				lt.ambient[3] = b4;
+			}
+			else
+				printf("Error parsing ambient\n");
+
+			component= component->NextSiblingElement();
+
+			valString=(char *) component->Attribute("value");
+
+			if(valString && sscanf(valString,"%f %f %f %f",&b1, &b2, &b3, &b4)==4)
+			{
+				lt.diffuse[0] = b1;
+				lt.diffuse[1] = b2;
+				lt.diffuse[2] = b3;
+				lt.diffuse[3] = b4;
+			}
+			else
+				printf("Error parsing diffuse\n");
+
+			component = component->NextSiblingElement();
+
+			valString=(char *) component->Attribute("value");
+
+			if(valString && sscanf(valString,"%f %f %f %f",&b1, &b2, &b3, &b4)==4)
+			{
+				lt.specular[0] = b1;
+				lt.specular[1] = b2;
+				lt.specular[2] = b3;
+				lt.specular[3] = b4;
+			}
+			else
+				printf("Error parsing specular\n");
+
+
+			parser->lights[lt.id] = lt;
 			light=light->NextSiblingElement();
 
 		}
@@ -228,12 +325,16 @@ ANFScene::ANFScene(char *filename)
 	{
 
 		TiXmlElement *node=graphElement->FirstChildElement();
+		parser->graph->rootID = graphElement->Attribute("rootid");
+
 		if(	node == NULL)
 			printf("Node block not found!\n");
 		else
 		{
 			while (node)
 			{
+				Node* pNode = new Node();
+				pNode->id = node->Attribute("id");
 				TiXmlElement *transforms = node->FirstChildElement("transforms");
 				if(transforms == NULL)
 				{
@@ -242,20 +343,65 @@ ANFScene::ANFScene(char *filename)
 				}
 				else
 				{
-					TiXmlElement *transform = transforms->FirstChildElement();
+					TiXmlElement *transform = transforms->FirstChildElement("transform");
 
 					while(transform)
 					{
-						printf("Transformation: %s\n",transform->Attribute("type"));
+						Transform *tr = new Transform();
+						if((string) transform->Attribute("type") == "translate")
+						{
 
+							tr->type = "translate";
+							char *pos=NULL;
+							float posx,posy,posz;
+							pos=(char *) transform->Attribute("to");
+
+							if(pos && sscanf(pos,"%f %f %f",&posx, &posy, &posz)==3)
+							{
+								tr->to[0] = posx;
+								tr->to[1] = posy;
+								tr->to[2] = posz;
+							}
+							else
+								printf("\tError reading position\n");
+						}
+						if((string) transform->Attribute("type") == "rotate")
+						{
+							tr->type = "rotate";
+
+							tr->axis = transform->Attribute("axis");
+							float angle;
+							if(transform->QueryFloatAttribute("angle",&angle)==TIXML_SUCCESS)
+								tr->angle = angle;
+						}
+
+						if((string) transform->Attribute("type") == "scale")
+						{
+							tr->type = "scale";
+							char *pos=NULL;
+							float posx,posy,posz;
+							pos=(char *) transform->Attribute("factor");
+
+							if(pos && sscanf(pos,"%f %f %f",&posx, &posy, &posz)==3)
+							{
+								tr->factor[0] = posx;
+								tr->factor[1] = posy;
+								tr->factor[2] = posz;
+							}
+							else
+								printf("\tError reading factor\n");
+						}
+
+
+						pNode->tranforms.push_back(tr);
 						transform = transform->NextSiblingElement();
 					}
 				}
 
 				TiXmlElement *appearance = node->FirstChildElement("appearanceref");
-				if(appearance->Attribute("id") == "inherit")
+				if(appearance->Attribute("id") != "inherit")
 				{
-					appearance = node->Parent.FirstChildElement("appearanceref");
+					pNode->apperance = &(parser->appearances[appearance->Attribute("id")]);
 				}
 
 				TiXmlElement *primitives = node->FirstChildElement("primitives");
@@ -266,6 +412,7 @@ ANFScene::ANFScene(char *filename)
 				}
 				else
 				{
+
 					TiXmlElement *rectangle = primitives->FirstChildElement("rectangle");
 					TiXmlElement *triangle = primitives->FirstChildElement("triangle");
 					TiXmlElement *cylinder = primitives->FirstChildElement("cylinder");
@@ -273,39 +420,153 @@ ANFScene::ANFScene(char *filename)
 					TiXmlElement *torus = primitives->FirstChildElement("torus");
 
 					while(rectangle){
-						printf("Rectangle: \n");
+						Rectangle* rect = new Rectangle();
+						rect->name = "rectangle";
+
+						char *pos=NULL;
+						float pos1,pos2;
+						pos=(char *) rectangle->Attribute("xy1");
+
+						if(pos && sscanf(pos,"%f %f",&pos1, &pos2)==2)
+						{
+							rect->xy1[0] = pos1;
+							rect->xy1[1] = pos2;
+						}
+						else
+							printf("\tError reading rectangle\n");
+
+						pos=(char *) rectangle->Attribute("xy2");
+
+						if(pos && sscanf(pos,"%f %f",&pos1, &pos2)==2)
+						{
+							rect->xy2[0] = pos1;
+							rect->xy2[1] = pos2;
+						}
+						else
+							printf("\tError reading rectangle\n");
+
+						pNode->primitives.push_back(rect);
 						rectangle=rectangle->NextSiblingElement("rectangle");
 					}
 					while(triangle){
-						printf("Triangle: \n");
+
+						Triangle* tri = new Triangle();
+						tri->name = "triangle";
+
+						char *pos=NULL;
+						float pos1,pos2, pos3;
+						pos=(char *) triangle->Attribute("xyz1");
+
+						if(pos && sscanf(pos,"%f %f %f",&pos1, &pos2, &pos3)==3)
+						{
+							tri->xyz1[0] = pos1;
+							tri->xyz1[1] = pos2;
+							tri->xyz1[2] = pos3;
+						}
+						else
+							printf("\tError reading triangle\n");
+
+						pos=(char *) triangle->Attribute("xyz2");
+
+						if(pos && sscanf(pos,"%f %f %f",&pos1, &pos2, &pos3)==3)
+						{
+							tri->xyz2[0] = pos1;
+							tri->xyz2[1] = pos2;
+							tri->xyz2[2] = pos3;
+						}
+						else
+							printf("\tError reading triangle\n");
+
+						pos=(char *) triangle->Attribute("xyz3");
+
+						if(pos && sscanf(pos,"%f %f %f",&pos1, &pos2, &pos3)==3)
+						{
+							tri->xyz3[0] = pos1;
+							tri->xyz3[1] = pos2;
+							tri->xyz3[2] = pos3;
+						}
+						else
+							printf("\tError reading triangle\n");
+
+						pNode->primitives.push_back(tri);
+
 						triangle=triangle->NextSiblingElement("triangle");
 					}
 					while(cylinder){
-						printf("Cylinder: \n");
+						Cylinder* cyl = new Cylinder(); 
+						cyl->name = "cylinder";
+
+						float base,top,height;
+						int slices, stacks;
+
+						if(cylinder->QueryFloatAttribute("base",&base)==TIXML_SUCCESS)
+							cyl->base = base;
+						if(cylinder->QueryFloatAttribute("top",&top)==TIXML_SUCCESS)
+							cyl->top = top;
+						if(cylinder->QueryFloatAttribute("height",&height)==TIXML_SUCCESS)
+							cyl->height = height;
+						if(cylinder->QueryIntAttribute("slices",&slices)==TIXML_SUCCESS)
+							cyl->slices = slices;
+						if(cylinder->QueryIntAttribute("stacks",&stacks)==TIXML_SUCCESS)
+							cyl->stacks = stacks;
+
+						pNode->primitives.push_back(cyl);
 						cylinder=cylinder->NextSiblingElement("cylinder");
 					}
 					while(sphere){
-						printf("Sphere: \n");
+						Sphere* sph = new Sphere();
+						sph->name = "sphere";
+
+						float radius;
+						int slices, stacks;
+
+						if(sphere->QueryFloatAttribute("radius",&radius)==TIXML_SUCCESS)
+							sph->radius = radius;
+						if(sphere->QueryIntAttribute("slices",&slices)==TIXML_SUCCESS)
+							sph->slices = slices;
+						if(sphere->QueryIntAttribute("stacks",&stacks)==TIXML_SUCCESS)
+							sph->stacks = stacks;
+
+						pNode->primitives.push_back(sph);
 						sphere=sphere->NextSiblingElement("sphere");
 					}
 					while(torus){
-						printf("Torus: \n");
+
+						Torus* tor = new Torus();
+						tor->name = "torus";
+
+						float inner, outer;
+						int slices, loops;
+
+						if(torus->QueryFloatAttribute("inner",&inner)==TIXML_SUCCESS)
+							tor->inner = inner;
+						if(torus->QueryFloatAttribute("outer",&outer)==TIXML_SUCCESS)
+							tor->outer = outer;
+						if(torus->QueryIntAttribute("slices",&slices)==TIXML_SUCCESS)
+							tor->slices = slices;
+						if(torus->QueryIntAttribute("loops",&loops)==TIXML_SUCCESS)
+							tor->loops = loops;
+
+						pNode->primitives.push_back(tor);
 						torus=torus->NextSiblingElement("torus");
 					}
 
 				}
-				
+
 				TiXmlElement *descendants = node->FirstChildElement("descendants");
-
-				TiXmlElement *descendant = descendants->FirstChildElement();
-				while(descendant)
+				if(descendants !=NULL)
 				{
-					printf("Descendant id: %s", descendant->Attribute("id"));
+					TiXmlElement *nodeRef = descendants->FirstChildElement();
+					while(nodeRef)
+					{
+						pNode->descendants[nodeRef->Attribute("id")] = parser->graph->nodes[nodeRef->Attribute("id")];
 
-					descendant = descendant->NextSiblingElement();
+						nodeRef = nodeRef->NextSiblingElement();
+					}
 				}
-
+				parser->graph->nodes[pNode->id] = pNode;
 				node = node->NextSiblingElement();
+
 			}
 		}
 	}

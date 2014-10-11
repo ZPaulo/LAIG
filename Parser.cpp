@@ -1,11 +1,18 @@
 #include "Parser.h"
 
 
-Parser::Parser(void)
+Parser::Parser()
 {
+	globals = new Globals();
+	graph = new Graph();
+
 }
 
 
-Parser::~Parser(void)
+Parser::~Parser()
 {
+	cameras.clear();
+	lights.clear();
+	textures.clear();
+	appearances.clear();
 }

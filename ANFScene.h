@@ -2,10 +2,12 @@
 #define _ANFSCENE_H_
 
 #include "tinyxml.h"
+#include "Parser.h"
 
 class ANFScene
 {
 public:
+	Parser* parser;
 	ANFScene(char *filename);
 	~ANFScene();
 
