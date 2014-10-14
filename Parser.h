@@ -1,7 +1,7 @@
 #include <String>
 #include <vector>
 #include <map>
-#include "ANFScene.h"
+#include "CGFapplication.h"
 #include "CGFobject.h"
 
 
@@ -107,7 +107,7 @@ class Triangle : public Primitives
 {
 public:
 	float xyz1[3],xyz2[3], xyz3[3];
-	vector<float> getCoord(){
+	void draw(){
 		vector<float> coord;
 		coord.push_back(xyz1[0]);
 		coord.push_back(xyz1[1]);
@@ -119,7 +119,7 @@ public:
 		coord.push_back(xyz3[1]);
 		coord.push_back(xyz3[2]);
 
-		return coord;
+	
 	}
 };
 
@@ -128,7 +128,7 @@ class Cylinder : public Primitives
 public:
 	float base, top, height;
 	int slices, stacks;
-	vector<float> getCoord(){
+	void draw(){
 		vector<float> coord;
 		coord.push_back(base);
 		coord.push_back(top);
@@ -136,7 +136,7 @@ public:
 		coord.push_back(slices);
 		coord.push_back(stacks);
 
-		return coord;
+
 	}
 };
 
@@ -145,13 +145,12 @@ class Sphere : public Primitives
 public:
 	float radius;
 	int slices, stacks;
-	vector<float> getCoord(){
+	void draw(){
 		vector<float> coord;
 		coord.push_back(radius);
 		coord.push_back(slices);
 		coord.push_back(stacks);
 
-		return coord;
 	}
 };
 
@@ -160,14 +159,13 @@ class Torus : public Primitives
 public:
 	float inner, outer;
 	int slices, loops;
-	vector<float> getCoord(){
+	void draw(){
 		vector<float> coord;
 		coord.push_back(inner);
 		coord.push_back(outer);
 		coord.push_back(loops);
 		coord.push_back(slices);
 
-		return coord;
 	}
 };
 

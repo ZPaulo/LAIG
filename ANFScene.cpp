@@ -704,7 +704,7 @@ void ANFScene::display()
 
 	// ---- BEGIN Primitive drawing section
 
-
+	drawGraph(parser.graph->rootID);
 
 
 
@@ -719,5 +719,8 @@ void ANFScene::display()
 
 void ANFScene::drawGraph(string nodeID)
 {
-
+	Node Cnode;
+	Cnode = *parser.graph->nodes[nodeID];
+	for(int i = 0; i < Cnode.primitives.size(); i++)
+		(*Cnode.primitives[i]).draw();
 }
