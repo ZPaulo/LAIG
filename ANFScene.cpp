@@ -723,4 +723,5 @@ void ANFScene::drawGraph(string nodeID)
 	Cnode = *parser.graph->nodes[nodeID];
 	for(int i = 0; i < Cnode.primitives.size(); i++)
 		(*Cnode.primitives[i]).draw();
+	
 }

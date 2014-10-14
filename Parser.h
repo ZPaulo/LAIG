@@ -108,18 +108,12 @@ class Triangle : public Primitives
 public:
 	float xyz1[3],xyz2[3], xyz3[3];
 	void draw(){
-		vector<float> coord;
-		coord.push_back(xyz1[0]);
-		coord.push_back(xyz1[1]);
-		coord.push_back(xyz1[2]);
-		coord.push_back(xyz2[0]);
-		coord.push_back(xyz2[1]);
-		coord.push_back(xyz2[2]);
-		coord.push_back(xyz3[0]);
-		coord.push_back(xyz3[1]);
-		coord.push_back(xyz3[2]);
+		glBegin(GL_TRIANGLES);
+		glVertex3f(xyz3[0],xyz3[1],xyz3[2]);
+		glVertex3f(xyz2[0],xyz2[1],xyz2[2]);
+		glVertex3f(xyz1[0],xyz1[1],xyz1[2]);
+		glEnd();
 
-	
 	}
 };
 
@@ -129,13 +123,29 @@ public:
 	float base, top, height;
 	int slices, stacks;
 	void draw(){
-		vector<float> coord;
-		coord.push_back(base);
-		coord.push_back(top);
-		coord.push_back(height);
-		coord.push_back(slices);
-		coord.push_back(stacks);
 
+		GLUquadric * quad,*botD,*topD;
+
+		quad = gluNewQuadric();
+		botD = gluNewQuadric();
+		topD = gluNewQuadric();
+
+
+		gluCylinder(quad,base,top,height,slices,stacks);
+
+		glPushMatrix();
+		glTranslated(0,0,height);
+		gluDisk(topD,0,top,slices,stacks);
+		glPopMatrix();
+
+		glPushMatrix();
+		glRotated(180,0,1,0);
+		gluDisk(botD,0,base,slices,stacks);
+		glPopMatrix();
+
+		gluDeleteQuadric(quad);
+		gluDeleteQuadric(botD);
+		gluDeleteQuadric(topD);
 
 	}
 };
@@ -146,10 +156,12 @@ public:
 	float radius;
 	int slices, stacks;
 	void draw(){
-		vector<float> coord;
-		coord.push_back(radius);
-		coord.push_back(slices);
-		coord.push_back(stacks);
+
+		GLUquadric *sphere = gluNewQuadric();
+
+		gluSphere(sphere,radius,slices,stacks);
+
+		gluDeleteQuadric(sphere);
 
 	}
 };
@@ -160,11 +172,25 @@ public:
 	float inner, outer;
 	int slices, loops;
 	void draw(){
-		vector<float> coord;
-		coord.push_back(inner);
-		coord.push_back(outer);
-		coord.push_back(loops);
-		coord.push_back(slices);
+		int i, j, k; 
+		double s, t, x, y, z, twopi;
+
+		twopi = 2 * (double)3.141569; 
+		for (i = 0; i < slices; i++) { 
+			glBegin(GL_QUAD_STRIP); 
+			for (j = 0; j <= loops; j++) { 
+				for (k = 1; k >= 0; k--) { 
+					s = (i + k) % slices + 0.5; 
+					t = j % loops; 
+
+					x = (inner+0.1*cos(s*twopi/slices))*cos(t*twopi/loops);
+					y = (inner+0.1*cos(s*twopi/slices))*sin(t*twopi/loops);
+					z = 0.1 * sin(s * twopi / slices); 
+					glVertex3f(x, y, z); 
+				} 
+			} 
+			glEnd(); 
+		} 
 
 	}
 };
