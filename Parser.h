@@ -1,6 +1,9 @@
 #include <String>
 #include <vector>
 #include <map>
+#include "ANFScene.h"
+#include "CGFobject.h"
+
 
 using namespace std;
 
@@ -78,32 +81,24 @@ public:
 
 };
 
-class Transform
-{
-public:
-	string type,axis;
-	float angle,factor[3], to[3];
-};
-
 class Primitives
 {
 public:
 	string name;
-	static vector<float> getCoord();
+	virtual void draw() = 0;
 };
 
 class Rectangle : public Primitives
 {
 public:
 	float xy1[2], xy2[2];
-	vector<float> getCoord(){
-		vector<float> coord;
-		coord.push_back(xy1[0]);
-		coord.push_back(xy1[1]);
-		coord.push_back(xy2[0]);
-		coord.push_back(xy2[1]);
-
-		return coord;
+	void draw(){
+		glBegin(GL_POLYGON);
+		glVertex2f(xy1[0], xy1[1]);
+		glVertex2f(xy2[0], xy1[1]);
+		glVertex2f(xy2[0], xy2[1]);
+		glVertex2f(xy1[0], xy2[1]);
+		glEnd();
 	}
 
 };
@@ -180,10 +175,10 @@ class Node
 {
 public:
 	string id;
-	vector<Transform*> tranforms;
+	float matrix[16];
 	Appearance* apperance;
 	vector<Primitives*> primitives;
-	map<string, Node*> descendants;
+	vector<string> descendants;
 };
 
 class Graph
@@ -202,7 +197,7 @@ public:
 	map <string, Camera> cameras;
 	string initCam;
 	string activeCam;
-	map<string, Light> lights;
+	vector<Light*> lights;
 	map<string, Texture> textures;
 	map<string, Appearance> appearances;
 	Graph* graph;

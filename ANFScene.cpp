@@ -1,8 +1,15 @@
 #include "ANFScene.h"
 #include <string>
 #include <iostream>
+#include "CGFaxis.h"
+#include "CGFapplication.h"
+#include <math.h>
 
 using namespace std;
+
+
+float pi = acos(-1.0);
+float deg2rad=pi/180.0;
 
 ANFScene::ANFScene(char *filename)
 {
@@ -26,7 +33,7 @@ ANFScene::ANFScene(char *filename)
 		exit(1);
 	}
 
-	parser = new Parser();
+	parser;
 
 	globalsElement = anfElement->FirstChildElement( "globals" );
 	lightsElement = anfElement->FirstChildElement( "lights" );
@@ -51,18 +58,18 @@ ANFScene::ANFScene(char *filename)
 			char *valString=NULL;
 			float b1,b2,b3,b4;
 
-			parser->globals->drawing.mode = drawingElement->Attribute("mode");
-			parser->globals->drawing.shading = drawingElement->Attribute("shading");
+			parser.globals->drawing.mode = drawingElement->Attribute("mode");
+			parser.globals->drawing.shading = drawingElement->Attribute("shading");
 
 
 			valString=(char *) drawingElement->Attribute("background");
 
 			if(valString && sscanf(valString,"%f %f %f %f",&b1, &b2, &b3, &b4)==4)
 			{
-				parser->globals->drawing.background[0] = b1;
-				parser->globals->drawing.background[1] = b2;
-				parser->globals->drawing.background[2] = b3;
-				parser->globals->drawing.background[3] = b4;
+				parser.globals->drawing.background[0] = b1;
+				parser.globals->drawing.background[1] = b2;
+				parser.globals->drawing.background[2] = b3;
+				parser.globals->drawing.background[3] = b4;
 			}
 			else
 				printf("Error parsing background");
@@ -73,8 +80,8 @@ ANFScene::ANFScene(char *filename)
 		TiXmlElement* cullingElement=globalsElement->FirstChildElement("culling");
 		if (cullingElement)
 		{
-			parser->globals->culling.face = cullingElement->Attribute("face");
-			parser->globals->culling.order = cullingElement->Attribute("order");
+			parser.globals->culling.face = cullingElement->Attribute("face");
+			parser.globals->culling.order = cullingElement->Attribute("order");
 		}
 		else
 			printf("culling not found\n");	
@@ -83,9 +90,9 @@ ANFScene::ANFScene(char *filename)
 		if (lightingElement)
 		{
 
-			parser->globals->lighting.local = lightingElement->Attribute("local");
-			parser->globals->lighting.doublesdd = lightingElement->Attribute("doublesided");
-			parser->globals->lighting.enabled = lightingElement->Attribute("enabled");
+			parser.globals->lighting.local = lightingElement->Attribute("local");
+			parser.globals->lighting.doublesdd = lightingElement->Attribute("doublesided");
+			parser.globals->lighting.enabled = lightingElement->Attribute("enabled");
 
 			char *valString=NULL;
 			float b1,b2,b3,b4;
@@ -94,10 +101,10 @@ ANFScene::ANFScene(char *filename)
 
 			if(valString && sscanf(valString,"%f %f %f %f",&b1, &b2, &b3, &b4)==4)
 			{
-				parser->globals->lighting.ambient[0] = b1;
-				parser->globals->lighting.ambient[1] = b2;
-				parser->globals->lighting.ambient[2] = b3;
-				parser->globals->lighting.ambient[3] = b4;
+				parser.globals->lighting.ambient[0] = b1;
+				parser.globals->lighting.ambient[1] = b2;
+				parser.globals->lighting.ambient[2] = b3;
+				parser.globals->lighting.ambient[3] = b4;
 			}
 			else
 				printf("Error parsing ambient");
@@ -119,8 +126,8 @@ ANFScene::ANFScene(char *filename)
 		TiXmlElement* ortho=camerasElement->FirstChildElement("ortho");
 		COrtho cOrt;
 
-		parser->initCam = camerasElement->Attribute("initial");
-		parser->activeCam = parser->initCam;
+		parser.initCam = camerasElement->Attribute("initial");
+		parser.activeCam = parser.initCam;
 
 		while(perspective){
 			cPer.id = perspective->Attribute("id");
@@ -156,7 +163,7 @@ ANFScene::ANFScene(char *filename)
 			else
 				printf("\tError reading target\n");
 
-			parser->cameras[cPer.id] = cPer;
+			parser.cameras[cPer.id] = cPer;
 			perspective=perspective->NextSiblingElement("perspective");
 		}
 
@@ -188,7 +195,7 @@ ANFScene::ANFScene(char *filename)
 			if(ortho->QueryFloatAttribute("bottom",&bottom)==TIXML_SUCCESS)
 				cOrt.bottom = bottom;
 
-			parser->cameras[cOrt.id] = cOrt;
+			parser.cameras[cOrt.id] = cOrt;
 			ortho=ortho->NextSiblingElement("ortho");
 		}
 	}
@@ -277,7 +284,7 @@ ANFScene::ANFScene(char *filename)
 				printf("Error parsing specular\n");
 
 
-			parser->lights[lt.id] = lt;
+			parser.lights.push_back(&lt);
 			light=light->NextSiblingElement();
 
 		}
@@ -325,7 +332,7 @@ ANFScene::ANFScene(char *filename)
 	{
 
 		TiXmlElement *node=graphElement->FirstChildElement();
-		parser->graph->rootID = graphElement->Attribute("rootid");
+		parser.graph->rootID = graphElement->Attribute("rootid");
 
 		if(	node == NULL)
 			printf("Node block not found!\n");
@@ -336,6 +343,8 @@ ANFScene::ANFScene(char *filename)
 				Node* pNode = new Node();
 				pNode->id = node->Attribute("id");
 				TiXmlElement *transforms = node->FirstChildElement("transforms");
+				glLoadIdentity();
+				glGetFloatv(GL_MODELVIEW_MATRIX,pNode->matrix);
 				if(transforms == NULL)
 				{
 					printf("Transforms block not found!\n");
@@ -344,56 +353,46 @@ ANFScene::ANFScene(char *filename)
 				else
 				{
 					TiXmlElement *transform = transforms->FirstChildElement("transform");
-
 					while(transform)
 					{
-						Transform *tr = new Transform();
 						if((string) transform->Attribute("type") == "translate")
 						{
 
-							tr->type = "translate";
 							char *pos=NULL;
 							float posx,posy,posz;
 							pos=(char *) transform->Attribute("to");
 
 							if(pos && sscanf(pos,"%f %f %f",&posx, &posy, &posz)==3)
 							{
-								tr->to[0] = posx;
-								tr->to[1] = posy;
-								tr->to[2] = posz;
+								glTranslatef(posx,posy,posz);
 							}
 							else
 								printf("\tError reading position\n");
 						}
 						if((string) transform->Attribute("type") == "rotate")
 						{
-							tr->type = "rotate";
-
-							tr->axis = transform->Attribute("axis");
+							string axis = (char*) transform->Attribute("axis");
 							float angle;
 							if(transform->QueryFloatAttribute("angle",&angle)==TIXML_SUCCESS)
-								tr->angle = angle;
+								glRotatef(angle, axis == "x", axis == "y", axis == "z");
 						}
 
 						if((string) transform->Attribute("type") == "scale")
 						{
-							tr->type = "scale";
 							char *pos=NULL;
 							float posx,posy,posz;
 							pos=(char *) transform->Attribute("factor");
 
 							if(pos && sscanf(pos,"%f %f %f",&posx, &posy, &posz)==3)
 							{
-								tr->factor[0] = posx;
-								tr->factor[1] = posy;
-								tr->factor[2] = posz;
+								glScalef(posx,posy,posz);
 							}
 							else
 								printf("\tError reading factor\n");
 						}
 
 
-						pNode->tranforms.push_back(tr);
+						glGetFloatv(GL_MODELVIEW_MATRIX,pNode->matrix);
 						transform = transform->NextSiblingElement();
 					}
 				}
@@ -401,7 +400,7 @@ ANFScene::ANFScene(char *filename)
 				TiXmlElement *appearance = node->FirstChildElement("appearanceref");
 				if(appearance->Attribute("id") != "inherit")
 				{
-					pNode->apperance = &(parser->appearances[appearance->Attribute("id")]);
+					pNode->apperance = &(parser.appearances[appearance->Attribute("id")]);
 				}
 
 				TiXmlElement *primitives = node->FirstChildElement("primitives");
@@ -559,17 +558,18 @@ ANFScene::ANFScene(char *filename)
 					TiXmlElement *nodeRef = descendants->FirstChildElement();
 					while(nodeRef)
 					{
-						pNode->descendants[nodeRef->Attribute("id")] = parser->graph->nodes[nodeRef->Attribute("id")];
+						pNode->descendants.push_back(nodeRef->Attribute("id"));
 
 						nodeRef = nodeRef->NextSiblingElement();
 					}
 				}
-				parser->graph->nodes[pNode->id] = pNode;
+				parser.graph->nodes[pNode->id] = pNode;
 				node = node->NextSiblingElement();
 
 			}
 		}
 	}
+
 
 }
 
@@ -580,18 +580,144 @@ ANFScene::~ANFScene()
 
 //-------------------------------------------------------
 
-TiXmlElement *ANFScene::findChildByAttribute(TiXmlElement *parent,const char * attr, const char *val)
-	// Searches within descendants of a parent for a light that has an attribute _attr_ (e.g. an id) with the value _val_
-	// A more elaborate version of this would rely on XPath expressions
+
+void ANFScene::init() 
 {
-	TiXmlElement *child=parent->FirstChildElement();
-	int found=0;
 
-	while (child && !found)
-		if (child->Attribute(attr) && strcmp(child->Attribute(attr),val)==0)
-			found=1;
-		else
-			child=child->NextSiblingElement();
+	float globalAmbientLight[4];
+	for(int i = 0; i < 4 ;i++)
+		globalAmbientLight[i] = parser.globals->lighting.ambient[i];
 
-	return child;
+	if(parser.globals->lighting.enabled)
+		glEnable(GL_LIGHTING);
+	else
+		glDisable(GL_LIGHTING);
+
+	if(parser.globals->lighting.doublesdd)
+		glLightModelf(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
+	else
+		glLightModelf(GL_LIGHT_MODEL_TWO_SIDE, GL_FALSE);
+
+	if(parser.globals->lighting.local)
+		glLightModelf(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
+	else
+		glLightModelf(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_FALSE);
+
+	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, globalAmbientLight);  
+
+	if(parser.globals->drawing.shading == "flat")
+		glShadeModel(GL_FLAT);
+	else
+		glShadeModel(GL_SMOOTH);
+
+
+
+	if(parser.globals->drawing.mode == "fill")
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	else if(parser.globals->drawing.mode == "point")
+		glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+	else
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+
+	glClearColor(parser.globals->drawing.background[0], parser.globals->drawing.background[1],
+		parser.globals->drawing.background[2],parser.globals->drawing.background[3]);
+
+	//Globals culling
+	glEnable(GL_CULL_FACE);
+
+	if(parser.globals->culling.face == "none")
+		glDisable(GL_CULL_FACE);
+	else if (parser.globals->culling.face == "front")
+		glCullFace(GL_FRONT);
+	else if (parser.globals->culling.face == "back")
+		glCullFace(GL_BACK);
+	else
+		glCullFace(GL_FRONT_AND_BACK);
+
+	if(parser.globals->culling.order == "cw")
+		glFrontFace(GL_CW);
+	else
+		glFrontFace(GL_CCW);
+
+
+	// Declares and enables two lights, with null ambient component
+
+
+
+	/*light0 = new CGFlight(GL_LIGHT0, light0_pos);
+	light0->setAmbient(ambientNull);
+	light0->setSpecular(yellow);
+
+
+	light1 = new CGFlight(GL_LIGHT1, light1_pos);
+	light1->setAmbient(ambientNull);
+
+
+	light2 = new CGFlight(GL_LIGHT2, light2_pos);
+	light2->setAmbient(ambientNull);
+	light2->setKc(0);
+	light2->setKl(1);
+	light2->setKq(0);*/
+
+
+
+
+	// Uncomment below to enable normalization of lighting normal vectors
+	glEnable (GL_NORMALIZE);
+	glEnable (GL_TEXTURE_2D);
+
+	//Declares scene elements
+
+}
+
+
+
+
+void ANFScene::display() 
+{
+
+	// ---- BEGIN Background, camera and axis setup
+
+	// Clear image and depth buffer everytime we update the scene
+	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+
+	// Initialize Model-View matrix as identity (no transformation
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
+
+	// Apply transformations corresponding to the camera position relative to the origin
+	CGFscene::activeCamera->applyView();
+
+	/*
+	light0->draw();
+	light0->disable();
+	if (l0 != 0)
+	light0->enable();*/
+
+
+	// Draw axis
+	axis.draw();
+
+	// ---- END Background, camera and axis setup
+
+	// ---- BEGIN Primitive drawing section
+
+
+
+
+
+	// ---- END Primitive drawing section
+
+
+	// We have been drawing in a memory area that is not visible - the back buffer, 
+	// while the graphics card is showing the contents of another buffer - the front buffer
+	// glutSwapBuffers() will swap pointers so that the back buffer becomes the front buffer and vice-versa
+	glutSwapBuffers();
+}
+
+void ANFScene::drawGraph(string nodeID)
+{
+
 }
