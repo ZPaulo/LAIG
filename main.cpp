@@ -13,7 +13,7 @@ int main(int argc, char* argv[]){
 	try {
 		app.init(&argc, argv);
 
-		app.setScene(new ANFScene("test.anf"));
+		app.setScene(new ANFScene("teste.anf"));
 		app.setInterface(new CGFinterface());
 		
 		app.run();

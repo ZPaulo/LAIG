@@ -297,13 +297,63 @@ ANFScene::ANFScene(char *filename)
 	else
 	{
 		TiXmlElement *appearance=appearancesElement->FirstChildElement();
+
 		while (appearance)
 		{
-			printf("Appearance - %s\n", appearance->Attribute("id"));
+			Appearance *app = new Appearance();
+			app->id =  appearance->Attribute("id");
 			appearance->QueryFloatAttribute("shininess",&shininess);
-			printf("\tShininess: %f\n", shininess);
-			printf("\tTextureRef: %s\n", appearance->Attribute("textureref"));
+			app->shininness = shininess;
+			if(appearance->Attribute("textureref")) 
+				if(appearance->Attribute("textureref")!= "")
+					app->textureRef = appearance->Attribute("textureref");
 
+
+			char *valString=NULL;
+			float b1,b2,b3,b4;
+			TiXmlElement *component = appearance->FirstChildElement();
+
+			valString=(char *) component->Attribute("value");
+
+			if(valString && sscanf(valString,"%f %f %f %f",&b1, &b2, &b3, &b4)==4)
+			{
+				app->ambient[0] = b1;
+				app->ambient[1] = b2;
+				app->ambient[2] = b3;
+				app->ambient[3] = b4;
+			}
+			else
+				printf("Error parsing ambient\n");
+
+			component= component->NextSiblingElement();
+
+			valString=(char *) component->Attribute("value");
+
+			if(valString && sscanf(valString,"%f %f %f %f",&b1, &b2, &b3, &b4)==4)
+			{
+				app->diffuse[0] = b1;
+				app->diffuse[1] = b2;
+				app->diffuse[2] = b3;
+				app->diffuse[3] = b4;
+			}
+			else
+				printf("Error parsing diffuse\n");
+
+			component = component->NextSiblingElement();
+
+			valString=(char *) component->Attribute("value");
+
+			if(valString && sscanf(valString,"%f %f %f %f",&b1, &b2, &b3, &b4)==4)
+			{
+				app->specular[0] = b1;
+				app->specular[1] = b2;
+				app->specular[2] = b3;
+				app->specular[3] = b4;
+			}
+			else
+				printf("Error parsing specular\n");
+
+			parser.appearances[app->id] = app;
 			appearance=appearance->NextSiblingElement();
 		}
 	}
@@ -317,9 +367,11 @@ ANFScene::ANFScene(char *filename)
 		TiXmlElement *texture = textureElement->FirstChildElement();
 		while(texture)
 		{
-			printf("Texture - %s\n", texture->Attribute("id"));
-			printf("\tfile: %s\n",texture->Attribute("file"));
+			Texture *tex = new Texture();
+			tex->id = texture->Attribute("id");
+			tex->file = texture->Attribute("file");
 
+			parser.textures[tex->id] = tex;
 			texture = texture->NextSiblingElement();
 		}
 	}
@@ -398,10 +450,8 @@ ANFScene::ANFScene(char *filename)
 				}
 
 				TiXmlElement *appearance = node->FirstChildElement("appearanceref");
-				if(appearance->Attribute("id") != "inherit")
-				{
-					pNode->apperance = &(parser.appearances[appearance->Attribute("id")]);
-				}
+
+				pNode->apperanceRef = appearance->Attribute("id");
 
 				TiXmlElement *primitives = node->FirstChildElement("primitives");
 				if(primitives == NULL)
@@ -721,7 +771,28 @@ void ANFScene::drawGraph(string nodeID)
 {
 	Node Cnode;
 	Cnode = *parser.graph->nodes[nodeID];
+	/*if(Cnode.apperanceRef != "inherit")
+	{
+		Appearance tempAp = *(parser.appearances[Cnode.apperanceRef]);
+
+		CGFappearance *app = new CGFappearance(tempAp.ambient,tempAp.diffuse,tempAp.specular,tempAp.shininness);
+		if(tempAp.textureRef != "")
+			app->setTexture(parser.textures[tempAp.textureRef]->file);
+	
+		
+	}*/
+	//app->apply();
+	glMultMatrixf(Cnode.matrix);
+
 	for(int i = 0; i < Cnode.primitives.size(); i++)
 		(*Cnode.primitives[i]).draw();
-	
+
+	for(int i = 0; i < Cnode.descendants.size(); i++)
+	{
+		glPushMatrix();
+		drawGraph(Cnode.descendants[i]);
+		glPopMatrix();
+	}
+
+
 }

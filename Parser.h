@@ -77,7 +77,7 @@ class Appearance
 {
 public:
 	string id, textureRef;
-	float ambient[4], diffuse[4], specular[4];
+	float ambient[4], diffuse[4], specular[4], shininness;
 
 };
 
@@ -158,6 +158,7 @@ public:
 	void draw(){
 
 		GLUquadric *sphere = gluNewQuadric();
+		gluQuadricTexture(sphere, GL_TRUE);
 
 		gluSphere(sphere,radius,slices,stacks);
 
@@ -174,18 +175,18 @@ public:
 	void draw(){
 		int i, j, k; 
 		double s, t, x, y, z, twopi;
-
+		
 		twopi = 2 * (double)3.141569; 
 		for (i = 0; i < slices; i++) { 
 			glBegin(GL_QUAD_STRIP); 
 			for (j = 0; j <= loops; j++) { 
 				for (k = 1; k >= 0; k--) { 
-					s = (i + k) % slices + 0.5; 
-					t = j % loops; 
+					s = (i + k) % slices; 
+					t = (j) % loops; 
 
-					x = (inner+0.1*cos(s*twopi/slices))*cos(t*twopi/loops);
-					y = (inner+0.1*cos(s*twopi/slices))*sin(t*twopi/loops);
-					z = 0.1 * sin(s * twopi / slices); 
+					x = (inner+outer*0.5+outer*0.5*cos(s*twopi/slices))*cos(t*twopi/loops);
+					y = (inner+outer*0.5+outer*0.5*cos(s*twopi/slices))*sin(t*twopi/loops);
+					z = outer*0.5*sin(s * twopi / slices); 
 					glVertex3f(x, y, z); 
 				} 
 			} 
@@ -200,7 +201,7 @@ class Node
 public:
 	string id;
 	float matrix[16];
-	Appearance* apperance;
+	string apperanceRef;
 	vector<Primitives*> primitives;
 	vector<string> descendants;
 };
@@ -222,7 +223,7 @@ public:
 	string initCam;
 	string activeCam;
 	vector<Light*> lights;
-	map<string, Texture> textures;
-	map<string, Appearance> appearances;
+	map<string, Texture*> textures;
+	map<string, Appearance*> appearances;
 	Graph* graph;
 };
