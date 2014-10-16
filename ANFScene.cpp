@@ -89,20 +89,22 @@ ANFScene::ANFScene(char *filename)
 		if (lightingElement)
 		{
 
-			if(lightingElement->Attribute("local") == "true")
+			if((string) lightingElement->Attribute("local") == "true")
 				parser.globals->lighting.local = true;
 			else
 				parser.globals->lighting.local = false;
 
-			if(lightingElement->Attribute("doublesided") == "true")
+			if((string) lightingElement->Attribute("doublesided") == "true")
 				parser.globals->lighting.doublesdd = true;
 			else
 				parser.globals->lighting.doublesdd = false;
 
-			if(lightingElement->Attribute("enabled") == "true")
+			if((string) lightingElement->Attribute("enabled") == "true")
 				parser.globals->lighting.enabled = true;
 			else
 				parser.globals->lighting.enabled = false;
+
+			printf("%s\n",lightingElement->Attribute("enabled"));
 
 			char *valString=NULL;
 			float b1,b2,b3,b4;
@@ -741,9 +743,7 @@ void ANFScene::init()
 	else
 		glFrontFace(GL_CCW);
 
-
-
-
+	
 	unsigned int lightnum[8];
 	lightnum[0]=GL_LIGHT0;
 	lightnum[1]=GL_LIGHT1;
