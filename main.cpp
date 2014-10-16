@@ -13,7 +13,7 @@ int main(int argc, char* argv[]){
 	try {
 		app.init(&argc, argv);
 
-		app.setScene(new ANFScene("teste.anf"));
+		app.setScene(new ANFScene("LAIG_TP1_ANF_T01_G03_v2.anf"));
 		app.setInterface(new CGFinterface());
 		
 		app.run();
@@ -26,6 +26,5 @@ int main(int argc, char* argv[]){
 		cout << "Erro inesperado: " << ex.what();
 		return -1;
 	}
-
 	return 0;
 }

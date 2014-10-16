@@ -1,6 +1,7 @@
 #include <String>
 #include <vector>
 #include <map>
+#include <math.h>
 #include "CGFapplication.h"
 #include "CGFobject.h"
 
@@ -76,7 +77,8 @@ public:
 class Appearance
 {
 public:
-	string id, textureRef;
+	string  textureRef;
+	CGFappearance *appCGF;
 	float ambient[4], diffuse[4], specular[4], shininness;
 
 };
@@ -94,9 +96,21 @@ public:
 	float xy1[2], xy2[2];
 	void draw(){
 		glBegin(GL_POLYGON);
+
+		glNormal3f(xy1[0], xy1[1],1);
+		glTexCoord2f(0,0);
 		glVertex2f(xy1[0], xy1[1]);
+
+		glNormal3f(xy2[0], xy1[1],1);
+		glTexCoord2f(1,0);
 		glVertex2f(xy2[0], xy1[1]);
+
+		glNormal3f(xy2[0], xy2[1],1);
+		glTexCoord2f(1,1);
 		glVertex2f(xy2[0], xy2[1]);
+
+		glNormal3f(xy1[0], xy2[1],1);
+		glTexCoord2f(0,1);
 		glVertex2f(xy1[0], xy2[1]);
 		glEnd();
 	}
@@ -108,10 +122,19 @@ class Triangle : public Primitives
 public:
 	float xyz1[3],xyz2[3], xyz3[3];
 	void draw(){
-		glBegin(GL_TRIANGLES);
-		glVertex3f(xyz3[0],xyz3[1],xyz3[2]);
+		glBegin(GL_TRIANGLES);	
+
+		glNormal3f(xyz1[0], xyz1[1],1);
+		glTexCoord2f(0,0);
+		glVertex3f(xyz1[0],xyz1[1],xyz1[2]);	
+
+		glNormal3f(xyz2[0], xyz2[1],1);
+		glTexCoord2f(1,0);
 		glVertex3f(xyz2[0],xyz2[1],xyz2[2]);
-		glVertex3f(xyz1[0],xyz1[1],xyz1[2]);
+
+		glNormal3f(xyz3[0], xyz3[1],1);
+		glTexCoord2f(0.5,1);
+		glVertex3f(xyz3[0],xyz3[1],xyz3[2]);
 		glEnd();
 
 	}
@@ -129,8 +152,16 @@ public:
 		quad = gluNewQuadric();
 		botD = gluNewQuadric();
 		topD = gluNewQuadric();
+		
+	
+			gluQuadricNormals(quad,GL_SMOOTH);
+			gluQuadricNormals(botD,GL_SMOOTH);
+			gluQuadricNormals(topD,GL_SMOOTH);
+		
 
-
+			gluQuadricTexture(quad, GL_TRUE);
+		gluQuadricTexture(botD, GL_TRUE);
+		gluQuadricTexture(topD, GL_TRUE);
 		gluCylinder(quad,base,top,height,slices,stacks);
 
 		glPushMatrix();
@@ -159,6 +190,7 @@ public:
 
 		GLUquadric *sphere = gluNewQuadric();
 		gluQuadricTexture(sphere, GL_TRUE);
+		gluQuadricNormals(sphere,GL_SMOOTH);
 
 		gluSphere(sphere,radius,slices,stacks);
 
@@ -170,28 +202,30 @@ public:
 class Torus : public Primitives
 {
 public:
+
 	float inner, outer;
 	int slices, loops;
 	void draw(){
-		int i, j, k; 
-		double s, t, x, y, z, twopi;
-		
-		twopi = 2 * (double)3.141569; 
-		for (i = 0; i < slices; i++) { 
-			glBegin(GL_QUAD_STRIP); 
-			for (j = 0; j <= loops; j++) { 
-				for (k = 1; k >= 0; k--) { 
-					s = (i + k) % slices; 
-					t = (j) % loops; 
+		float pi = acos(-1.0);
+		float deg2rad=pi/180.0;
+		double TWOPI = 2 * pi;
+		for (int i = 0; i < slices; i++) {
+			glBegin(GL_QUAD_STRIP);
+			for (int j = 0; j <= loops; j++) {
+				for (int k = 1; k >= 0; k--) {
 
-					x = (inner+outer*0.5+outer*0.5*cos(s*twopi/slices))*cos(t*twopi/loops);
-					y = (inner+outer*0.5+outer*0.5*cos(s*twopi/slices))*sin(t*twopi/loops);
-					z = outer*0.5*sin(s * twopi / slices); 
-					glVertex3f(x, y, z); 
-				} 
-			} 
-			glEnd(); 
-		} 
+					double s = (i + k) % slices + 0.5;
+					double t = j % loops;
+
+					double x = (inner + 0.1* cos(s * TWOPI / slices)) * cos(t * TWOPI / loops);
+					double y = (inner + 0.1* cos(s * TWOPI / slices)) * sin(t * TWOPI / loops);
+					double z = 0.1* sin(s * TWOPI / slices);
+
+					glVertex3d(2 * x, 2 * y, 2 * z);
+				}
+			}
+			glEnd();
+		}
 
 	}
 };

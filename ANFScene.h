@@ -19,9 +19,9 @@ public:
 
 	void drawGraph(string nodeID);
 
-	vector<CGFlight*> lights;
-	vector<CGFappearance*> appearances;
-
+	vector<CGFlight*> lightsV;
+	
+	CGFlight* light0;
 	
 protected:
 
