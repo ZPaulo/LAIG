@@ -227,12 +227,13 @@ ANFScene::ANFScene(char *filename)
 			Light *lt = new Light();
 			lt->id = light->Attribute("id");
 			lt->type = light->Attribute("type");
-			if(light->Attribute("enabled") == "true")
+
+			if(light->Attribute("enabled")[0] == 't')
 				lt->enabled = true;
 			else
 				lt->enabled = false;
 
-			if(light->Attribute("marker") == "true")
+			if(light->Attribute("marker")[0] == 't')
 				lt->marker =true;
 			else
 				lt->marker = false;
@@ -672,6 +673,14 @@ ANFScene::ANFScene(char *filename)
 
 
 }
+void ANFScene::activateLight(int id,bool enable1){
+	if(enable1==true){
+		lightsV[id]->enable();
+	}
+	else{
+		lightsV[id]->disable();
+	}
+}
 
 ANFScene::~ANFScene()
 {
@@ -813,6 +822,8 @@ void ANFScene::display()
 	{
 		if(parser.lights[i]->marker)
 			lightsV[i]->draw();
+		
+
 	}
 	// Draw axis
 	axis.draw();
@@ -836,6 +847,7 @@ void ANFScene::display()
 
 void ANFScene::drawGraph(string nodeID)
 {
+	
 	Node Cnode;
 	Cnode = *parser.graph->nodes[nodeID];
 	if(Cnode.apperanceRef != "")
@@ -856,3 +868,4 @@ void ANFScene::drawGraph(string nodeID)
 
 
 }
+

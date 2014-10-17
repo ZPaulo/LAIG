@@ -260,4 +260,5 @@ public:
 	map<string, Texture*> textures;
 	map<string, Appearance*> appearances;
 	Graph* graph;
+
 };
