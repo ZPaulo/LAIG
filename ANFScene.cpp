@@ -56,8 +56,9 @@ ANFScene::ANFScene(char *filename)
 
 			char *valString=NULL;
 			float b1,b2,b3,b4;
-
-			parser.globals->drawing.mode = drawingElement->Attribute("mode");
+			string s;
+			s = drawingElement->Attribute("mode");
+			parser.globals->drawing.mode = s;
 			parser.globals->drawing.shading = drawingElement->Attribute("shading");
 
 
@@ -89,7 +90,7 @@ ANFScene::ANFScene(char *filename)
 		if (lightingElement)
 		{
 
-			if((string) lightingElement->Attribute("local") == "true")
+			if(strcmp((char *) lightingElement->Attribute("local"),"true"))
 				parser.globals->lighting.local = true;
 			else
 				parser.globals->lighting.local = false;
@@ -98,6 +99,8 @@ ANFScene::ANFScene(char *filename)
 				parser.globals->lighting.doublesdd = true;
 			else
 				parser.globals->lighting.doublesdd = false;
+
+
 
 			if((string) lightingElement->Attribute("enabled") == "true")
 				parser.globals->lighting.enabled = true;
@@ -227,12 +230,12 @@ ANFScene::ANFScene(char *filename)
 			Light *lt = new Light();
 			lt->id = light->Attribute("id");
 			lt->type = light->Attribute("type");
-			if(light->Attribute("enabled") == "true")
+			if((string)light->Attribute("enabled") == "true")
 				lt->enabled = true;
 			else
 				lt->enabled = false;
 
-			if(light->Attribute("marker") == "true")
+			if((string)light->Attribute("marker") == "true")
 				lt->marker =true;
 			else
 				lt->marker = false;
@@ -743,33 +746,34 @@ void ANFScene::init()
 	else
 		glFrontFace(GL_CCW);
 
-	
-	unsigned int lightnum[8];
-	lightnum[0]=GL_LIGHT0;
-	lightnum[1]=GL_LIGHT1;
-	lightnum[2]=GL_LIGHT2;
-	lightnum[3]=GL_LIGHT3;
-	lightnum[4]=GL_LIGHT4;
-	lightnum[5]=GL_LIGHT5;
-	lightnum[6]=GL_LIGHT6;
-	lightnum[7]=GL_LIGHT7;
+
+
 
 	for(unsigned int i=0;i<parser.lights.size() && i<8;i++)
 	{
+		int id = GL_LIGHT0;
+
 		CGFlight* light;
 		Light* recentlight = parser.lights[i];
-
-		light = new CGFlight(lightnum[i], recentlight->pos);
-
+		float pos[4];
+		pos[0] = recentlight->pos[0];
+		pos[1] = recentlight->pos[1];
+		pos[2] = recentlight->pos[2];
+		pos[3] = 1;
+		if(recentlight->type==("spot")){
+			glLightf(id,GL_SPOT_CUTOFF,recentlight->angle);
+			glLightf(id,GL_SPOT_EXPONENT,recentlight->exponent);
+			glLightfv(id,GL_SPOT_DIRECTION,recentlight->target);
+			pos[3] = 0;
+			light = new CGFlight(id, pos);
+		}
+		else
+			light = new CGFlight(id, pos);
 		light->setAmbient(recentlight->ambient);
 		light->setSpecular(recentlight->specular);
 		light->setDiffuse(recentlight->diffuse);
 
-		if(recentlight->type.c_str()==("spot")){
-			glLightf(lightnum[i],GL_SPOT_CUTOFF,recentlight->angle);
-			glLightf(lightnum[i],GL_SPOT_EXPONENT,recentlight->exponent);
-			glLightfv(lightnum[i],GL_SPOT_DIRECTION,recentlight->target);
-		}
+
 
 		if(parser.lights[i]->enabled==true)
 			light->enable();
@@ -777,6 +781,7 @@ void ANFScene::init()
 			light->disable();
 
 		lightsV.push_back(light);
+		id++;
 	}
 
 
@@ -817,20 +822,8 @@ void ANFScene::display()
 	// Draw axis
 	axis.draw();
 
-	// ---- END Background, camera and axis setup
-
-	// ---- BEGIN Primitive drawing section
-
 	drawGraph(parser.graph->rootID);
 
-
-
-	// ---- END Primitive drawing section
-
-
-	// We have been drawing in a memory area that is not visible - the back buffer, 
-	// while the graphics card is showing the contents of another buffer - the front buffer
-	// glutSwapBuffers() will swap pointers so that the back buffer becomes the front buffer and vice-versa
 	glutSwapBuffers();
 }
 
@@ -838,21 +831,31 @@ void ANFScene::drawGraph(string nodeID)
 {
 	Node Cnode;
 	Cnode = *parser.graph->nodes[nodeID];
+	bool app = false;
 	if(Cnode.apperanceRef != "")
 		if(Cnode.apperanceRef != "inherit")
+		{
 			parser.appearances[Cnode.apperanceRef]->appCGF->apply();
+			app = true;
+		}
 
-	glMultMatrixf(Cnode.matrix);
+		glMultMatrixf(Cnode.matrix);
 
-	for(int i = 0; i < Cnode.primitives.size(); i++)
-		(*Cnode.primitives[i]).draw();
+		for(int i = 0; i < Cnode.primitives.size(); i++)
+		{
+			if(app)
+				if(parser.appearances[Cnode.apperanceRef]->textureRef != "")
+					(*Cnode.primitives[i]).draw(*(parser.textures[parser.appearances[Cnode.apperanceRef]->textureRef]));
+				else
+					(*Cnode.primitives[i]).draw();
+		}
 
-	for(int i = 0; i < Cnode.descendants.size(); i++)
-	{
-		glPushMatrix();
-		drawGraph(Cnode.descendants[i]);
-		glPopMatrix();
-	}
+		for(int i = 0; i < Cnode.descendants.size(); i++)
+		{
+			glPushMatrix();
+			drawGraph(Cnode.descendants[i]);
+			glPopMatrix();
+		}
 
 
 }
