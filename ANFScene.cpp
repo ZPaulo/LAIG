@@ -337,9 +337,14 @@ ANFScene::ANFScene(char *filename)
 		TiXmlElement *texture = textureElement->FirstChildElement();
 		while(texture)
 		{
+			float texS,texT;
 			Texture *tex = new Texture();
 			tex->id = texture->Attribute("id");
 			tex->file = texture->Attribute("file");
+			texture->QueryFloatAttribute("texlength_s",&texS);
+			tex->texLengthS = texS;
+			texture->QueryFloatAttribute("texlength_t",&texT);
+			tex->texLengthT = texT;
 			parser.textures[tex->id] = tex;
 			texture = texture->NextSiblingElement();
 		}
@@ -409,6 +414,7 @@ ANFScene::ANFScene(char *filename)
 			else
 				printf("Error parsing specular\n");
 
+			app->isTexApp = false;
 			CGFappearance *appC = new CGFappearance(app->ambient,app->diffuse,app->specular,app->shininness);
 			if(app->textureRef != "")
 			{
@@ -416,9 +422,12 @@ ANFScene::ANFScene(char *filename)
 				{
 					fclose(file);
 					appC->setTexture(parser.textures[app->textureRef]->file);
+					appC->setTextureWrap(GL_REPEAT,GL_REPEAT);	
+					app->isTexApp = true;
 				} 
 				else 
 					app->textureRef = "";
+
 			}
 
 			app->appCGF = appC;
@@ -676,12 +685,7 @@ ANFScene::ANFScene(char *filename)
 
 }
 void ANFScene::activateLight(int id,bool enable1){
-	if(enable1==true){
-		lightsV[id]->enable();
-	}
-	else{
-		lightsV[id]->disable();
-	}
+	parser.lights[id]->enabled = enable1;
 }
 
 ANFScene::~ANFScene()
@@ -754,13 +758,21 @@ void ANFScene::init()
 	else
 		glFrontFace(GL_CCW);
 
+	int id[8];
+	id[0] = GL_LIGHT0;
+	id[1] = GL_LIGHT1;
+	id[2] = GL_LIGHT2;
+	id[3] = GL_LIGHT3;
+	id[4] = GL_LIGHT4;
+	id[5] = GL_LIGHT5;
+	id[6] = GL_LIGHT6;
+	id[7] = GL_LIGHT7;
 
 
-	
 	for(unsigned int i=0;i<parser.lights.size() && i<8;i++)
 	{
-		int id = GL_LIGHT0;
-	
+
+
 		CGFlight* light;
 		Light* recentlight = parser.lights[i];
 		float pos[4];
@@ -770,20 +782,18 @@ void ANFScene::init()
 		pos[3] = 1;
 		if(recentlight->type==("spot")){
 			//glLightf(id,GL_SPOT_CUTOFF,recentlight->angle);
-			glLightf(id,GL_SPOT_EXPONENT,recentlight->exponent);
-			glLightfv(id,GL_SPOT_DIRECTION,recentlight->target);
+			glLightf(id[i],GL_SPOT_EXPONENT,recentlight->exponent);
+			glLightfv(id[i],GL_SPOT_DIRECTION,recentlight->target);
 			pos[3] = 0;
-			light = new CGFlight(id, pos);
 			light->setAngle(recentlight->angle);
 		}
-		else
-			light = new CGFlight(id, pos);
+
+		light = new CGFlight(id[i], pos);
 		light->setAmbient(recentlight->ambient);
 		light->setSpecular(recentlight->specular);
 		light->setDiffuse(recentlight->diffuse);
 
 		lightsV.push_back(light);
-		id++;
 	}
 
 
@@ -823,7 +833,7 @@ void ANFScene::display()
 
 		lightsV[i]->disable();
 		if(parser.lights[i]->enabled)
-		lightsV[i]->enable();
+			lightsV[i]->enable();
 		lightsV[i]->update();
 	}
 	// Draw axis
@@ -836,7 +846,7 @@ void ANFScene::display()
 
 void ANFScene::drawGraph(string nodeID)
 {
-	
+
 	Node Cnode;
 	Cnode = *parser.graph->nodes[nodeID];
 	if(Cnode.apperanceRef != "")
@@ -846,7 +856,17 @@ void ANFScene::drawGraph(string nodeID)
 	glMultMatrixf(Cnode.matrix);
 
 	for(int i = 0; i < Cnode.primitives.size(); i++)
-		(*Cnode.primitives[i]).draw();
+	{
+		if(Cnode.apperanceRef != "inherit")
+		{
+			if(parser.appearances[Cnode.apperanceRef]->isTexApp)
+				(*Cnode.primitives[i]).draw(parser.textures[parser.appearances[Cnode.apperanceRef]->textureRef]);
+			else
+				(*Cnode.primitives[i]).draw();
+		}
+		else
+			(*Cnode.primitives[i]).draw();
+	}
 
 	for(int i = 0; i < Cnode.descendants.size(); i++)
 	{

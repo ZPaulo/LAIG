@@ -11,7 +11,6 @@ class Interface: public CGFinterface {
 		virtual void processGUI(GLUI_Control *ctrl);
 
 
-		int testVar;
 };
 
 
