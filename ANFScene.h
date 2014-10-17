@@ -21,7 +21,6 @@ public:
 
 	vector<CGFlight*> lightsV;
 	
-	CGFlight* light0;
 	
 protected:
 

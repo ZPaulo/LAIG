@@ -748,11 +748,11 @@ void ANFScene::init()
 
 
 
-
+	
 	for(unsigned int i=0;i<parser.lights.size() && i<8;i++)
 	{
 		int id = GL_LIGHT0;
-
+	
 		CGFlight* light;
 		Light* recentlight = parser.lights[i];
 		float pos[4];
@@ -761,24 +761,18 @@ void ANFScene::init()
 		pos[2] = recentlight->pos[2];
 		pos[3] = 1;
 		if(recentlight->type==("spot")){
-			glLightf(id,GL_SPOT_CUTOFF,recentlight->angle);
+			//glLightf(id,GL_SPOT_CUTOFF,recentlight->angle);
 			glLightf(id,GL_SPOT_EXPONENT,recentlight->exponent);
 			glLightfv(id,GL_SPOT_DIRECTION,recentlight->target);
 			pos[3] = 0;
 			light = new CGFlight(id, pos);
+			light->setAngle(recentlight->angle);
 		}
 		else
 			light = new CGFlight(id, pos);
 		light->setAmbient(recentlight->ambient);
 		light->setSpecular(recentlight->specular);
 		light->setDiffuse(recentlight->diffuse);
-
-
-
-		if(parser.lights[i]->enabled==true)
-			light->enable();
-		else
-			light->disable();
 
 		lightsV.push_back(light);
 		id++;
@@ -818,6 +812,11 @@ void ANFScene::display()
 	{
 		if(parser.lights[i]->marker)
 			lightsV[i]->draw();
+
+		lightsV[i]->disable();
+		if(parser.lights[i]->enabled)
+		lightsV[i]->enable();
+		lightsV[i]->update();
 	}
 	// Draw axis
 	axis.draw();
@@ -831,31 +830,21 @@ void ANFScene::drawGraph(string nodeID)
 {
 	Node Cnode;
 	Cnode = *parser.graph->nodes[nodeID];
-	bool app = false;
 	if(Cnode.apperanceRef != "")
 		if(Cnode.apperanceRef != "inherit")
-		{
 			parser.appearances[Cnode.apperanceRef]->appCGF->apply();
-			app = true;
-		}
 
-		glMultMatrixf(Cnode.matrix);
+	glMultMatrixf(Cnode.matrix);
 
-		for(int i = 0; i < Cnode.primitives.size(); i++)
-		{
-			if(app)
-				if(parser.appearances[Cnode.apperanceRef]->textureRef != "")
-					(*Cnode.primitives[i]).draw(*(parser.textures[parser.appearances[Cnode.apperanceRef]->textureRef]));
-				else
-					(*Cnode.primitives[i]).draw();
-		}
+	for(int i = 0; i < Cnode.primitives.size(); i++)
+		(*Cnode.primitives[i]).draw();
 
-		for(int i = 0; i < Cnode.descendants.size(); i++)
-		{
-			glPushMatrix();
-			drawGraph(Cnode.descendants[i]);
-			glPopMatrix();
-		}
+	for(int i = 0; i < Cnode.descendants.size(); i++)
+	{
+		glPushMatrix();
+		drawGraph(Cnode.descendants[i]);
+		glPopMatrix();
+	}
 
 
 }
