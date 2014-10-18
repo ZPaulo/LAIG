@@ -31,7 +31,7 @@ void Interface::initGUI()
 	addColumnToPanel(geral);
 	GLUI_Panel *camerasPanel = addPanelToPanel(geral,"Camaras", 1);
 	GLUI_RadioGroup *cameraList = addRadioGroupToPanel(camerasPanel,&(((ANFScene *) scene)->parser.activeCam));
-
+	
 	for(unsigned int i=0;i<((ANFScene *) scene)->parser.cameras.size();i++){
 
 		string str=((ANFScene *) scene)->parser.cameras[i]->id;
@@ -47,6 +47,7 @@ void Interface::initGUI()
 		delete[] writable;
 
 	}
+	addRadioButtonToGroup(cameraList, "Default");
 
 	addColumnToPanel(geral);
 	GLUI_Panel *drawPanel = addPanelToPanel(geral,"Draw Mode", 1);

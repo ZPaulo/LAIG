@@ -430,18 +430,21 @@ ANFScene::ANFScene(char *filename)
 			app->isTexApp = false;
 			CGFappearance *appC = new CGFappearance(app->ambient,app->diffuse,app->specular,app->shininness);
 			if(app->textureRef != "")
-			{
-				if (FILE *file = fopen(parser.textures[app->textureRef]->file.c_str(), "r")) 
+				if(parser.textures[app->textureRef])
 				{
-					fclose(file);
-					appC->setTexture(parser.textures[app->textureRef]->file);
-					appC->setTextureWrap(GL_REPEAT,GL_REPEAT);	
-					app->isTexApp = true;
-				} 
+
+					if (FILE *file = fopen(parser.textures[app->textureRef]->file.c_str(), "r")) 
+					{
+						fclose(file);
+						appC->setTexture(parser.textures[app->textureRef]->file);
+						appC->setTextureWrap(GL_REPEAT,GL_REPEAT);	
+						app->isTexApp = true;
+					} 
+				}
 				else 
 					app->textureRef = "";
 
-			}
+
 
 			app->appCGF = appC;
 			parser.appearances[id] = app;
@@ -795,7 +798,7 @@ void ANFScene::init()
 		if(recentlight->type==("spot")){
 			glLightf(id[i],GL_SPOT_CUTOFF,recentlight->angle);
 			glLightf(id[i],GL_SPOT_EXPONENT,recentlight->exponent);
-			glLightfv(id[i],GL_SPOT_DIRECTION,dir);
+			glLightfv(id[i],GL_SPOT_DIRECTION,recentlight->target);
 		}
 
 		light = new CGFlight(id[i], pos);
@@ -827,7 +830,10 @@ void ANFScene::display()
 	// Clear image and depth buffer everytime we update the scene
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
-	parser.cameras[parser.activeCam]->apply();
+	if(parser.activeCam >= parser.cameras.size())
+		CGFscene::activeCamera->applyView();
+	else
+		parser.cameras[parser.activeCam]->apply();
 
 	CGFapplication::activeApp->forceRefresh();
 
@@ -875,7 +881,8 @@ void ANFScene::drawGraph(string nodeID,string app)
 	if(Cnode.apperanceRef == "" || Cnode.apperanceRef == "inherit")
 		Cnode.apperanceRef = app;
 
-	parser.appearances[Cnode.apperanceRef]->appCGF->apply();
+	if(Cnode.apperanceRef != "")
+		parser.appearances[Cnode.apperanceRef]->appCGF->apply();
 
 	glMultMatrixf(Cnode.matrix);
 
