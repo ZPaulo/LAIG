@@ -56,9 +56,14 @@ ANFScene::ANFScene(char *filename)
 
 			char *valString=NULL;
 			float b1,b2,b3,b4;
-			string s;
-			s = drawingElement->Attribute("mode");
-			parser.globals->drawing.mode = s;
+			string s = drawingElement->Attribute("mode");
+			if(s == "fill")
+				parser.globals->drawing.mode = 0;
+			else if(s == "line")
+				parser.globals->drawing.mode = 1;
+			else
+				parser.globals->drawing.mode = 2;
+
 			parser.globals->drawing.shading = drawingElement->Attribute("shading");
 
 
@@ -137,33 +142,33 @@ ANFScene::ANFScene(char *filename)
 		printf("Processing camerass:\n");
 
 		TiXmlElement* perspective=camerasElement->FirstChildElement("perspective");
-		CPerspective cPer;
+
 		TiXmlElement* ortho=camerasElement->FirstChildElement("ortho");
-		COrtho cOrt;
 
 		parser.initCam = camerasElement->Attribute("initial");
-		parser.activeCam = parser.initCam;
 
 		while(perspective){
-			cPer.id = perspective->Attribute("id");
+			CPerspective *cPer = new CPerspective();
+
+			cPer->id = perspective->Attribute("id");
 
 			float near, far, angle, posx, posy, posz, targetx, targety, targetz;
 			char *pos=NULL, *target=NULL;
 
 			if(perspective->QueryFloatAttribute("near",&near)==TIXML_SUCCESS)
-				cPer.near = near;
+				cPer->near = near;
 			if(perspective->QueryFloatAttribute("far",&far)==TIXML_SUCCESS)
-				cPer.far = far;
+				cPer->far = far;
 			if(perspective->QueryFloatAttribute("angle",&angle)==TIXML_SUCCESS)
-				cPer.angle = angle;
+				cPer->angle = angle;
 
 			pos=(char *) perspective->Attribute("pos");
 
 			if(pos && sscanf(pos,"%f %f %f",&posx, &posy, &posz)==3)
 			{
-				cPer.pos[0] = posx;
-				cPer.pos[1] = posy;
-				cPer.pos[2] = posz;
+				cPer->pos[0] = posx;
+				cPer->pos[1] = posy;
+				cPer->pos[2] = posz;
 			}
 			else
 				printf("\tError reading position\n");
@@ -171,14 +176,14 @@ ANFScene::ANFScene(char *filename)
 
 			if(target && sscanf(target,"%f %f %f",&targetx, &targety, &targetz)==3)
 			{
-				cPer.target[0] = targetx;
-				cPer.target[1] = targety;
-				cPer.target[2] = targetz;
+				cPer->target[0] = targetx;
+				cPer->target[1] = targety;
+				cPer->target[2] = targetz;
 			}
 			else
 				printf("\tError reading target\n");
 
-			parser.cameras[cPer.id] = cPer;
+			parser.cameras.push_back(cPer);
 			perspective=perspective->NextSiblingElement("perspective");
 		}
 
@@ -187,31 +192,39 @@ ANFScene::ANFScene(char *filename)
 		float direction,near1,far1,left,right,top,bottom;
 		while(ortho)
 		{
-			cOrt.id = ortho->Attribute("id");
+			COrtho *cOrt = new COrtho();
+			cOrt->id = ortho->Attribute("id");
 
-			if(ortho->QueryFloatAttribute("direction",&direction)==TIXML_SUCCESS)
-				cOrt.direction = direction;
+			cOrt->direction = ortho->Attribute("direction");
 
 			if(ortho->QueryFloatAttribute("near",&near1)==TIXML_SUCCESS)
-				cOrt.near = near1;
+				cOrt->near = near1;
 
 			if(ortho->QueryFloatAttribute("far",&far1)==TIXML_SUCCESS)
-				cOrt.far = far1;
+				cOrt->far = far1;
 
 			if(ortho->QueryFloatAttribute("left",&left)==TIXML_SUCCESS)
-				cOrt.left = left;
+				cOrt->left = left;
 
 			if(ortho->QueryFloatAttribute("right",&right)==TIXML_SUCCESS)
-				cOrt.right = right;
+				cOrt->right = right;
 
 			if(ortho->QueryFloatAttribute("top",&top)==TIXML_SUCCESS)
-				cOrt.top = top;
+				cOrt->top = top;
 
 			if(ortho->QueryFloatAttribute("bottom",&bottom)==TIXML_SUCCESS)
-				cOrt.bottom = bottom;
+				cOrt->bottom = bottom;
 
-			parser.cameras[cOrt.id] = cOrt;
+			parser.cameras.push_back(cOrt);
 			ortho=ortho->NextSiblingElement("ortho");
+		}
+		for(int i = 0; i < parser.cameras.size();i++)
+		{
+			if(parser.cameras[i]->id == parser.initCam)
+			{
+				parser.activeCam = i;
+				break;
+			}
 		}
 	}
 
@@ -730,14 +743,6 @@ void ANFScene::init()
 
 
 
-	if(parser.globals->drawing.mode == "fill")
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	else if(parser.globals->drawing.mode == "point")
-		glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
-	else
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-
 	glClearColor(parser.globals->drawing.background[0], parser.globals->drawing.background[1],
 		parser.globals->drawing.background[2],parser.globals->drawing.background[3]);
 
@@ -775,17 +780,22 @@ void ANFScene::init()
 
 		CGFlight* light;
 		Light* recentlight = parser.lights[i];
-		float pos[4];
-		pos[0] = recentlight->pos[0];
-		pos[1] = recentlight->pos[1];
-		pos[2] = recentlight->pos[2];
+		float pos[4],dir[3], unit;
+		for(int i = 0; i< 3; i++)
+		{
+			pos[i] = recentlight->pos[i];
+			dir[i]= recentlight->target[i] - pos[i];
+		}
 		pos[3] = 1;
+		unit = sqrt(dir[0]*dir[0]+dir[1]*dir[1]+dir[2]*dir[2]);
+		for(int i = 0; i< 3; i++)
+		{
+			dir[i] = dir[i] / unit;
+		}
 		if(recentlight->type==("spot")){
-			//glLightf(id,GL_SPOT_CUTOFF,recentlight->angle);
+			glLightf(id[i],GL_SPOT_CUTOFF,recentlight->angle);
 			glLightf(id[i],GL_SPOT_EXPONENT,recentlight->exponent);
-			glLightfv(id[i],GL_SPOT_DIRECTION,recentlight->target);
-			pos[3] = 0;
-			light->setAngle(recentlight->angle);
+			glLightfv(id[i],GL_SPOT_DIRECTION,dir);
 		}
 
 		light = new CGFlight(id[i], pos);
@@ -802,7 +812,7 @@ void ANFScene::init()
 	glEnable (GL_NORMALIZE);
 	glEnable (GL_TEXTURE_2D);
 
-	//Declares scene elements
+
 
 }
 
@@ -817,13 +827,17 @@ void ANFScene::display()
 	// Clear image and depth buffer everytime we update the scene
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
+	parser.cameras[parser.activeCam]->apply();
+	CGFapplication::activeApp->forceRefresh();
+
 	// Initialize Model-View matrix as identity (no transformation
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-
+	//parser.cameras[parser.activeCam]->camera
 	// Apply transformations corresponding to the camera position relative to the origin
-	CGFscene::activeCamera->applyView();
+	//CGFscene::activeCamera->applyView();
+
 
 
 	for(unsigned int i=0;i<parser.lights.size() && i<8;i++)
@@ -838,6 +852,14 @@ void ANFScene::display()
 	}
 	// Draw axis
 	axis.draw();
+
+	if(parser.globals->drawing.mode == 0)
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	else if(parser.globals->drawing.mode == 2)
+		glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+	else
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
 
 	drawGraph(parser.graph->rootID);
 

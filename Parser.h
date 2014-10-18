@@ -15,7 +15,8 @@ using namespace std;
 class Drawing
 {
 public:
-	string mode,shading;
+	string shading;
+	int mode;
 	float background[4];
 };
 
@@ -40,23 +41,49 @@ public:
 	Lighting lighting;
 };
 
-class Camera
+class Camera : public CGFcamera
 {
 public:
 	string id;
+	virtual void apply() = 0;
 };
 
 class CPerspective : public Camera
 {
 public:
 	float near, far, angle, pos[3], target[3];
+	void apply(){
+
+		float ratio = ((float) CGFapplication::width)/((float) CGFapplication::height);
+
+		glPushMatrix();
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		gluPerspective(angle, ratio, near, far );
+		glPopMatrix();
+
+		gluLookAt(pos[0],pos[1],pos[2],target[0],target[1],target[2],0,1,0);
+	}
 };
 
 class COrtho : public Camera
 {
 public:
-	char direction;
+	string direction;
 	float near,far,left,right, top, bottom;
+	void apply(){
+		float ratio = ((float) CGFapplication::width)/((float) CGFapplication::height);
+
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+
+		glOrtho(left * ratio,right*ratio ,bottom,top, near, far);
+		if(direction == "x")
+			glRotatef(90,0,1,0);
+		if(direction == "y")
+			glRotatef(90,1,0,0);
+	}
+
 };
 
 class Light
@@ -100,25 +127,24 @@ public:
 		float lenT = t->texLengthS, heiT = t->texLengthT, lenO = xy2[0]-xy1[0],heiO = xy2[1]-xy1[1];
 		float xT,yT;
 		xT = lenO/lenT;
-			yT = heiO/heiT;
+		yT = heiO/heiT;
 		glBegin(GL_POLYGON);
 
 		glNormal3f(xy1[0], xy1[1],1);
 		glTexCoord2f(0,0); 
 		glVertex2f(xy1[0], xy1[1]);
 
-		
 		glNormal3f(xy2[0], xy1[1],1);
-			glTexCoord2f(xT,0);
-			glVertex2f(xy2[0], xy1[1]);
+		glTexCoord2f(xT,0);
+		glVertex2f(xy2[0], xy1[1]);
 
-			glNormal3f(xy2[0], xy2[1],1);
-			glTexCoord2f(xT,yT);
-			glVertex2f(xy2[0], xy2[1]);
+		glNormal3f(xy2[0], xy2[1],1);
+		glTexCoord2f(xT,yT);
+		glVertex2f(xy2[0], xy2[1]);
 
-			glNormal3f(xy1[0], xy2[1],1);
-			glTexCoord2f(0,yT);
-			glVertex2f(xy1[0], xy2[1]);
+		glNormal3f(xy1[0], xy2[1],1);
+		glTexCoord2f(0,yT);
+		glVertex2f(xy1[0], xy2[1]);
 
 		glEnd();
 	}
@@ -171,6 +197,12 @@ public:
 
 	}
 	void draw(Texture *t){
+		float lenT = t->texLengthS, heiT = t->texLengthT, lenO = xyz1[0]-xyz2[0],heiO = xyz3[1]-xyz1[1];
+		float xT,yT;
+
+		xT = lenO/lenT;
+		yT = heiO/heiT;
+
 		glBegin(GL_TRIANGLES);	
 
 		glNormal3f(xyz1[0], xyz1[1],1);
@@ -178,11 +210,11 @@ public:
 		glVertex3f(xyz1[0],xyz1[1],xyz1[2]);	
 
 		glNormal3f(xyz2[0], xyz2[1],1);
-		glTexCoord2f(1,0);
+		glTexCoord2f(xT,0);
 		glVertex3f(xyz2[0],xyz2[1],xyz2[2]);
 
 		glNormal3f(xyz3[0], xyz3[1],1);
-		glTexCoord2f(0.5,1);
+		glTexCoord2f(xT*0.5,yT);
 		glVertex3f(xyz3[0],xyz3[1],xyz3[2]);
 		glEnd();
 
@@ -400,9 +432,9 @@ public:
 	Parser();
 	~Parser();
 	Globals* globals;
-	map <string, Camera> cameras;
+	vector<Camera*> cameras;
 	string initCam;
-	string activeCam;
+	int activeCam;
 	vector<Light*> lights;
 	map<string, Texture*> textures;
 	map<string, Appearance*> appearances;

@@ -20,7 +20,6 @@ public:
 	void drawGraph(string nodeID);
 
 	vector<CGFlight*> lightsV;
-	
 	void activateLight(int id,bool enable);
 	
 protected:
