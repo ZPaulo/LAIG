@@ -330,6 +330,7 @@ class Torus : public Primitives
 public:
 
 	float inner, outer;
+
 	int slices, loops;
 	void draw(){
 		int i, j;
@@ -359,8 +360,10 @@ public:
 				dist = outer + inner * cosPhi;
 
 				glNormal3f(cosTheta1 * cosPhi, -sinTheta1  *cosPhi, sinPhi);
+					//glTexCoord3f(cosTheta1 * cosPhi, -sinTheta1  *cosPhi, sinPhi);
 				glVertex3f(cosTheta1  *dist, -sinTheta1  *dist, inner * sinPhi);
 				glNormal3f(cosTheta  *cosPhi, -sinTheta  *cosPhi, sinPhi);
+					//glTexCoord3f(cosTheta  *cosPhi, -sinTheta  *cosPhi, sinPhi);
 				glVertex3f(cosTheta  *dist, -sinTheta * dist,  inner * sinPhi);
 			}
 			glEnd();
@@ -370,6 +373,7 @@ public:
 		}
 	}
 	void draw(Texture *t){
+		float lenT = t->texLengthS, heiT = t->texLengthT;
 		int i, j;
 		GLfloat theta, phi, theta1;
 		GLfloat cosTheta, sinTheta;
@@ -397,9 +401,20 @@ public:
 				dist = outer + inner * cosPhi;
 
 				glNormal3f(cosTheta1 * cosPhi, -sinTheta1  *cosPhi, sinPhi);
+				if(cosTheta1 * (cosPhi)>0)
+					glTexCoord3f(cosTheta1 * (cosPhi)*lenT, -sinTheta1  *cosPhi*heiT, -sinPhi);
+				else
+					glTexCoord3f(cosTheta1 * (-cosPhi)*lenT, -sinTheta1  *cosPhi*heiT, -sinPhi);
 				glVertex3f(cosTheta1  *dist, -sinTheta1  *dist, inner * sinPhi);
+				
 				glNormal3f(cosTheta  *cosPhi, -sinTheta  *cosPhi, sinPhi);
+				if(cosTheta * (cosPhi)>0)
+					glTexCoord3f(cosTheta  *(cosPhi)*lenT, -sinTheta  *cosPhi*heiT, -sinPhi);
+				else
+					glTexCoord3f(cosTheta  *(-cosPhi)*lenT, -sinTheta  *cosPhi*heiT, -sinPhi);
 				glVertex3f(cosTheta  *dist, -sinTheta * dist,  inner * sinPhi);
+				
+
 			}
 			glEnd();
 			theta = theta1;
