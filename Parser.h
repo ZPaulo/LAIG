@@ -79,7 +79,7 @@ public:
 
 		glOrtho(left * ratio,right*ratio ,bottom,top, near, far);
 		if(direction == "x")
-			glRotatef(90,0,1,0);
+			glRotatef(-90,0,1,0);
 		if(direction == "y")
 			glRotatef(90,1,0,0);
 	}
