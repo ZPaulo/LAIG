@@ -14,7 +14,7 @@ int main(int argc, char* argv[]){
 	try {
 		app.init(&argc, argv);
 
-		app.setScene(new ANFScene("LAIG_TP1_ANF_T01_G03_v2.anf"));
+		app.setScene(new ANFScene("snowman.anf"));
 		app.setInterface(new Interface());
 		app.run();
 	}

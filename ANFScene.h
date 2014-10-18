@@ -17,8 +17,8 @@ public:
 	void init();
 	void display();
 
-	void drawGraph(string nodeID);
-
+	void drawGraph(string nodeID,string app);
+	
 	vector<CGFlight*> lightsV;
 	void activateLight(int id,bool enable);
 	
