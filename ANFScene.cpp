@@ -828,6 +828,7 @@ void ANFScene::display()
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
 	parser.cameras[parser.activeCam]->apply();
+
 	CGFapplication::activeApp->forceRefresh();
 
 	// Initialize Model-View matrix as identity (no transformation
@@ -861,19 +862,20 @@ void ANFScene::display()
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 
-	drawGraph(parser.graph->rootID);
+	drawGraph(parser.graph->rootID,parser.graph->nodes[parser.graph->rootID]->apperanceRef);
 
 	glutSwapBuffers();
 }
 
-void ANFScene::drawGraph(string nodeID)
+void ANFScene::drawGraph(string nodeID,string app)
 {
 
 	Node Cnode;
 	Cnode = *parser.graph->nodes[nodeID];
-	if(Cnode.apperanceRef != "")
-		if(Cnode.apperanceRef != "inherit")
-			parser.appearances[Cnode.apperanceRef]->appCGF->apply();
+	if(Cnode.apperanceRef == "" || Cnode.apperanceRef == "inherit")
+		Cnode.apperanceRef = app;
+
+	parser.appearances[Cnode.apperanceRef]->appCGF->apply();
 
 	glMultMatrixf(Cnode.matrix);
 
@@ -893,10 +895,12 @@ void ANFScene::drawGraph(string nodeID)
 	for(int i = 0; i < Cnode.descendants.size(); i++)
 	{
 		glPushMatrix();
-		drawGraph(Cnode.descendants[i]);
+		drawGraph(Cnode.descendants[i],Cnode.apperanceRef);
 		glPopMatrix();
 	}
 
 
 }
+
+
 
