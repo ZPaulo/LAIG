@@ -401,6 +401,7 @@ public:
 				dist = outer + inner * cosPhi;
 
 				glNormal3f(cosTheta1 * cosPhi, -sinTheta1  *cosPhi, sinPhi);
+				//glTexCoord2f((j) / slices, ((j) / slices-i) / loops);
 				if(cosTheta1 * (cosPhi)>0)
 					glTexCoord3f(cosTheta1 * (cosPhi)*lenT, -sinTheta1  *cosPhi*heiT, -sinPhi);
 				else
@@ -408,6 +409,7 @@ public:
 				glVertex3f(cosTheta1  *dist, -sinTheta1  *dist, inner * sinPhi);
 				
 				glNormal3f(cosTheta  *cosPhi, -sinTheta  *cosPhi, sinPhi);
+				//glTexCoord2f((j-1) / slices, ((j-1) / slices-i) / loops);
 				if(cosTheta * (cosPhi)>0)
 					glTexCoord3f(cosTheta  *(cosPhi)*lenT, -sinTheta  *cosPhi*heiT, -sinPhi);
 				else
