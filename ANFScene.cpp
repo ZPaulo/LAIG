@@ -67,7 +67,7 @@ ANFScene::ANFScene(char *filename)
 				printf("Error reading drawing mode, assuming fill\n");
 				parser.globals->drawing.mode = 0;
 			}
-			
+
 			parser.globals->drawing.shading = drawingElement->Attribute("shading");
 			if(parser.globals->drawing.shading !="flat" && parser.globals->drawing.shading !="gouraud"){
 				printf("Error reading drawing shading, assuming flat\n");
@@ -131,8 +131,8 @@ ANFScene::ANFScene(char *filename)
 			else
 				parser.globals->lighting.enabled = false;
 
-			
-			
+
+
 
 			char *valString=NULL;
 			float b1,b2,b3,b4;
@@ -288,7 +288,7 @@ ANFScene::ANFScene(char *filename)
 		}
 		if(parser.initCam==""&&parser.cameras.size()>0)
 			parser.initCam=parser.cameras[0]->id;
-		
+
 		for(int i = 0; i < parser.cameras.size();i++)
 		{
 			if(parser.cameras[i]->id == parser.initCam)
@@ -297,7 +297,7 @@ ANFScene::ANFScene(char *filename)
 				break;
 			}
 		}
-	
+
 	}
 
 
@@ -1154,35 +1154,34 @@ void ANFScene::drawGraph(string nodeID,string app)
 		Cnode = *parser.graph->nodes[nodeID];
 		if(app != "" && app != "inherit")
 			if(Cnode.apperanceRef == "" || Cnode.apperanceRef == "inherit")
-			{
 				Cnode.apperanceRef = app;
-				parser.appearances[Cnode.apperanceRef]->appCGF->apply();
-			}
+
+		if(Cnode.apperanceRef != "" && Cnode.apperanceRef != "inherit")
+			parser.appearances[Cnode.apperanceRef]->appCGF->apply();
 
 
 
+		glMultMatrixf(Cnode.matrix);
 
-			glMultMatrixf(Cnode.matrix);
-
-			for(int i = 0; i < Cnode.primitives.size(); i++)
+		for(int i = 0; i < Cnode.primitives.size(); i++)
+		{
+			if(Cnode.apperanceRef != "inherit" && Cnode.apperanceRef != "")
 			{
-				if(Cnode.apperanceRef != "inherit" && Cnode.apperanceRef != "")
-				{
-					if(parser.appearances[Cnode.apperanceRef]->isTexApp)
-						(*Cnode.primitives[i]).draw(parser.textures[parser.appearances[Cnode.apperanceRef]->textureRef]);
-					else
-						(*Cnode.primitives[i]).draw();
-				}
+				if(parser.appearances[Cnode.apperanceRef]->isTexApp)
+					(*Cnode.primitives[i]).draw(parser.textures[parser.appearances[Cnode.apperanceRef]->textureRef]);
 				else
 					(*Cnode.primitives[i]).draw();
 			}
+			else
+				(*Cnode.primitives[i]).draw();
+		}
 
-			for(int i = 0; i < Cnode.descendants.size(); i++)
-			{
-				glPushMatrix();
-				drawGraph(Cnode.descendants[i],Cnode.apperanceRef);
-				glPopMatrix();
-			}
+		for(int i = 0; i < Cnode.descendants.size(); i++)
+		{
+			glPushMatrix();
+			drawGraph(Cnode.descendants[i],Cnode.apperanceRef);
+			glPopMatrix();
+		}
 
 	}
 }
