@@ -106,7 +106,7 @@ ANFScene::ANFScene(char *filename)
 			parser.globals->culling.order = cullingElement->Attribute("order");
 			if(parser.globals->culling.order != "ccw" && parser.globals->culling.order != "cw"){
 				printf("Error reading culling order, assuming ccw\n");
-				parser.globals->culling.face ="ccw";
+				parser.globals->culling.order ="ccw";
 			}
 		}
 		else
