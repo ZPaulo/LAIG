@@ -112,7 +112,6 @@ ANFScene::ANFScene(char *filename)
 			else
 				parser.globals->lighting.enabled = false;
 
-			printf("%s\n",lightingElement->Attribute("enabled"));
 
 			char *valString=NULL;
 			float b1,b2,b3,b4;
@@ -340,24 +339,48 @@ ANFScene::ANFScene(char *filename)
 	}
 
 
-
 	//Textures
 
 	if(textureElement == NULL)
 		printf("Textures block not found!\n");
 	else
 	{
+		printf("Processing Textures... \n");
 		TiXmlElement *texture = textureElement->FirstChildElement();
 		while(texture)
 		{
 			float texS,texT;
 			Texture *tex = new Texture();
-			tex->id = texture->Attribute("id");
-			tex->file = texture->Attribute("file");
-			texture->QueryFloatAttribute("texlength_s",&texS);
-			tex->texLengthS = texS;
-			texture->QueryFloatAttribute("texlength_t",&texT);
-			tex->texLengthT = texT;
+
+			if(texture->Attribute("file"))
+				tex->file = texture->Attribute("file");
+			else
+			{
+				tex->file = "";
+				printf("Missing file.\n");
+			}
+
+			if(texture->QueryFloatAttribute("texlength_s",&texS)==TIXML_SUCCESS)
+				tex->texLengthS = texS;
+			else
+			{
+				printf("Wrong texS.\n");
+				tex->texLengthS = 1;
+			}
+			if(texture->QueryFloatAttribute("texlength_t",&texT)==TIXML_SUCCESS)
+				tex->texLengthT = texT;
+			else
+			{
+				printf("Wrong texT.\n");
+				tex->texLengthT = 1;
+			}
+
+			if(texture->Attribute("id"))
+				tex->id = texture->Attribute("id");
+			else
+				printf("Missing ID.\n");
+
+
 			parser.textures[tex->id] = tex;
 			texture = texture->NextSiblingElement();
 		}
@@ -369,18 +392,27 @@ ANFScene::ANFScene(char *filename)
 		printf("Appearances Block not found!\n");
 	else
 	{
+		printf("Processing Appearances... \n");
 		TiXmlElement *appearance=appearancesElement->FirstChildElement();
 
 		while (appearance)
 		{
 			string id;
 			Appearance *app = new Appearance();
-			id =  appearance->Attribute("id");
-			appearance->QueryFloatAttribute("shininess",&shininess);
-			app->shininness = shininess;
+			if(appearance->Attribute("id"))
+				id = appearance->Attribute("id");
+			else
+				printf("Missing ID.\n");
+
+			if(appearance->QueryFloatAttribute("shininess",&shininess)==TIXML_SUCCESS)
+				app->shininness = shininess;
+			else
+			{
+				printf("Value Missing\n");
+				app->shininness = 0;
+			}
 			if(appearance->Attribute("textureref")) 
-				if(appearance->Attribute("textureref")!= "")
-					app->textureRef = appearance->Attribute("textureref");
+				app->textureRef = appearance->Attribute("textureref");
 
 
 			char *valString=NULL;
@@ -397,7 +429,11 @@ ANFScene::ANFScene(char *filename)
 				app->ambient[3] = b4;
 			}
 			else
+			{
 				printf("Error parsing ambient\n");
+				for(unsigned int i = 0; i < 4; i++)
+					app->ambient[i] = 0;
+			}
 
 			component= component->NextSiblingElement();
 
@@ -411,7 +447,11 @@ ANFScene::ANFScene(char *filename)
 				app->diffuse[3] = b4;
 			}
 			else
+			{
 				printf("Error parsing diffuse\n");
+				for(unsigned int i = 0; i < 4; i++)
+					app->diffuse[i] = 0;
+			}
 
 			component = component->NextSiblingElement();
 
@@ -425,14 +465,17 @@ ANFScene::ANFScene(char *filename)
 				app->specular[3] = b4;
 			}
 			else
+			{
 				printf("Error parsing specular\n");
+				for(unsigned int i = 0; i < 4; i++)
+					app->specular[i] = 0;
+			}
 
 			app->isTexApp = false;
 			CGFappearance *appC = new CGFappearance(app->ambient,app->diffuse,app->specular,app->shininness);
 			if(app->textureRef != "")
 				if(parser.textures[app->textureRef])
 				{
-
 					if (FILE *file = fopen(parser.textures[app->textureRef]->file.c_str(), "r")) 
 					{
 						fclose(file);
@@ -459,245 +502,362 @@ ANFScene::ANFScene(char *filename)
 		printf("Graph block not found!\n");
 	else
 	{
+		printf("Processing Graph...\n");
 
 		TiXmlElement *node=graphElement->FirstChildElement();
-		parser.graph->rootID = graphElement->Attribute("rootid");
-
-		if(	node == NULL)
-			printf("Node block not found!\n");
+		if(!graphElement->Attribute("rootid"))
+			printf("Missing ID\n");
 		else
 		{
-			while (node)
+			parser.graph->rootID = graphElement->Attribute("rootid");
+
+			if(	node == NULL)
+				printf("Node block not found!\n");
+			else
 			{
-				Node* pNode = new Node();
-				pNode->id = node->Attribute("id");
-				TiXmlElement *transforms = node->FirstChildElement("transforms");
-				glLoadIdentity();
-				glGetFloatv(GL_MODELVIEW_MATRIX,pNode->matrix);
-				if(transforms == NULL)
+				while (node)
 				{
-					printf("Transforms block not found!\n");
-				}
-				else
-				{
-					TiXmlElement *transform = transforms->FirstChildElement("transform");
-					while(transform)
+
+					Node* pNode = new Node();
+					if(node->Attribute("id"))
+						pNode->id = node->Attribute("id");
+					else
 					{
-						if((string) transform->Attribute("type") == "translate")
-						{
-
-							char *pos=NULL;
-							float posx,posy,posz;
-							pos=(char *) transform->Attribute("to");
-
-							if(pos && sscanf(pos,"%f %f %f",&posx, &posy, &posz)==3)
-							{
-								glTranslatef(posx,posy,posz);
-							}
-							else
-								printf("\tError reading position\n");
-						}
-						if((string) transform->Attribute("type") == "rotate")
-						{
-							string axis = (char*) transform->Attribute("axis");
-							float angle;
-							if(transform->QueryFloatAttribute("angle",&angle)==TIXML_SUCCESS)
-								glRotatef(angle, axis == "x", axis == "y", axis == "z");
-						}
-
-						if((string) transform->Attribute("type") == "scale")
-						{
-							char *pos=NULL;
-							float posx,posy,posz;
-							pos=(char *) transform->Attribute("factor");
-
-							if(pos && sscanf(pos,"%f %f %f",&posx, &posy, &posz)==3)
-							{
-								glScalef(posx,posy,posz);
-							}
-							else
-								printf("\tError reading factor\n");
-						}
-
-
-						glGetFloatv(GL_MODELVIEW_MATRIX,pNode->matrix);
-						transform = transform->NextSiblingElement();
+						printf("Missing Node ID\n");
+						break;
 					}
-				}
+					printf("Processing Node %s ...\n",pNode->id.c_str());
 
-				TiXmlElement *appearance = node->FirstChildElement("appearanceref");
+					TiXmlElement *transforms = node->FirstChildElement("transforms");
+					glLoadIdentity();
+					glGetFloatv(GL_MODELVIEW_MATRIX,pNode->matrix);
+					if(transforms == NULL)
+					{
+						printf("Transforms block not found!\n");
+					}
+					else
+					{
+						TiXmlElement *transform = transforms->FirstChildElement("transform");
+						while(transform)
+						{
+							if((string) transform->Attribute("type") == "translate")
+							{
 
-				if(appearance)
-					pNode->apperanceRef = appearance->Attribute("id");
-				else 
+								char *pos=NULL;
+								float posx,posy,posz;
+								pos=(char *) transform->Attribute("to");
+
+								if(pos && sscanf(pos,"%f %f %f",&posx, &posy, &posz)==3)
+								{
+									glTranslatef(posx,posy,posz);
+								}
+								else
+									printf("\tError reading translate\n");
+							}
+							if((string) transform->Attribute("type") == "rotate")
+							{
+								string axis = (char*) transform->Attribute("axis");
+								float angle;
+								if(transform->QueryFloatAttribute("angle",&angle)==TIXML_SUCCESS)
+									glRotatef(angle, axis == "x", axis == "y", axis == "z");
+								else
+									printf("\tError reading rotate\n");
+							}
+
+							if((string) transform->Attribute("type") == "scale")
+							{
+								char *pos=NULL;
+								float posx,posy,posz;
+								pos=(char *) transform->Attribute("factor");
+
+								if(pos && sscanf(pos,"%f %f %f",&posx, &posy, &posz)==3)
+								{
+									glScalef(posx,posy,posz);
+								}
+								else
+									printf("\tError reading scale\n");
+							}
+
+
+							glGetFloatv(GL_MODELVIEW_MATRIX,pNode->matrix);
+							transform = transform->NextSiblingElement();
+						}
+					}
+
+					TiXmlElement *appearance = node->FirstChildElement("appearanceref");
 					pNode->apperanceRef = "";
 
-				TiXmlElement *primitives = node->FirstChildElement("primitives");
-				if(primitives == NULL)
-				{
-					printf("Primitives block not found!\n");
+					if(appearance)
+						if(appearance->Attribute("id")) 
+							if(parser.appearances[appearance->Attribute("id")])
+								pNode->apperanceRef = appearance->Attribute("id");
+							else if((string)appearance->Attribute("id") == "inherit")
+								pNode->apperanceRef = appearance->Attribute("id");
+							else
+								printf("\tApearance %s not found\n", appearance->Attribute("id"));
+
+							TiXmlElement *primitives = node->FirstChildElement("primitives");
+							if(primitives == NULL)
+							{
+								printf("Primitives block not found!\n");
+							}
+							else
+							{
+
+								TiXmlElement *rectangle = primitives->FirstChildElement("rectangle");
+								TiXmlElement *triangle = primitives->FirstChildElement("triangle");
+								TiXmlElement *cylinder = primitives->FirstChildElement("cylinder");
+								TiXmlElement *sphere = primitives->FirstChildElement("sphere");
+								TiXmlElement *torus = primitives->FirstChildElement("torus");
+								bool save;
+								while(rectangle){
+									save = true;
+									Rectangle* rect = new Rectangle();
+									rect->name = "rectangle";
+
+									char *pos=NULL;
+									float pos1,pos2;
+									pos=(char *) rectangle->Attribute("xy1");
+
+									if(pos && sscanf(pos,"%f %f",&pos1, &pos2)==2)
+									{
+										rect->xy1[0] = pos1;
+										rect->xy1[1] = pos2;
+									}
+									else
+									{
+										save = false;
+										printf("\tError reading rectangle\n");
+										break;
+									}
+
+									pos=(char *) rectangle->Attribute("xy2");
+
+									if(pos && sscanf(pos,"%f %f",&pos1, &pos2)==2)
+									{
+										rect->xy2[0] = pos1;
+										rect->xy2[1] = pos2;
+									}
+									else
+									{
+										save = false;
+										printf("\tError reading rectangle\n");
+										break;
+									}
+
+									if(save)
+										pNode->primitives.push_back(rect);
+
+									rectangle=rectangle->NextSiblingElement("rectangle");
+								}
+
+								while(triangle){
+									save = true;
+									Triangle* tri = new Triangle();
+									tri->name = "triangle";
+
+									char *pos=NULL;
+									float pos1,pos2, pos3;
+									pos=(char *) triangle->Attribute("xyz1");
+
+									if(pos && sscanf(pos,"%f %f %f",&pos1, &pos2, &pos3)==3)
+									{
+										tri->xyz1[0] = pos1;
+										tri->xyz1[1] = pos2;
+										tri->xyz1[2] = pos3;
+									}
+									else
+									{
+										save = false;
+										printf("\tError reading triangle\n");
+										break;
+									}
+
+									pos=(char *) triangle->Attribute("xyz2");
+
+									if(pos && sscanf(pos,"%f %f %f",&pos1, &pos2, &pos3)==3)
+									{
+										tri->xyz2[0] = pos1;
+										tri->xyz2[1] = pos2;
+										tri->xyz2[2] = pos3;
+									}
+									else
+									{
+										save = false;
+										printf("\tError reading triangle\n");
+										break;
+									}
+
+									pos=(char *) triangle->Attribute("xyz3");
+
+									if(pos && sscanf(pos,"%f %f %f",&pos1, &pos2, &pos3)==3)
+									{
+										tri->xyz3[0] = pos1;
+										tri->xyz3[1] = pos2;
+										tri->xyz3[2] = pos3;
+									}
+									else
+									{								
+										save = false;
+										printf("\tError reading triangle\n");
+										break;
+									}
+
+									if(save)
+										pNode->primitives.push_back(tri);
+
+									triangle=triangle->NextSiblingElement("triangle");
+								}
+
+								while(cylinder){
+									save = true;
+									Cylinder* cyl = new Cylinder(); 
+									cyl->name = "cylinder";
+
+									float base,top,height;
+									int slices, stacks;
+
+									if(cylinder->QueryFloatAttribute("base",&base)==TIXML_SUCCESS)
+										cyl->base = base;
+									else
+									{
+										save = false;
+										printf("\tError reading base\n");
+									}
+									if(cylinder->QueryFloatAttribute("top",&top)==TIXML_SUCCESS)
+										cyl->top = top;
+									else
+									{
+										save = false;
+										printf("\tError reading top\n");
+									}
+									if(cylinder->QueryFloatAttribute("height",&height)==TIXML_SUCCESS)
+										cyl->height = height;
+									else
+									{
+										save = false;
+										printf("\tError reading height\n");
+									}
+									if(cylinder->QueryIntAttribute("slices",&slices)==TIXML_SUCCESS)
+										cyl->slices = slices;
+									else
+									{
+										save = false;
+										printf("\tError reading slices\n");
+									}
+									if(cylinder->QueryIntAttribute("stacks",&stacks)==TIXML_SUCCESS)
+										cyl->stacks = stacks;
+									else
+									{
+										save = false;
+										printf("\tError reading stacks\n");
+									}
+
+									if(save)
+										pNode->primitives.push_back(cyl);
+									cylinder=cylinder->NextSiblingElement("cylinder");
+								}
+
+								while(sphere){
+									save = true;
+									Sphere* sph = new Sphere();
+									sph->name = "sphere";
+
+									float radius;
+									int slices, stacks;
+
+									if(sphere->QueryFloatAttribute("radius",&radius)==TIXML_SUCCESS)
+										sph->radius = radius;
+									else
+									{
+										save = false;
+										printf("\tError reading radius\n");
+									}
+									if(sphere->QueryIntAttribute("slices",&slices)==TIXML_SUCCESS)
+										sph->slices = slices;
+									else
+									{
+										save = false;
+										printf("\tError reading slices\n");
+									}
+									if(sphere->QueryIntAttribute("stacks",&stacks)==TIXML_SUCCESS)
+										sph->stacks = stacks;
+									else
+									{
+										save = false;
+										printf("\tError reading stacks\n");
+									}
+
+									if(save)
+										pNode->primitives.push_back(sph);
+									sphere=sphere->NextSiblingElement("sphere");
+								}
+								while(torus){
+									save = true;
+									Torus* tor = new Torus();
+									tor->name = "torus";
+
+									float inner, outer;
+									int slices, loops;
+
+									if(torus->QueryFloatAttribute("inner",&inner)==TIXML_SUCCESS)
+										tor->inner = inner;
+									else
+									{
+										save = false;
+										printf("\tError reading inner\n");
+									}
+									if(torus->QueryFloatAttribute("outer",&outer)==TIXML_SUCCESS)
+										tor->outer = outer;
+									else
+									{
+										save = false;
+										printf("\tError reading outer\n");
+									}
+									if(torus->QueryIntAttribute("slices",&slices)==TIXML_SUCCESS)
+										tor->slices = slices;
+									else
+									{
+										save = false;
+										printf("\tError reading slices\n");
+									}
+									if(torus->QueryIntAttribute("loops",&loops)==TIXML_SUCCESS)
+										tor->loops = loops;
+									else
+									{
+										save = false;
+										printf("\tError reading loops\n");
+									}
+
+									if(save)
+										pNode->primitives.push_back(tor);
+									torus=torus->NextSiblingElement("torus");
+								}
+
+							}
+
+							TiXmlElement *descendants = node->FirstChildElement("descendants");
+							if(descendants)
+							{
+								TiXmlElement *nodeRef = descendants->FirstChildElement();
+								while(nodeRef)
+								{
+									if(nodeRef->Attribute("id"))
+										pNode->descendants.push_back(nodeRef->Attribute("id"));
+
+									nodeRef = nodeRef->NextSiblingElement();
+								}
+							}
+
+
+							parser.graph->nodes[pNode->id] = pNode;
+							node = node->NextSiblingElement();
+
 				}
-				else
-				{
-
-					TiXmlElement *rectangle = primitives->FirstChildElement("rectangle");
-					TiXmlElement *triangle = primitives->FirstChildElement("triangle");
-					TiXmlElement *cylinder = primitives->FirstChildElement("cylinder");
-					TiXmlElement *sphere = primitives->FirstChildElement("sphere");
-					TiXmlElement *torus = primitives->FirstChildElement("torus");
-
-					while(rectangle){
-						Rectangle* rect = new Rectangle();
-						rect->name = "rectangle";
-
-						char *pos=NULL;
-						float pos1,pos2;
-						pos=(char *) rectangle->Attribute("xy1");
-
-						if(pos && sscanf(pos,"%f %f",&pos1, &pos2)==2)
-						{
-							rect->xy1[0] = pos1;
-							rect->xy1[1] = pos2;
-						}
-						else
-							printf("\tError reading rectangle\n");
-
-						pos=(char *) rectangle->Attribute("xy2");
-
-						if(pos && sscanf(pos,"%f %f",&pos1, &pos2)==2)
-						{
-							rect->xy2[0] = pos1;
-							rect->xy2[1] = pos2;
-						}
-						else
-							printf("\tError reading rectangle\n");
-
-						pNode->primitives.push_back(rect);
-						rectangle=rectangle->NextSiblingElement("rectangle");
-					}
-					while(triangle){
-
-						Triangle* tri = new Triangle();
-						tri->name = "triangle";
-
-						char *pos=NULL;
-						float pos1,pos2, pos3;
-						pos=(char *) triangle->Attribute("xyz1");
-
-						if(pos && sscanf(pos,"%f %f %f",&pos1, &pos2, &pos3)==3)
-						{
-							tri->xyz1[0] = pos1;
-							tri->xyz1[1] = pos2;
-							tri->xyz1[2] = pos3;
-						}
-						else
-							printf("\tError reading triangle\n");
-
-						pos=(char *) triangle->Attribute("xyz2");
-
-						if(pos && sscanf(pos,"%f %f %f",&pos1, &pos2, &pos3)==3)
-						{
-							tri->xyz2[0] = pos1;
-							tri->xyz2[1] = pos2;
-							tri->xyz2[2] = pos3;
-						}
-						else
-							printf("\tError reading triangle\n");
-
-						pos=(char *) triangle->Attribute("xyz3");
-
-						if(pos && sscanf(pos,"%f %f %f",&pos1, &pos2, &pos3)==3)
-						{
-							tri->xyz3[0] = pos1;
-							tri->xyz3[1] = pos2;
-							tri->xyz3[2] = pos3;
-						}
-						else
-							printf("\tError reading triangle\n");
-
-						pNode->primitives.push_back(tri);
-
-						triangle=triangle->NextSiblingElement("triangle");
-					}
-					while(cylinder){
-						Cylinder* cyl = new Cylinder(); 
-						cyl->name = "cylinder";
-
-						float base,top,height;
-						int slices, stacks;
-
-						if(cylinder->QueryFloatAttribute("base",&base)==TIXML_SUCCESS)
-							cyl->base = base;
-						if(cylinder->QueryFloatAttribute("top",&top)==TIXML_SUCCESS)
-							cyl->top = top;
-						if(cylinder->QueryFloatAttribute("height",&height)==TIXML_SUCCESS)
-							cyl->height = height;
-						if(cylinder->QueryIntAttribute("slices",&slices)==TIXML_SUCCESS)
-							cyl->slices = slices;
-						if(cylinder->QueryIntAttribute("stacks",&stacks)==TIXML_SUCCESS)
-							cyl->stacks = stacks;
-
-						pNode->primitives.push_back(cyl);
-						cylinder=cylinder->NextSiblingElement("cylinder");
-					}
-					while(sphere){
-						Sphere* sph = new Sphere();
-						sph->name = "sphere";
-
-						float radius;
-						int slices, stacks;
-
-						if(sphere->QueryFloatAttribute("radius",&radius)==TIXML_SUCCESS)
-							sph->radius = radius;
-						if(sphere->QueryIntAttribute("slices",&slices)==TIXML_SUCCESS)
-							sph->slices = slices;
-						if(sphere->QueryIntAttribute("stacks",&stacks)==TIXML_SUCCESS)
-							sph->stacks = stacks;
-
-						pNode->primitives.push_back(sph);
-						sphere=sphere->NextSiblingElement("sphere");
-					}
-					while(torus){
-
-						Torus* tor = new Torus();
-						tor->name = "torus";
-
-						float inner, outer;
-						int slices, loops;
-
-						if(torus->QueryFloatAttribute("inner",&inner)==TIXML_SUCCESS)
-							tor->inner = inner;
-						if(torus->QueryFloatAttribute("outer",&outer)==TIXML_SUCCESS)
-							tor->outer = outer;
-						if(torus->QueryIntAttribute("slices",&slices)==TIXML_SUCCESS)
-							tor->slices = slices;
-						if(torus->QueryIntAttribute("loops",&loops)==TIXML_SUCCESS)
-							tor->loops = loops;
-
-						pNode->primitives.push_back(tor);
-						torus=torus->NextSiblingElement("torus");
-					}
-
-				}
-
-				TiXmlElement *descendants = node->FirstChildElement("descendants");
-				if(descendants !=NULL)
-				{
-					TiXmlElement *nodeRef = descendants->FirstChildElement();
-					while(nodeRef)
-					{
-						pNode->descendants.push_back(nodeRef->Attribute("id"));
-
-						nodeRef = nodeRef->NextSiblingElement();
-					}
-				}
-				parser.graph->nodes[pNode->id] = pNode;
-				node = node->NextSiblingElement();
-
 			}
 		}
-	}
 
+	}
 
 }
 void ANFScene::activateLight(int id,bool enable1){
@@ -877,36 +1037,44 @@ void ANFScene::drawGraph(string nodeID,string app)
 {
 
 	Node Cnode;
-	Cnode = *parser.graph->nodes[nodeID];
-	if(Cnode.apperanceRef == "" || Cnode.apperanceRef == "inherit")
-		Cnode.apperanceRef = app;
-
-	if(Cnode.apperanceRef != "")
-		parser.appearances[Cnode.apperanceRef]->appCGF->apply();
-
-	glMultMatrixf(Cnode.matrix);
-
-	for(int i = 0; i < Cnode.primitives.size(); i++)
+	if(!parser.graph->nodes[nodeID])
+		printf("Node not found!\n");
+	else
 	{
-		if(Cnode.apperanceRef != "inherit")
-		{
-			if(parser.appearances[Cnode.apperanceRef]->isTexApp)
-				(*Cnode.primitives[i]).draw(parser.textures[parser.appearances[Cnode.apperanceRef]->textureRef]);
-			else
-				(*Cnode.primitives[i]).draw();
-		}
-		else
-			(*Cnode.primitives[i]).draw();
+		Cnode = *parser.graph->nodes[nodeID];
+		if(app != "" && app != "inherit")
+			if(Cnode.apperanceRef == "" || Cnode.apperanceRef == "inherit")
+			{
+				Cnode.apperanceRef = app;
+				parser.appearances[Cnode.apperanceRef]->appCGF->apply();
+			}
+
+
+
+
+			glMultMatrixf(Cnode.matrix);
+
+			for(int i = 0; i < Cnode.primitives.size(); i++)
+			{
+				if(Cnode.apperanceRef != "inherit" && Cnode.apperanceRef != "")
+				{
+					if(parser.appearances[Cnode.apperanceRef]->isTexApp)
+						(*Cnode.primitives[i]).draw(parser.textures[parser.appearances[Cnode.apperanceRef]->textureRef]);
+					else
+						(*Cnode.primitives[i]).draw();
+				}
+				else
+					(*Cnode.primitives[i]).draw();
+			}
+
+			for(int i = 0; i < Cnode.descendants.size(); i++)
+			{
+				glPushMatrix();
+				drawGraph(Cnode.descendants[i],Cnode.apperanceRef);
+				glPopMatrix();
+			}
+
 	}
-
-	for(int i = 0; i < Cnode.descendants.size(); i++)
-	{
-		glPushMatrix();
-		drawGraph(Cnode.descendants[i],Cnode.apperanceRef);
-		glPopMatrix();
-	}
-
-
 }
 
 

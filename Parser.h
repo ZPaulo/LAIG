@@ -130,19 +130,16 @@ public:
 		yT = heiO/heiT;
 		glBegin(GL_POLYGON);
 
-		glNormal3f(xy1[0], xy1[1],1);
+		glNormal3f(0,0,1);
 		glTexCoord2f(0,0); 
 		glVertex2f(xy1[0], xy1[1]);
 
-		glNormal3f(xy2[0], xy1[1],1);
 		glTexCoord2f(xT,0);
 		glVertex2f(xy2[0], xy1[1]);
 
-		glNormal3f(xy2[0], xy2[1],1);
 		glTexCoord2f(xT,yT);
 		glVertex2f(xy2[0], xy2[1]);
 
-		glNormal3f(xy1[0], xy2[1],1);
 		glTexCoord2f(0,yT);
 		glVertex2f(xy1[0], xy2[1]);
 
@@ -152,19 +149,16 @@ public:
 
 		glBegin(GL_POLYGON);
 
-		glNormal3f(xy1[0], xy1[1],1);
+		glNormal3f(0,0,1);
 		glTexCoord2f(0,0); 
 		glVertex2f(xy1[0], xy1[1]);
 
-		glNormal3f(xy2[0], xy1[1],1);
 		glTexCoord2f(1,0);
 		glVertex2f(xy2[0], xy1[1]);
 
-		glNormal3f(xy2[0], xy2[1],1);
 		glTexCoord2f(1,1);
 		glVertex2f(xy2[0], xy2[1]);
 
-		glNormal3f(xy1[0], xy2[1],1);
 		glTexCoord2f(0,1);
 		glVertex2f(xy1[0], xy2[1]);
 
