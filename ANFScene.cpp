@@ -61,11 +61,18 @@ ANFScene::ANFScene(char *filename)
 				parser.globals->drawing.mode = 0;
 			else if(s == "line")
 				parser.globals->drawing.mode = 1;
-			else
+			else if(s=="point")
 				parser.globals->drawing.mode = 2;
-
+			else{
+				printf("Error reading drawing mode, assuming fill\n");
+				parser.globals->drawing.mode = 0;
+			}
+			
 			parser.globals->drawing.shading = drawingElement->Attribute("shading");
-
+			if(parser.globals->drawing.shading !="flat" && parser.globals->drawing.shading !="gouraud"){
+				printf("Error reading drawing shading, assuming flat\n");
+				parser.globals->drawing.shading ="flat";
+			}
 
 			valString=(char *) drawingElement->Attribute("background");
 
@@ -76,8 +83,13 @@ ANFScene::ANFScene(char *filename)
 				parser.globals->drawing.background[2] = b3;
 				parser.globals->drawing.background[3] = b4;
 			}
-			else
-				printf("Error parsing background");
+			else{
+				printf("Error parsing background, assuming 0 0 0 0\n");
+				parser.globals->drawing.background[0] = 0;
+				parser.globals->drawing.background[1] = 0;
+				parser.globals->drawing.background[2] = 0;
+				parser.globals->drawing.background[3] = 0;
+			}
 		}
 		else
 			printf("drawing not found\n");	
@@ -86,7 +98,16 @@ ANFScene::ANFScene(char *filename)
 		if (cullingElement)
 		{
 			parser.globals->culling.face = cullingElement->Attribute("face");
+			if(parser.globals->culling.face !="none" && parser.globals->culling.face !="back" && parser.globals->culling.face !="front" && parser.globals->culling.face !="both"){
+				printf("Error reading culling face, assuming none\n");
+				parser.globals->culling.face ="none";
+			}
+
 			parser.globals->culling.order = cullingElement->Attribute("order");
+			if(parser.globals->culling.order != "ccw" && parser.globals->culling.order != "cw"){
+				printf("Error reading culling order, assuming ccw\n");
+				parser.globals->culling.face ="ccw";
+			}
 		}
 		else
 			printf("culling not found\n");	
@@ -95,7 +116,7 @@ ANFScene::ANFScene(char *filename)
 		if (lightingElement)
 		{
 
-			if(strcmp((char *) lightingElement->Attribute("local"),"true"))
+			if((string)lightingElement->Attribute("local") == "true")
 				parser.globals->lighting.local = true;
 			else
 				parser.globals->lighting.local = false;
@@ -105,13 +126,13 @@ ANFScene::ANFScene(char *filename)
 			else
 				parser.globals->lighting.doublesdd = false;
 
-
-
 			if((string) lightingElement->Attribute("enabled") == "true")
 				parser.globals->lighting.enabled = true;
 			else
 				parser.globals->lighting.enabled = false;
 
+			
+			
 
 			char *valString=NULL;
 			float b1,b2,b3,b4;
@@ -125,8 +146,13 @@ ANFScene::ANFScene(char *filename)
 				parser.globals->lighting.ambient[2] = b3;
 				parser.globals->lighting.ambient[3] = b4;
 			}
-			else
-				printf("Error parsing ambient");
+			else{
+				printf("Error parsing ambient, assuming 0 0 0 0");
+				parser.globals->lighting.ambient[0] = 0;
+				parser.globals->lighting.ambient[1] = 0;
+				parser.globals->lighting.ambient[2] = 0;
+				parser.globals->lighting.ambient[3] = 0;
+			}
 		}
 		else
 			printf("lighting not found\n");	
@@ -138,29 +164,42 @@ ANFScene::ANFScene(char *filename)
 		printf("Cameras block not found!\n");
 	else
 	{
-		printf("Processing camerass:\n");
+		printf("Processing cameras:\n");
 
 		TiXmlElement* perspective=camerasElement->FirstChildElement("perspective");
 
 		TiXmlElement* ortho=camerasElement->FirstChildElement("ortho");
 
 		parser.initCam = camerasElement->Attribute("initial");
-
+		int i=0;
 		while(perspective){
 			CPerspective *cPer = new CPerspective();
 
 			cPer->id = perspective->Attribute("id");
-
+			if(cPer->id == "")
+				cPer->id="cam_pers_"+i;
+			i++;
 			float near, far, angle, posx, posy, posz, targetx, targety, targetz;
 			char *pos=NULL, *target=NULL;
 
 			if(perspective->QueryFloatAttribute("near",&near)==TIXML_SUCCESS)
 				cPer->near = near;
+			else{
+				printf("Error reading camara perspective near param\n");
+				cPer->near = 0.0;
+			}
 			if(perspective->QueryFloatAttribute("far",&far)==TIXML_SUCCESS)
 				cPer->far = far;
+			else{
+				printf("Error reading camara perspective far param\n");
+				cPer->far = 100.0;
+			}
 			if(perspective->QueryFloatAttribute("angle",&angle)==TIXML_SUCCESS)
 				cPer->angle = angle;
-
+			else{
+				printf("Error reading camara perspective angle param\n");
+				cPer->angle = 90.0;
+			}
 			pos=(char *) perspective->Attribute("pos");
 
 			if(pos && sscanf(pos,"%f %f %f",&posx, &posy, &posz)==3)
@@ -169,18 +208,26 @@ ANFScene::ANFScene(char *filename)
 				cPer->pos[1] = posy;
 				cPer->pos[2] = posz;
 			}
-			else
-				printf("\tError reading position\n");
-			target=(char *) perspective->Attribute("target");
+			else{
+				printf("\tError reading position, assuming 0 0 0\n");
+				cPer->pos[0] = 0;
+				cPer->pos[1] = 0;
+				cPer->pos[2] = 0;
+			}
 
+			target=(char *) perspective->Attribute("target");
 			if(target && sscanf(target,"%f %f %f",&targetx, &targety, &targetz)==3)
 			{
 				cPer->target[0] = targetx;
 				cPer->target[1] = targety;
 				cPer->target[2] = targetz;
 			}
-			else
-				printf("\tError reading target\n");
+			else{
+				printf("\tError reading target, assuming 0 0 0\n");
+				cPer->target[0] = 0;
+				cPer->target[1] = 0;
+				cPer->target[2] = 0;
+			}
 
 			parser.cameras.push_back(cPer);
 			perspective=perspective->NextSiblingElement("perspective");
@@ -189,34 +236,59 @@ ANFScene::ANFScene(char *filename)
 
 
 		float direction,near1,far1,left,right,top,bottom;
+		i=0;
 		while(ortho)
 		{
 			COrtho *cOrt = new COrtho();
 			cOrt->id = ortho->Attribute("id");
+			if(cOrt->id=="")
+				cOrt->id="cam_orth_"+i;
+			i++;
 
 			cOrt->direction = ortho->Attribute("direction");
-
 			if(ortho->QueryFloatAttribute("near",&near1)==TIXML_SUCCESS)
 				cOrt->near = near1;
-
+			else{
+				printf("Error reading camara ortho near param\n");
+				cOrt->near = 0;
+			}
 			if(ortho->QueryFloatAttribute("far",&far1)==TIXML_SUCCESS)
 				cOrt->far = far1;
-
+			else{
+				printf("Error reading camara ortho far param\n");
+				cOrt->far = 0;
+			}
 			if(ortho->QueryFloatAttribute("left",&left)==TIXML_SUCCESS)
 				cOrt->left = left;
-
+			else{
+				printf("Error reading camara ortho left param\n");
+				cOrt->left = 0;
+			}
 			if(ortho->QueryFloatAttribute("right",&right)==TIXML_SUCCESS)
 				cOrt->right = right;
-
+			else{
+				printf("Error reading camara ortho right param\n");
+				cOrt->right = 0;
+			}
 			if(ortho->QueryFloatAttribute("top",&top)==TIXML_SUCCESS)
 				cOrt->top = top;
-
+			else{
+				printf("Error reading camara ortho top param\n");
+				cOrt->right = 0;
+			}
 			if(ortho->QueryFloatAttribute("bottom",&bottom)==TIXML_SUCCESS)
 				cOrt->bottom = bottom;
+			else{
+				printf("Error reading camara ortho bottom param\n");
+				cOrt->bottom = 0;
+			}
 
 			parser.cameras.push_back(cOrt);
 			ortho=ortho->NextSiblingElement("ortho");
 		}
+		if(parser.initCam==""&&parser.cameras.size()>0)
+			parser.initCam=parser.cameras[0]->id;
+		
 		for(int i = 0; i < parser.cameras.size();i++)
 		{
 			if(parser.cameras[i]->id == parser.initCam)
@@ -225,11 +297,12 @@ ANFScene::ANFScene(char *filename)
 				break;
 			}
 		}
+	
 	}
 
 
 	//Lights
-
+	int i=0;
 	if (lightsElement == NULL)
 		printf("Lights block not found!\n");
 	else
@@ -241,7 +314,15 @@ ANFScene::ANFScene(char *filename)
 		{
 			Light *lt = new Light();
 			lt->id = light->Attribute("id");
+			if(lt->id=="")
+				lt->id="light_"+i;
+			i++;
 			lt->type = light->Attribute("type");
+			if(lt->type != "spot" && lt->type !="omni")
+			{
+				printf("Error reading light type, assuming omni\n");
+				lt->type="omni";
+			}
 			if((string)light->Attribute("enabled") == "true")
 				lt->enabled = true;
 			else
@@ -262,8 +343,12 @@ ANFScene::ANFScene(char *filename)
 				lt->pos[1] = pos2;
 				lt->pos[2] = pos3;
 			}
-			else
-				printf("\tError reading triangle\n");
+			else{
+				printf("\tError reading light pos, assuming 0 0 0\n");
+				lt->pos[0] = 0;
+				lt->pos[1] = 0;
+				lt->pos[2] = 0;
+			}
 
 			if(lt->type == "spot")
 			{
@@ -271,10 +356,16 @@ ANFScene::ANFScene(char *filename)
 				char *target=NULL;
 				if(light->QueryFloatAttribute("angle",&angle)==TIXML_SUCCESS)
 					lt->angle = angle;
-
+				else{
+					printf("Error reading light spot angle, assuming 90\n");
+					lt->angle=90;
+				}
 				if(light->QueryFloatAttribute("exponent",&exponent)==TIXML_SUCCESS)
 					lt->exponent = exponent;
-
+				else{
+					printf("Error reading light spot exponent, assuming 1.0\n");
+					lt->exponent=1.0;
+				}
 				target=(char *) light->Attribute("target");
 
 				if(target && sscanf(target,"%f %f %f",&targetx, &targety, &targetz)==3)
@@ -283,8 +374,12 @@ ANFScene::ANFScene(char *filename)
 					lt->target[1] = targety;
 					lt->target[2] = targetz;
 				}
-				else
-					printf("\tError reading target\n");
+				else{
+					printf("\tError reading light spot target, assuming 0 0 0\n");
+					lt->target[0] = 0;
+					lt->target[1] = 0;
+					lt->target[2] = 0;
+				}
 			}
 
 			char *valString=NULL;
@@ -300,8 +395,13 @@ ANFScene::ANFScene(char *filename)
 				lt->ambient[2] = b3;
 				lt->ambient[3] = b4;
 			}
-			else
-				printf("Error parsing ambient\n");
+			else{
+				printf("Error parsing light ambient parameter, assuming 0 0 0 0\n");
+				lt->ambient[0] = 0;
+				lt->ambient[1] = 0;
+				lt->ambient[2] = 0;
+				lt->ambient[3] = 0;
+			}
 
 			component= component->NextSiblingElement();
 
@@ -314,8 +414,13 @@ ANFScene::ANFScene(char *filename)
 				lt->diffuse[2] = b3;
 				lt->diffuse[3] = b4;
 			}
-			else
-				printf("Error parsing diffuse\n");
+			else{
+				printf("Error parsing light diffuse parameter, assuming 0 0 0 0\n");
+				lt->diffuse[0] = 0;
+				lt->diffuse[1] = 0;
+				lt->diffuse[2] = 0;
+				lt->diffuse[3] = 0;
+			}
 
 			component = component->NextSiblingElement();
 
@@ -328,8 +433,13 @@ ANFScene::ANFScene(char *filename)
 				lt->specular[2] = b3;
 				lt->specular[3] = b4;
 			}
-			else
-				printf("Error parsing specular\n");
+			else{
+				printf("Error parsing light specular parameter, assuming 0 0 0 0\n");
+				lt->specular[0] = 0;
+				lt->specular[1] = 0;
+				lt->specular[2] = 0;
+				lt->specular[3] = 0;
+			}
 
 
 			parser.lights.push_back(lt);
