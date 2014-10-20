@@ -1081,7 +1081,6 @@ void ANFScene::init()
 
 
 
-	// Uncomment below to enable normalization of lighting normal vectors
 	glEnable (GL_NORMALIZE);
 	glEnable (GL_TEXTURE_2D);
 
@@ -1110,12 +1109,6 @@ void ANFScene::display()
 	// Initialize Model-View matrix as identity (no transformation
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-
-	//parser.cameras[parser.activeCam]->camera
-	// Apply transformations corresponding to the camera position relative to the origin
-	//CGFscene::activeCamera->applyView();
-
-
 
 	for(unsigned int i=0;i<parser.lights.size() && i<8;i++)
 	{

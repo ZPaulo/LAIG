@@ -428,6 +428,8 @@ public:
 	string apperanceRef;
 	vector<Primitives*> primitives;
 	vector<string> descendants;
+
+	~Node();
 };
 
 class Graph
@@ -435,6 +437,8 @@ class Graph
 public:
 	map<string, Node*> nodes;
 	string rootID;
+
+	~Graph();
 };
 
 class Parser
