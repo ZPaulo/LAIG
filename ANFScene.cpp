@@ -1137,8 +1137,8 @@ void ANFScene::display()
 	else
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-
-	drawGraph(parser.graph->rootID,parser.graph->nodes[parser.graph->rootID]->apperanceRef);
+	if(parser.graph->nodes[parser.graph->rootID])
+		drawGraph(parser.graph->rootID,parser.graph->nodes[parser.graph->rootID]->apperanceRef);
 
 	glutSwapBuffers();
 }
