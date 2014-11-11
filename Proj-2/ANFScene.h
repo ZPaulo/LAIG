@@ -31,6 +31,7 @@ protected:
 	TiXmlElement* camerasElement;
 	TiXmlElement* appearancesElement;
 	TiXmlElement* textureElement;
+	TiXmlElement* animationElement;
 	TiXmlElement* graphElement;
 };
 

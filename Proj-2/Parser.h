@@ -100,6 +100,13 @@ public:
 	string id, file;
 	float texLengthS,texLengthT;
 };
+class Animation
+{
+public:
+	string id,type;
+	float span,radius,startang,rotang,center[3];
+	vector<vector<float>> controlpoint;
+};
 
 class Appearance
 {
@@ -419,13 +426,40 @@ public:
 		}
 	}
 };
-
+class Plane:public Primitives{
+public:
+	int parts;
+	void draw(){}
+	void draw(Texture *t){}
+};
+class Patch: public Primitives{
+public:
+	int order;
+	int partsU;
+	int partsV;
+	string compute;
+	float controlPoint[3];
+	void draw(){}
+	void draw(Texture *t){}
+};
+class Flag: public Primitives{
+public:
+	string texture;
+	void draw(){}
+	void draw(Texture *t){}
+};
+class Vehicle: public Primitives{
+public:
+	void draw(){}
+	void draw(Texture *t){}
+};
 class Node
 {
 public:
 	string id;
 	float matrix[16];
 	string apperanceRef;
+	string animationRef;
 	vector<Primitives*> primitives;
 	vector<string> descendants;
 
@@ -437,7 +471,7 @@ class Graph
 public:
 	map<string, Node*> nodes;
 	string rootID;
-
+	bool displaylist;
 	~Graph();
 };
 

@@ -1,5 +1,4 @@
 #include <iostream>
-#include "XMLScene.h"
 #include "ANFScene.h"
 #include "CGFapplication.h"
 #include "Interface.h"
