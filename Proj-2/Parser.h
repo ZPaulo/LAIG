@@ -426,12 +426,14 @@ public:
 		}
 	}
 };
+
 class Plane:public Primitives{
 public:
 	int parts;
 	void draw(){}
 	void draw(Texture *t){}
 };
+
 class Patch: public Primitives{
 public:
 	int order;
@@ -442,17 +444,20 @@ public:
 	void draw(){}
 	void draw(Texture *t){}
 };
+
 class Flag: public Primitives{
 public:
 	string texture;
 	void draw(){}
 	void draw(Texture *t){}
 };
+
 class Vehicle: public Primitives{
 public:
 	void draw(){}
 	void draw(Texture *t){}
 };
+
 class Node
 {
 public:
@@ -461,6 +466,8 @@ public:
 	string apperanceRef;
 	string animationRef;
 	vector<Primitives*> primitives;
+	bool displayList;
+	int indexDList;
 	vector<string> descendants;
 
 	~Node();
@@ -471,7 +478,6 @@ class Graph
 public:
 	map<string, Node*> nodes;
 	string rootID;
-	bool displaylist;
 	~Graph();
 };
 
@@ -488,5 +494,4 @@ public:
 	map<string, Texture*> textures;
 	map<string, Appearance*> appearances;
 	Graph* graph;
-
 };
