@@ -1309,8 +1309,6 @@ void ANFScene::init()
 	glEnable (GL_NORMALIZE);
 	glEnable (GL_TEXTURE_2D);
 
-	numberOfList = glGenLists(3);
-
 	if(parser.graph->nodes[parser.graph->rootID])
 		createDisplayList(parser.graph->rootID,parser.graph->nodes[parser.graph->rootID]->apperanceRef);
 
@@ -1433,7 +1431,6 @@ void ANFScene::drawGraph(string nodeID,string app,bool init)
 					else
 						(*Cnode.primitives[i]).draw();
 				}
-
 				for(int i = 0; i < Cnode.descendants.size(); i++)
 				{
 					glPushMatrix();
@@ -1456,11 +1453,11 @@ void ANFScene::createDisplayList(string nodeID,string app)
 		Cnode = *parser.graph->nodes[nodeID];
 		if(Cnode.displayList)
 		{
+			numberOfList = glGenLists(1);
 			glNewList(numberOfList,GL_COMPILE);
 			parser.graph->nodes[nodeID]->indexDList = numberOfList;
 			drawGraph(nodeID,Cnode.apperanceRef,true);
 			glEndList();
-			numberOfList++;
 		}
 		else
 		{
