@@ -830,19 +830,26 @@ ANFScene::ANFScene(char *filename)
 					}
 
 					TiXmlElement *animationr = node->FirstChildElement("animationref");
-					pNode->animationRef="";
+
+					string animationRef="";
 					pNode->animIndex = 0;
-					if(animationr)
-						pNode->animationRef=animationr->Attribute("id");
 
-					if(pNode->animationRef != "")
+					while(animationr)
 					{
+						animationRef=animationr->Attribute("id");
 
-						for(unsigned int i = 0; i < parser.animations.size(); i++)
+						if(animationRef != "")
 						{
-							if(parser.animations[i]->id == pNode->animationRef)
-								pNode->animation.push_back(parser.animations[i]);
+							for(unsigned int i = 0; i < parser.animations.size(); i++)
+							{
+								if(parser.animations[i]->id == animationRef)
+								{
+									pNode->animation.push_back(parser.animations[i]);
+									break;
+								}
+							}
 						}
+						animationr = animationr->NextSiblingElement("animationref");
 					}
 
 					TiXmlElement *primitives = node->FirstChildElement("primitives");
@@ -1391,106 +1398,106 @@ void ANFScene::display()
 
 	if(parser.graph->nodes[parser.graph->rootID])
 	{
-		if(!parser.graph->nodes[parser.graph->rootID])
-			printf("Node not found!\n");
-		else
-			drawGraph(parser.graph->nodes[parser.graph->rootID],parser.graph->nodes[parser.graph->rootID]->apperanceRef,false);
+		drawGraph(parser.graph->rootID,parser.graph->nodes[parser.graph->rootID]->apperanceRef,false);
 	}
 
 	glutSwapBuffers();
 }
 
 
-void ANFScene::drawGraph(Node *Cnode,string app,bool init)
+void ANFScene::drawGraph(string nodeID,string app,bool init)
 {
 
-	
-
-	if(app != "" && app != "inherit")
-		if(Cnode->apperanceRef == "" || Cnode->apperanceRef == "inherit")
-			Cnode->apperanceRef = app;
-
-	if(init)
-	{
-		if(Cnode->apperanceRef != "" && Cnode->apperanceRef != "inherit")
-			parser.appearances[Cnode->apperanceRef]->appCGF->apply();
-
-		glMultMatrixf(Cnode->matrix);
-
-		for(unsigned int i = 0; i < Cnode->primitives.size(); i++)
-		{
-			if(Cnode->apperanceRef != "inherit" && Cnode->apperanceRef != "")
-			{
-				if(parser.appearances[Cnode->apperanceRef]->isTexApp)
-					(*Cnode->primitives[i]).draw(parser.textures[parser.appearances[Cnode->apperanceRef]->textureRef]);
-				else
-					(*Cnode->primitives[i]).draw();
-			}
-			else
-				(*Cnode->primitives[i]).draw();
-		}
-
-		for(unsigned int i = 0; i < Cnode->descendants.size(); i++)
-		{
-			glPushMatrix();
-			cout << Cnode->descendants[i] << endl;
-			drawGraph(parser.graph->nodes[Cnode->descendants[i]],Cnode->apperanceRef,init);
-			glPopMatrix();
-		}
-	}
+	Node Cnode;
+	if(!parser.graph->nodes[nodeID])
+		printf("Node not found!\n");
 	else
 	{
-		if(Cnode->displayList)
+		Cnode = *parser.graph->nodes[nodeID];
+		if(app != "" && app != "inherit")
+			if(Cnode.apperanceRef == "" || Cnode.apperanceRef == "inherit")
+				Cnode.apperanceRef = app;
+
+		if(init)
 		{
-			glCallList(Cnode->indexDList);
-		}
-		else
-		{
-			if(Cnode->apperanceRef != "" && Cnode->apperanceRef != "inherit")
-				parser.appearances[Cnode->apperanceRef]->appCGF->apply();
+			if(Cnode.apperanceRef != "" && Cnode.apperanceRef != "inherit")
+				parser.appearances[Cnode.apperanceRef]->appCGF->apply();
 
-			
-			cout <<Cnode->id << " " <<Cnode->apperanceRef << " " << parser.appearances[Cnode->apperanceRef]->textureRef<< endl;
+			glMultMatrixf(Cnode.matrix);
 
-			bool anim;
-			if(Cnode->animIndex < Cnode->animation.size())
+			for(unsigned int i = 0; i < Cnode.primitives.size(); i++)
 			{
-				if(Cnode->animation[Cnode->animIndex]->valid)
+				if(Cnode.apperanceRef != "inherit" && Cnode.apperanceRef != "")
 				{
-					Cnode->animation[Cnode->animIndex]->apply();
-				}
-				else
-					Cnode->animIndex++;
-				anim = true;
-			}
-			else
-				anim = false;
-
-			if(!anim)
-				glMultMatrixf(Cnode->matrix);
-
-
-
-			for(unsigned int i = 0; i < Cnode->primitives.size(); i++)
-			{
-				if(Cnode->apperanceRef != "inherit" && Cnode->apperanceRef != "")
-				{
-					if(parser.appearances[Cnode->apperanceRef]->isTexApp)
-						(*Cnode->primitives[i]).draw(parser.textures[parser.appearances[Cnode->apperanceRef]->textureRef]);
+					if(parser.appearances[Cnode.apperanceRef]->isTexApp)
+						(*Cnode.primitives[i]).draw(parser.textures[parser.appearances[Cnode.apperanceRef]->textureRef]);
 					else
-						(*Cnode->primitives[i]).draw();
+						(*Cnode.primitives[i]).draw();
 				}
 				else
-					(*Cnode->primitives[i]).draw();
+					(*Cnode.primitives[i]).draw();
 			}
-			for(unsigned int i = 0; i < Cnode->descendants.size(); i++)
+
+			for(unsigned int i = 0; i < Cnode.descendants.size(); i++)
 			{
 				glPushMatrix();
-				drawGraph(parser.graph->nodes[Cnode->descendants[i]],Cnode->apperanceRef,init);
+				drawGraph(Cnode.descendants[i],Cnode.apperanceRef,init);
 				glPopMatrix();
 			}
 		}
+		else
+		{
+			if(Cnode.displayList)
+			{
+				glCallList(Cnode.indexDList);
+			}
+			else
+			{
+				if(Cnode.apperanceRef != "" && Cnode.apperanceRef != "inherit")
+					parser.appearances[Cnode.apperanceRef]->appCGF->apply();
 
+				bool anim = false;
+
+				if(Cnode.animIndex < Cnode.animation.size())
+				{
+					anim = true;
+					Cnode.animation[Cnode.animIndex]->apply();
+					if(!Cnode.animation[Cnode.animIndex]->valid)
+					{
+						parser.graph->nodes[nodeID]->animIndex++;
+						if(parser.graph->nodes[nodeID]->animIndex < Cnode.animation.size())
+						{
+							parser.animations[parser.graph->nodes[nodeID]->animIndex]->doReset = true;
+							parser.animations[parser.graph->nodes[nodeID]->animIndex]->valid= true;
+						}
+					}
+
+				}
+				if(!anim)
+					glMultMatrixf(Cnode.matrix);
+
+
+
+				for(unsigned int i = 0; i < Cnode.primitives.size(); i++)
+				{
+					if(Cnode.apperanceRef != "inherit" && Cnode.apperanceRef != "")
+					{
+						if(parser.appearances[Cnode.apperanceRef]->isTexApp)
+							(*Cnode.primitives[i]).draw(parser.textures[parser.appearances[Cnode.apperanceRef]->textureRef]);
+						else
+							(*Cnode.primitives[i]).draw();
+					}
+					else
+						(*Cnode.primitives[i]).draw();
+				}
+				for(unsigned int i = 0; i < Cnode.descendants.size(); i++)
+				{
+					glPushMatrix();
+					drawGraph(Cnode.descendants[i],Cnode.apperanceRef,init);
+					glPopMatrix();
+				}
+			}
+		}
 	}
 }
 
@@ -1508,7 +1515,7 @@ void ANFScene::createDisplayList(string nodeID,string app)
 			numberOfList = glGenLists(1);
 			glNewList(numberOfList,GL_COMPILE);
 			parser.graph->nodes[nodeID]->indexDList = numberOfList;
-			drawGraph(parser.graph->nodes[nodeID],Cnode.apperanceRef,true);
+			drawGraph(nodeID,Cnode.apperanceRef,true);
 			glEndList();
 		}
 		else

@@ -504,7 +504,6 @@ public:
 	string id;
 	float matrix[16];
 	string apperanceRef;
-	string animationRef;
 	vector<Animation*> animation;
 	vector<Primitives*> primitives;
 	int animIndex;

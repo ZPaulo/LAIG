@@ -82,27 +82,28 @@ void LinearAnimation::init(unsigned long t)
 
 void LinearAnimation::update(unsigned long t)
 {
-	if (doReset)
+	if (doReset){
 		init(t);
-	else
-	{
-		if(resetTime)
-		{
-			controlTime = t;
-			resetTime = false;
-		}
-		double animT = (t-controlTime)/1000.0;
-		double checkSpan = (t-startTime)/1000.0;
-		if(checkSpan >= span)
-		{
-			valid = false;
-			glPopMatrix();
-		}
+	}
 		else
 		{
-			obj_translate = velocity*animT;
+			if(resetTime)
+			{
+				controlTime = t;
+				resetTime = false;
+			}
+			double animT = (t-controlTime)/1000.0;
+			double checkSpan = (t-startTime)/1000.0;
+			if(checkSpan >= span)
+			{
+				valid = false;
+				glPopMatrix();
+			}
+			else
+			{
+				obj_translate = velocity*animT;
+			}
 		}
-	}
 }
 
 void LinearAnimation::apply(){
