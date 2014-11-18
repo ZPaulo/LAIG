@@ -1329,7 +1329,7 @@ void ANFScene::init()
 
 
 	// Animation-related code
-	unsigned long updatePeriod=30;
+	unsigned long updatePeriod=10;
 	setUpdatePeriod(updatePeriod);
 
 	if(parser.graph->nodes[parser.graph->rootID])

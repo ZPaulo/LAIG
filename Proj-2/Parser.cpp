@@ -1,5 +1,6 @@
 #include "Parser.h"
 
+#include <iostream>
 
 Parser::Parser()
 {
@@ -40,7 +41,9 @@ Graph::~Graph()
 void Animation::init(unsigned long t)
 {
 	startTime=t;
+	controlTime = t;
 	valid = true;
+	resetTime = false;
 	indexCP = 0;
 	doReset=false;
 
@@ -66,7 +69,6 @@ void Animation::init(unsigned long t)
 
 	float product = directions[0][2];
 	angle = acos(product)*180/PI;
-	
 
 	velocity = distance / span;
 
@@ -75,6 +77,7 @@ void Animation::init(unsigned long t)
 	initZ = controlPoint[0][2];
 
 	obj_translate = 0;
+	glPushMatrix();
 }
 
 void Animation::update(unsigned long t)
@@ -83,13 +86,23 @@ void Animation::update(unsigned long t)
 		init(t);
 	else
 	{
-		double animT = (t-startTime)/1000.0;
-		if(animT >= span)
+		if(resetTime)
+		{
+			controlTime = t;
+			resetTime = false;
+		}
+		double animT = (t-controlTime)/1000.0;
+		double checkSpan = (t-startTime)/1000.0;
+		if(checkSpan >= span)
+		{
 			valid = false;
+			glPopMatrix();
+		}
 		else
 		{
 			//obj_rotate= START_ANGLE + animT* rotate_speed_ms;
 			//obj_radius= START_RADIUS + animT* radius_speed_ms;
+
 			obj_translate = velocity*animT;
 		}
 	}
@@ -98,27 +111,81 @@ void Animation::update(unsigned long t)
 void Animation::apply(){
 	if(valid)
 	{
+		bool flag = false;
 		float deltaX = directions[indexCP][0]*obj_translate,deltaY = directions[indexCP][1]*obj_translate,deltaZ = directions[indexCP][2]*obj_translate;
 
 		float currX = initX+deltaX;
 		float currY = initY+deltaY;
 		float currZ = initZ+deltaZ;
 
-		glTranslatef(currX,currY,currZ);
-		glRotatef(angle,0,1,0);
 
+		if(directions[indexCP][0] > 0)
+		{
+			if(currX >= controlPoint[indexCP+1][0])
+				flag = true;
+		}
+		else if(currX <= controlPoint[indexCP+1][0])
+			flag = true;
 
-
-		if(indexCP < directions.size() -1)
-			if(((int) currX == controlPoint[indexCP+1][0]) && ((int)currY == controlPoint[indexCP+1][1]) && ((int)currZ == controlPoint[indexCP+1][2]))
+		if(flag)
+		{
+			if(directions[indexCP][1] > 0)
 			{
-				initX = controlPoint[indexCP+1][0]*2;
-				initY = controlPoint[indexCP+1][1]*2;
-				initZ = controlPoint[indexCP+1][2]*2;
-				float product = directions[indexCP][0]*directions[indexCP+1][0]+directions[indexCP][2]*directions[indexCP+1][2];
-				angle = acos(product)*180/PI;
-				indexCP++;
+				if(currY >= controlPoint[indexCP+1][1])
+					flag = true;
+				else
+					flag = false;
 			}
+			else if(currY <= controlPoint[indexCP+1][1])
+				flag = true;
+			else
+				flag = false;
+		}
+
+		if(flag)
+		{
+			if(directions[indexCP][2] > 0)
+			{
+				if(currZ >= controlPoint[indexCP+1][2])
+					flag = true;
+				else
+					flag = false;
+			}
+			else if(currZ <= controlPoint[indexCP+1][2])
+				flag = true;
+			else
+				flag = false;
+		}
+
+
+		if(flag)
+		{
+			initX = controlPoint[indexCP+1][0];
+			initY = controlPoint[indexCP+1][1];
+			initZ = controlPoint[indexCP+1][2];
+
+			float product;
+			if(directions[indexCP+1][1] != 0)
+				product = directions[indexCP+1][2]/(abs(directions[indexCP+1][2]));
+			else
+				product = directions[indexCP+1][2];
+
+			angle = acos(product)*180/PI;
+			if(directions[indexCP+1][0] < 0)
+				angle *= -1;
+			resetTime = true;
+			obj_translate = 0;
+			indexCP++;
+		}
+		else
+		{
+
+			glTranslatef(currX,currY,currZ);
+			glRotatef(angle,0,1,0);
+		}
+
+
+
 
 	}
 

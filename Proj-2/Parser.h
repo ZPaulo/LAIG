@@ -113,11 +113,12 @@ public:
 
 private:
 	void init(unsigned long t);
-	unsigned long startTime;
+	unsigned long startTime, controlTime;
 	float  obj_radius, obj_rotate, obj_translate,velocity;
 	unsigned int indexCP;
 	vector<vector<float>> directions;
 	float initX,initY,initZ, angle;
+	bool resetTime;
 	
 };
 
