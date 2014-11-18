@@ -16,6 +16,7 @@ public:
 
 	void init();
 	void display();
+	void update(unsigned long t);
 
 	void drawGraph(string nodeID,string app,bool init);
 	void createDisplayList(string nodeID,string app);

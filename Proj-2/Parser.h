@@ -100,12 +100,25 @@ public:
 	string id, file;
 	float texLengthS,texLengthT;
 };
+
 class Animation
 {
 public:
 	string id,type;
 	float span,radius,startang,rotang,center[3];
-	vector<vector<float>> controlpoint;
+	vector<vector<float>> controlPoint;
+	void apply();
+	void update(unsigned long t);
+	bool valid,doReset;
+
+private:
+	void init(unsigned long t);
+	unsigned long startTime;
+	float  obj_radius, obj_rotate, obj_translate,velocity;
+	unsigned int indexCP;
+	vector<vector<float>> directions;
+	float initX,initY,initZ, angle;
+	
 };
 
 class Appearance
@@ -465,6 +478,7 @@ public:
 	float matrix[16];
 	string apperanceRef;
 	string animationRef;
+	Animation* animation;
 	vector<Primitives*> primitives;
 	bool displayList;
 	int indexDList;
@@ -493,5 +507,6 @@ public:
 	vector<Light*> lights;
 	map<string, Texture*> textures;
 	map<string, Appearance*> appearances;
+	vector<Animation*> animations;
 	Graph* graph;
 };

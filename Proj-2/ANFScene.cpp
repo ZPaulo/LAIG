@@ -495,110 +495,7 @@ ANFScene::ANFScene(char *filename)
 		}
 	}
 
-	//animations
-	if(animationElement==NULL)
-		printf("Animation Block not found!\n");
-	else{
-		printf("Processing Animations... \n");
-		TiXmlElement *animation=animationElement->FirstChildElement("animations");
 
-		while (animation)
-		{
-			string id;
-			char* center;
-			float span,startang,rotang,radius,b1,b2,b3;
-			vector<float>push;
-			Animation* anim= new Animation();
-			if(animation->Attribute("id"))
-				anim->id = animation->Attribute("id");
-			else
-				printf("Missing ID.\n");
-			if(animation->QueryFloatAttribute("span",&span)==TIXML_SUCCESS)
-				anim->span = span;
-			else
-			{
-				printf("Value Missing\n");
-				anim->span = 0.0;
-			}
-			if(!animation->Attribute("type"))
-				printf("Missing type.\n");
-			else{
-				anim->type=animation->Attribute("type");
-				if(anim->type=="linear")
-				{
-					TiXmlElement *controlpoint = animation->FirstChildElement("controlpoint");
-					int g=0;
-					while(controlpoint){
-						float xx,yy,zz;
-						if(controlpoint->QueryFloatAttribute("xx",&xx)==TIXML_SUCCESS)
-							push.push_back(xx);
-						else
-						{
-							printf("Value Missing\n");
-							push.push_back(0);
-						}	
-						if(controlpoint->QueryFloatAttribute("yy",&yy)==TIXML_SUCCESS)
-							push.push_back(yy);
-						else
-						{
-							printf("Value Missing\n");
-							push.push_back(0);
-						}
-						if(controlpoint->QueryFloatAttribute("zz",&zz)==TIXML_SUCCESS)
-							push.push_back(zz);
-						else
-						{
-							printf("Value Missing\n");
-							push.push_back(0);
-						}
-						g++;
-						anim->controlpoint.push_back(push);
-						controlpoint->NextSiblingElement("controlpoint");
-					}
-
-				}
-				else if(anim->type=="circular")
-				{
-					center=(char *) animation->Attribute("center");
-
-					if(center && sscanf(center,"%f %f %f",&b1, &b2, &b3)==3)
-					{
-						anim->center[0] = b1;
-						anim->center[1] = b2;
-						anim->center[2] = b3;
-					}
-					else
-					{
-						printf("Error parsing center\n");
-						for(unsigned int i = 0; i < 3; i++)
-							anim->center[i] = 0;
-					}
-					if(animation->QueryFloatAttribute("radius",&radius)==TIXML_SUCCESS)
-						anim->radius = radius;
-					else
-					{
-						printf("Value Missing\n");
-						anim->radius = 0.0;
-					}
-					if(animation->QueryFloatAttribute("startang",&startang)==TIXML_SUCCESS)
-						anim->startang = startang;
-					else
-					{
-						printf("Value Missing\n");
-						anim->startang = 0.0;
-					}
-					if(animation->QueryFloatAttribute("rotang",&rotang)==TIXML_SUCCESS)
-						anim->rotang = rotang;
-					else
-					{
-						printf("Value Missing\n");
-						anim->rotang = 0.0;
-					}
-				}
-			}
-			animation->NextSiblingElement("animations");
-		}
-	}
 	//appearances
 	float shininess;
 	if (appearancesElement==NULL)
@@ -709,6 +606,113 @@ ANFScene::ANFScene(char *filename)
 		}
 	}
 
+	//animations
+	if(animationElement==NULL)
+		printf("Animation Block not found!\n");
+	else{
+		printf("Processing Animations... \n");
+		TiXmlElement *animation=animationElement->FirstChildElement();
+
+		while (animation)
+		{
+			string id;
+			char* center;
+			float span,startang,rotang,radius,b1,b2,b3;
+			Animation* anim= new Animation();
+			if(animation->Attribute("id"))
+				anim->id = animation->Attribute("id");
+			else
+				printf("Missing ID.\n");
+			if(animation->QueryFloatAttribute("span",&span)==TIXML_SUCCESS)
+				anim->span = span;
+			else
+			{
+				printf("Value Missing\n");
+				anim->span = 0.0;
+			}
+			if(!animation->Attribute("type"))
+				printf("Missing type.\n");
+			else{
+				anim->type=animation->Attribute("type");
+				if(anim->type=="linear")
+				{
+					TiXmlElement *controlpoint = animation->FirstChildElement("controlpoint");
+				
+					while(controlpoint){
+						vector<float>coord;
+
+						float xx,yy,zz;
+						if(controlpoint->QueryFloatAttribute("xx",&xx)==TIXML_SUCCESS)
+							coord.push_back(xx);
+						else
+						{
+							printf("Value Missing\n");
+							coord.push_back(0);
+						}	
+						if(controlpoint->QueryFloatAttribute("yy",&yy)==TIXML_SUCCESS)
+							coord.push_back(yy);
+						else
+						{
+							printf("Value Missing\n");
+							coord.push_back(0);
+						}
+						if(controlpoint->QueryFloatAttribute("zz",&zz)==TIXML_SUCCESS)
+							coord.push_back(zz);
+						else
+						{
+							printf("Value Missing\n");
+							coord.push_back(0);
+						}
+					
+						anim->controlPoint.push_back(coord);
+						controlpoint = controlpoint->NextSiblingElement("controlpoint");
+					}
+
+				}
+				else if(anim->type=="circular")
+				{
+					center=(char *) animation->Attribute("center");
+
+					if(center && sscanf(center,"%f %f %f",&b1, &b2, &b3)==3)
+					{
+						anim->center[0] = b1;
+						anim->center[1] = b2;
+						anim->center[2] = b3;
+					}
+					else
+					{
+						printf("Error parsing center\n");
+						for(unsigned int i = 0; i < 3; i++)
+							anim->center[i] = 0;
+					}
+					if(animation->QueryFloatAttribute("radius",&radius)==TIXML_SUCCESS)
+						anim->radius = radius;
+					else
+					{
+						printf("Value Missing\n");
+						anim->radius = 0.0;
+					}
+					if(animation->QueryFloatAttribute("startang",&startang)==TIXML_SUCCESS)
+						anim->startang = startang;
+					else
+					{
+						printf("Value Missing\n");
+						anim->startang = 0.0;
+					}
+					if(animation->QueryFloatAttribute("rotang",&rotang)==TIXML_SUCCESS)
+						anim->rotang = rotang;
+					else
+					{
+						printf("Value Missing\n");
+						anim->rotang = 0.0;
+					}
+				}
+			}
+			parser.animations.push_back(anim);
+			animation = animation->NextSiblingElement();
+		}
+	}
+
 	//Graph
 
 	if (graphElement == NULL)
@@ -805,16 +809,13 @@ ANFScene::ANFScene(char *filename)
 						}
 					}
 
-					//<animationref id=”ss” />
-					TiXmlElement *animationr = node->FirstChildElement("animationref");
-					pNode->animationRef="";
-					if(animationr)
-						pNode->animationRef=animationr->Attribute("id");
+
 
 					TiXmlElement *appearance = node->FirstChildElement("appearanceref");
 					pNode->apperanceRef = "";
 
 					if(appearance)
+					{
 						if(appearance->Attribute("id")) 
 							if(parser.appearances[appearance->Attribute("id")])
 								pNode->apperanceRef = appearance->Attribute("id");
@@ -822,369 +823,386 @@ ANFScene::ANFScene(char *filename)
 								pNode->apperanceRef = appearance->Attribute("id");
 							else
 								printf("\tApearance %s not found\n", appearance->Attribute("id"));
+					}
 
-							TiXmlElement *primitives = node->FirstChildElement("primitives");
-							if(primitives == NULL)
+					TiXmlElement *animationr = node->FirstChildElement("animationref");
+					pNode->animationRef="";
+					if(animationr)
+						pNode->animationRef=animationr->Attribute("id");
+
+					if(pNode->animationRef == "")
+						pNode->animation = NULL;
+					else
+					{
+						for(unsigned int i = 0; i < parser.animations.size(); i++)
+						{
+							if(parser.animations[i]->id == pNode->animationRef)
+								pNode->animation = parser.animations[i];
+						}
+					}
+
+					TiXmlElement *primitives = node->FirstChildElement("primitives");
+					if(primitives == NULL)
+					{
+						printf("Primitives block not found!\n");
+					}
+					else
+					{
+
+						TiXmlElement *rectangle = primitives->FirstChildElement("rectangle");
+						TiXmlElement *triangle = primitives->FirstChildElement("triangle");
+						TiXmlElement *cylinder = primitives->FirstChildElement("cylinder");
+						TiXmlElement *sphere = primitives->FirstChildElement("sphere");
+						TiXmlElement *torus = primitives->FirstChildElement("torus");
+						TiXmlElement *plane = primitives->FirstChildElement("plane");
+						TiXmlElement *patch = primitives->FirstChildElement("patch");
+						TiXmlElement *vehicle = primitives->FirstChildElement("vehicle");
+						TiXmlElement *flag = primitives->FirstChildElement("flag");
+						bool save;
+						while(plane){
+							save=true;
+							Plane* pl = new Plane();
+							pl->name="plane";
+							int part;
+							if(plane->QueryIntAttribute("parts",&part)==TIXML_SUCCESS)
+								pl->parts = part;
+							else
 							{
-								printf("Primitives block not found!\n");
+								save = false;
+								printf("\tError reading parts\n");
+							}
+							if(save)
+								pNode->primitives.push_back(pl);
+
+							plane=plane->NextSiblingElement("plane");
+						}
+						while(flag){
+							save=true;
+							Flag* fl = new Flag();
+							fl->name="flag";
+							string text;
+							text= (string) flag->Attribute("texture");
+
+							if(save)
+								pNode->primitives.push_back(fl);
+
+							flag=flag->NextSiblingElement("flag");
+						}
+						while(vehicle){
+							save=true;
+							Vehicle* ve= new Vehicle();
+							ve->name="vehicle";
+							if(save)
+								pNode->primitives.push_back(ve);
+
+							vehicle=vehicle->NextSiblingElement("vehicle");
+						}
+						while(patch){
+							save=true;
+							Patch* pa= new Patch();
+							pa->name="patch";
+							int order,partsU,partsV;
+							float x,y,z;
+							TiXmlElement *controlpoint = patch->FirstChildElement("controlpoint");
+
+							if(patch->QueryIntAttribute("order",&order)==TIXML_SUCCESS)
+								pa->order = order;
+							else
+							{
+								save = false;
+								printf("\tError reading order\n");
+							}
+							if(patch->QueryIntAttribute("partsU",&partsU)==TIXML_SUCCESS)
+								pa->partsU = partsU;
+							else
+							{
+								save = false;
+								printf("\tError reading partsU\n");
+							}
+							if(patch->QueryIntAttribute("partsV",&partsV)==TIXML_SUCCESS)
+								pa->partsV = partsV;
+							else
+							{
+								save = false;
+								printf("\tError reading partsV\n");
+							}
+
+							pa->compute=(string)patch->Attribute("compute");
+
+
+							if(controlpoint->QueryFloatAttribute("x",&x)==TIXML_SUCCESS)
+								pa->controlPoint[0] = x;
+							else
+							{
+								save = false;
+								printf("\tError reading controlpoint x\n");
+							}
+							if(controlpoint->QueryFloatAttribute("y",&y)==TIXML_SUCCESS)
+								pa->controlPoint[1] = y;
+							else
+							{
+								save = false;
+								printf("\tError reading controlpoint y\n");
+							}
+							if(controlpoint->QueryFloatAttribute("z",&z)==TIXML_SUCCESS)
+								pa->controlPoint[2] = z;
+							else
+							{
+								save = false;
+								printf("\tError reading controlpoint z\n");
+							}
+
+
+
+							if(save)
+								pNode->primitives.push_back(pa);
+
+							patch=patch->NextSiblingElement("patch");
+
+						}
+
+						while(rectangle){
+							save = true;
+							Rectangle* rect = new Rectangle();
+							rect->name = "rectangle";
+
+							char *pos=NULL;
+							float pos1,pos2;
+							pos=(char *) rectangle->Attribute("xy1");
+
+							if(pos && sscanf(pos,"%f %f",&pos1, &pos2)==2)
+							{
+								rect->xy1[0] = pos1;
+								rect->xy1[1] = pos2;
 							}
 							else
 							{
-
-								TiXmlElement *rectangle = primitives->FirstChildElement("rectangle");
-								TiXmlElement *triangle = primitives->FirstChildElement("triangle");
-								TiXmlElement *cylinder = primitives->FirstChildElement("cylinder");
-								TiXmlElement *sphere = primitives->FirstChildElement("sphere");
-								TiXmlElement *torus = primitives->FirstChildElement("torus");
-								TiXmlElement *plane = primitives->FirstChildElement("plane");
-								TiXmlElement *patch = primitives->FirstChildElement("patch");
-								TiXmlElement *vehicle = primitives->FirstChildElement("vehicle");
-								TiXmlElement *flag = primitives->FirstChildElement("flag");
-								bool save;
-								while(plane){
-									save=true;
-									Plane* pl = new Plane();
-									pl->name="plane";
-									int part;
-									if(plane->QueryIntAttribute("parts",&part)==TIXML_SUCCESS)
-										pl->parts = part;
-									else
-									{
-										save = false;
-										printf("\tError reading parts\n");
-									}
-									if(save)
-										pNode->primitives.push_back(pl);
-
-									plane=plane->NextSiblingElement("plane");
-								}
-								while(flag){
-									save=true;
-									Flag* fl = new Flag();
-									fl->name="flag";
-									string text;
-									text= (string) flag->Attribute("texture");
-
-									if(save)
-										pNode->primitives.push_back(fl);
-
-									flag=flag->NextSiblingElement("flag");
-								}
-								while(vehicle){
-									save=true;
-									Vehicle* ve= new Vehicle();
-									ve->name="vehicle";
-									if(save)
-										pNode->primitives.push_back(ve);
-
-									vehicle=vehicle->NextSiblingElement("vehicle");
-								}
-								while(patch){
-									save=true;
-									Patch* pa= new Patch();
-									pa->name="patch";
-									int order,partsU,partsV;
-									float x,y,z;
-									TiXmlElement *controlpoint = patch->FirstChildElement("controlpoint");
-
-									if(patch->QueryIntAttribute("order",&order)==TIXML_SUCCESS)
-										pa->order = order;
-									else
-									{
-										save = false;
-										printf("\tError reading order\n");
-									}
-									if(patch->QueryIntAttribute("partsU",&partsU)==TIXML_SUCCESS)
-										pa->partsU = partsU;
-									else
-									{
-										save = false;
-										printf("\tError reading partsU\n");
-									}
-									if(patch->QueryIntAttribute("partsV",&partsV)==TIXML_SUCCESS)
-										pa->partsV = partsV;
-									else
-									{
-										save = false;
-										printf("\tError reading partsV\n");
-									}
-
-									pa->compute=(string)patch->Attribute("compute");
-
-
-									if(controlpoint->QueryFloatAttribute("x",&x)==TIXML_SUCCESS)
-										pa->controlPoint[0] = x;
-									else
-									{
-										save = false;
-										printf("\tError reading controlpoint x\n");
-									}
-									if(controlpoint->QueryFloatAttribute("y",&y)==TIXML_SUCCESS)
-										pa->controlPoint[1] = y;
-									else
-									{
-										save = false;
-										printf("\tError reading controlpoint y\n");
-									}
-									if(controlpoint->QueryFloatAttribute("z",&z)==TIXML_SUCCESS)
-										pa->controlPoint[2] = z;
-									else
-									{
-										save = false;
-										printf("\tError reading controlpoint z\n");
-									}
-
-
-
-									if(save)
-										pNode->primitives.push_back(pa);
-
-									patch=patch->NextSiblingElement("patch");
-
-								}
-
-								while(rectangle){
-									save = true;
-									Rectangle* rect = new Rectangle();
-									rect->name = "rectangle";
-
-									char *pos=NULL;
-									float pos1,pos2;
-									pos=(char *) rectangle->Attribute("xy1");
-
-									if(pos && sscanf(pos,"%f %f",&pos1, &pos2)==2)
-									{
-										rect->xy1[0] = pos1;
-										rect->xy1[1] = pos2;
-									}
-									else
-									{
-										save = false;
-										printf("\tError reading rectangle\n");
-										break;
-									}
-
-									pos=(char *) rectangle->Attribute("xy2");
-
-									if(pos && sscanf(pos,"%f %f",&pos1, &pos2)==2)
-									{
-										rect->xy2[0] = pos1;
-										rect->xy2[1] = pos2;
-									}
-									else
-									{
-										save = false;
-										printf("\tError reading rectangle\n");
-										break;
-									}
-
-									if(save)
-										pNode->primitives.push_back(rect);
-
-									rectangle=rectangle->NextSiblingElement("rectangle");
-								}
-
-								while(triangle){
-									save = true;
-									Triangle* tri = new Triangle();
-									tri->name = "triangle";
-
-									char *pos=NULL;
-									float pos1,pos2, pos3;
-									pos=(char *) triangle->Attribute("xyz1");
-
-									if(pos && sscanf(pos,"%f %f %f",&pos1, &pos2, &pos3)==3)
-									{
-										tri->xyz1[0] = pos1;
-										tri->xyz1[1] = pos2;
-										tri->xyz1[2] = pos3;
-									}
-									else
-									{
-										save = false;
-										printf("\tError reading triangle\n");
-										break;
-									}
-
-									pos=(char *) triangle->Attribute("xyz2");
-
-									if(pos && sscanf(pos,"%f %f %f",&pos1, &pos2, &pos3)==3)
-									{
-										tri->xyz2[0] = pos1;
-										tri->xyz2[1] = pos2;
-										tri->xyz2[2] = pos3;
-									}
-									else
-									{
-										save = false;
-										printf("\tError reading triangle\n");
-										break;
-									}
-
-									pos=(char *) triangle->Attribute("xyz3");
-
-									if(pos && sscanf(pos,"%f %f %f",&pos1, &pos2, &pos3)==3)
-									{
-										tri->xyz3[0] = pos1;
-										tri->xyz3[1] = pos2;
-										tri->xyz3[2] = pos3;
-									}
-									else
-									{								
-										save = false;
-										printf("\tError reading triangle\n");
-										break;
-									}
-
-									if(save)
-										pNode->primitives.push_back(tri);
-
-									triangle=triangle->NextSiblingElement("triangle");
-								}
-
-								while(cylinder){
-									save = true;
-									Cylinder* cyl = new Cylinder(); 
-									cyl->name = "cylinder";
-
-									float base,top,height;
-									int slices, stacks;
-
-									if(cylinder->QueryFloatAttribute("base",&base)==TIXML_SUCCESS)
-										cyl->base = base;
-									else
-									{
-										save = false;
-										printf("\tError reading base\n");
-									}
-									if(cylinder->QueryFloatAttribute("top",&top)==TIXML_SUCCESS)
-										cyl->top = top;
-									else
-									{
-										save = false;
-										printf("\tError reading top\n");
-									}
-									if(cylinder->QueryFloatAttribute("height",&height)==TIXML_SUCCESS)
-										cyl->height = height;
-									else
-									{
-										save = false;
-										printf("\tError reading height\n");
-									}
-									if(cylinder->QueryIntAttribute("slices",&slices)==TIXML_SUCCESS)
-										cyl->slices = slices;
-									else
-									{
-										save = false;
-										printf("\tError reading slices\n");
-									}
-									if(cylinder->QueryIntAttribute("stacks",&stacks)==TIXML_SUCCESS)
-										cyl->stacks = stacks;
-									else
-									{
-										save = false;
-										printf("\tError reading stacks\n");
-									}
-
-									if(save)
-										pNode->primitives.push_back(cyl);
-									cylinder=cylinder->NextSiblingElement("cylinder");
-								}
-
-								while(sphere){
-									save = true;
-									Sphere* sph = new Sphere();
-									sph->name = "sphere";
-
-									float radius;
-									int slices, stacks;
-
-									if(sphere->QueryFloatAttribute("radius",&radius)==TIXML_SUCCESS)
-										sph->radius = radius;
-									else
-									{
-										save = false;
-										printf("\tError reading radius\n");
-									}
-									if(sphere->QueryIntAttribute("slices",&slices)==TIXML_SUCCESS)
-										sph->slices = slices;
-									else
-									{
-										save = false;
-										printf("\tError reading slices\n");
-									}
-									if(sphere->QueryIntAttribute("stacks",&stacks)==TIXML_SUCCESS)
-										sph->stacks = stacks;
-									else
-									{
-										save = false;
-										printf("\tError reading stacks\n");
-									}
-
-									if(save)
-										pNode->primitives.push_back(sph);
-									sphere=sphere->NextSiblingElement("sphere");
-								}
-								while(torus){
-									save = true;
-									Torus* tor = new Torus();
-									tor->name = "torus";
-
-									float inner, outer;
-									int slices, loops;
-
-									if(torus->QueryFloatAttribute("inner",&inner)==TIXML_SUCCESS)
-										tor->inner = inner;
-									else
-									{
-										save = false;
-										printf("\tError reading inner\n");
-									}
-									if(torus->QueryFloatAttribute("outer",&outer)==TIXML_SUCCESS)
-										tor->outer = outer;
-									else
-									{
-										save = false;
-										printf("\tError reading outer\n");
-									}
-									if(torus->QueryIntAttribute("slices",&slices)==TIXML_SUCCESS)
-										tor->slices = slices;
-									else
-									{
-										save = false;
-										printf("\tError reading slices\n");
-									}
-									if(torus->QueryIntAttribute("loops",&loops)==TIXML_SUCCESS)
-										tor->loops = loops;
-									else
-									{
-										save = false;
-										printf("\tError reading loops\n");
-									}
-
-									if(save)
-										pNode->primitives.push_back(tor);
-									torus=torus->NextSiblingElement("torus");
-								}
-
+								save = false;
+								printf("\tError reading rectangle\n");
+								break;
 							}
 
-							TiXmlElement *descendants = node->FirstChildElement("descendants");
-							if(descendants)
+							pos=(char *) rectangle->Attribute("xy2");
+
+							if(pos && sscanf(pos,"%f %f",&pos1, &pos2)==2)
 							{
-								TiXmlElement *nodeRef = descendants->FirstChildElement();
-								while(nodeRef)
-								{
-									if(nodeRef->Attribute("id"))
-										pNode->descendants.push_back(nodeRef->Attribute("id"));
-
-									nodeRef = nodeRef->NextSiblingElement();
-								}
+								rect->xy2[0] = pos1;
+								rect->xy2[1] = pos2;
+							}
+							else
+							{
+								save = false;
+								printf("\tError reading rectangle\n");
+								break;
 							}
 
+							if(save)
+								pNode->primitives.push_back(rect);
 
-							parser.graph->nodes[pNode->id] = pNode;
-							node = node->NextSiblingElement();
+							rectangle=rectangle->NextSiblingElement("rectangle");
+						}
+
+						while(triangle){
+							save = true;
+							Triangle* tri = new Triangle();
+							tri->name = "triangle";
+
+							char *pos=NULL;
+							float pos1,pos2, pos3;
+							pos=(char *) triangle->Attribute("xyz1");
+
+							if(pos && sscanf(pos,"%f %f %f",&pos1, &pos2, &pos3)==3)
+							{
+								tri->xyz1[0] = pos1;
+								tri->xyz1[1] = pos2;
+								tri->xyz1[2] = pos3;
+							}
+							else
+							{
+								save = false;
+								printf("\tError reading triangle\n");
+								break;
+							}
+
+							pos=(char *) triangle->Attribute("xyz2");
+
+							if(pos && sscanf(pos,"%f %f %f",&pos1, &pos2, &pos3)==3)
+							{
+								tri->xyz2[0] = pos1;
+								tri->xyz2[1] = pos2;
+								tri->xyz2[2] = pos3;
+							}
+							else
+							{
+								save = false;
+								printf("\tError reading triangle\n");
+								break;
+							}
+
+							pos=(char *) triangle->Attribute("xyz3");
+
+							if(pos && sscanf(pos,"%f %f %f",&pos1, &pos2, &pos3)==3)
+							{
+								tri->xyz3[0] = pos1;
+								tri->xyz3[1] = pos2;
+								tri->xyz3[2] = pos3;
+							}
+							else
+							{								
+								save = false;
+								printf("\tError reading triangle\n");
+								break;
+							}
+
+							if(save)
+								pNode->primitives.push_back(tri);
+
+							triangle=triangle->NextSiblingElement("triangle");
+						}
+
+						while(cylinder){
+							save = true;
+							Cylinder* cyl = new Cylinder(); 
+							cyl->name = "cylinder";
+
+							float base,top,height;
+							int slices, stacks;
+
+							if(cylinder->QueryFloatAttribute("base",&base)==TIXML_SUCCESS)
+								cyl->base = base;
+							else
+							{
+								save = false;
+								printf("\tError reading base\n");
+							}
+							if(cylinder->QueryFloatAttribute("top",&top)==TIXML_SUCCESS)
+								cyl->top = top;
+							else
+							{
+								save = false;
+								printf("\tError reading top\n");
+							}
+							if(cylinder->QueryFloatAttribute("height",&height)==TIXML_SUCCESS)
+								cyl->height = height;
+							else
+							{
+								save = false;
+								printf("\tError reading height\n");
+							}
+							if(cylinder->QueryIntAttribute("slices",&slices)==TIXML_SUCCESS)
+								cyl->slices = slices;
+							else
+							{
+								save = false;
+								printf("\tError reading slices\n");
+							}
+							if(cylinder->QueryIntAttribute("stacks",&stacks)==TIXML_SUCCESS)
+								cyl->stacks = stacks;
+							else
+							{
+								save = false;
+								printf("\tError reading stacks\n");
+							}
+
+							if(save)
+								pNode->primitives.push_back(cyl);
+							cylinder=cylinder->NextSiblingElement("cylinder");
+						}
+
+						while(sphere){
+							save = true;
+							Sphere* sph = new Sphere();
+							sph->name = "sphere";
+
+							float radius;
+							int slices, stacks;
+
+							if(sphere->QueryFloatAttribute("radius",&radius)==TIXML_SUCCESS)
+								sph->radius = radius;
+							else
+							{
+								save = false;
+								printf("\tError reading radius\n");
+							}
+							if(sphere->QueryIntAttribute("slices",&slices)==TIXML_SUCCESS)
+								sph->slices = slices;
+							else
+							{
+								save = false;
+								printf("\tError reading slices\n");
+							}
+							if(sphere->QueryIntAttribute("stacks",&stacks)==TIXML_SUCCESS)
+								sph->stacks = stacks;
+							else
+							{
+								save = false;
+								printf("\tError reading stacks\n");
+							}
+
+							if(save)
+								pNode->primitives.push_back(sph);
+							sphere=sphere->NextSiblingElement("sphere");
+						}
+						while(torus){
+							save = true;
+							Torus* tor = new Torus();
+							tor->name = "torus";
+
+							float inner, outer;
+							int slices, loops;
+
+							if(torus->QueryFloatAttribute("inner",&inner)==TIXML_SUCCESS)
+								tor->inner = inner;
+							else
+							{
+								save = false;
+								printf("\tError reading inner\n");
+							}
+							if(torus->QueryFloatAttribute("outer",&outer)==TIXML_SUCCESS)
+								tor->outer = outer;
+							else
+							{
+								save = false;
+								printf("\tError reading outer\n");
+							}
+							if(torus->QueryIntAttribute("slices",&slices)==TIXML_SUCCESS)
+								tor->slices = slices;
+							else
+							{
+								save = false;
+								printf("\tError reading slices\n");
+							}
+							if(torus->QueryIntAttribute("loops",&loops)==TIXML_SUCCESS)
+								tor->loops = loops;
+							else
+							{
+								save = false;
+								printf("\tError reading loops\n");
+							}
+
+							if(save)
+								pNode->primitives.push_back(tor);
+							torus=torus->NextSiblingElement("torus");
+						}
+
+					}
+
+					TiXmlElement *descendants = node->FirstChildElement("descendants");
+					if(descendants)
+					{
+						TiXmlElement *nodeRef = descendants->FirstChildElement();
+						while(nodeRef)
+						{
+							if(nodeRef->Attribute("id"))
+								pNode->descendants.push_back(nodeRef->Attribute("id"));
+
+							nodeRef = nodeRef->NextSiblingElement();
+						}
+					}
+
+
+					parser.graph->nodes[pNode->id] = pNode;
+					node = node->NextSiblingElement();
 
 				}
 			}
@@ -1309,9 +1327,23 @@ void ANFScene::init()
 	glEnable (GL_NORMALIZE);
 	glEnable (GL_TEXTURE_2D);
 
+
+	// Animation-related code
+	unsigned long updatePeriod=30;
+	setUpdatePeriod(updatePeriod);
+
 	if(parser.graph->nodes[parser.graph->rootID])
 		createDisplayList(parser.graph->rootID,parser.graph->nodes[parser.graph->rootID]->apperanceRef);
 
+	for(unsigned int i = 0; i < parser.animations.size();i++)
+		parser.animations[i]->doReset = true;
+
+}
+
+void ANFScene::update(unsigned long t)
+{
+	for(unsigned int i = 0; i < parser.animations.size();i++)
+		parser.animations[i]->update(t);
 }
 
 void ANFScene::display() 
@@ -1380,8 +1412,6 @@ void ANFScene::drawGraph(string nodeID,string app,bool init)
 			if(Cnode.apperanceRef != "" && Cnode.apperanceRef != "inherit")
 				parser.appearances[Cnode.apperanceRef]->appCGF->apply();
 
-
-
 			glMultMatrixf(Cnode.matrix);
 
 			for(int i = 0; i < Cnode.primitives.size(); i++)
@@ -1416,8 +1446,15 @@ void ANFScene::drawGraph(string nodeID,string app,bool init)
 					parser.appearances[Cnode.apperanceRef]->appCGF->apply();
 
 
-
-				glMultMatrixf(Cnode.matrix);
+				if(!Cnode.animation)
+				{
+					glMultMatrixf(Cnode.matrix);
+				}
+				else 
+					if(!Cnode.animation->valid)
+						glMultMatrixf(Cnode.matrix);
+					else
+						Cnode.animation->apply();
 
 				for(int i = 0; i < Cnode.primitives.size(); i++)
 				{
