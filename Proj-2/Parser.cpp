@@ -196,18 +196,43 @@ void LinearAnimation::apply(){
 
 void CircularAnimation::init(unsigned long t)
 {
+	startTime=t;
+	valid = true;
+	doReset=false;
 
+	velocity = rotAng/span;
+	radius = sqrt(center[0]*center[0]+center[1]*center[1]+center[2]*center[2]);
+	obj_translate = 0;
 }
 
 void CircularAnimation::update(unsigned long t)
 {
-
+	if (doReset){
+		init(t);
+	}
+		else
+		{
+			
+			double animT = (t-startTime)/1000.0;
+			if(animT >= span)
+			{
+				valid = false;
+				glPopMatrix();
+			}
+			else
+			{
+				//obj_translate = ;
+				obj_rotate = velocity*animT;
+			}
+		}
 }
 
 void CircularAnimation::apply(){
 	if(valid)
 	{
-
+		glTranslatef(center[0],center[1],center[2]);
+		glRotated(obj_rotate, 0,1,0);
+		glTranslatef(-center[0],-center[1],-center[2]);
 	}
 
 }

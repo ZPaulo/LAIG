@@ -697,18 +697,18 @@ ANFScene::ANFScene(char *filename)
 						anim->radius = 0.0;
 					}
 					if(animation->QueryFloatAttribute("startang",&startang)==TIXML_SUCCESS)
-						anim->startang = startang;
+						anim->startAng = startang;
 					else
 					{
 						printf("Value Missing\n");
-						anim->startang = 0.0;
+						anim->startAng = 0.0;
 					}
 					if(animation->QueryFloatAttribute("rotang",&rotang)==TIXML_SUCCESS)
-						anim->rotang = rotang;
+						anim->rotAng = rotang;
 					else
 					{
 						printf("Value Missing\n");
-						anim->rotang = 0.0;
+						anim->rotAng = 0.0;
 					}
 					parser.animations.push_back(anim);
 				}
@@ -1456,11 +1456,11 @@ void ANFScene::drawGraph(string nodeID,string app,bool init)
 				if(Cnode.apperanceRef != "" && Cnode.apperanceRef != "inherit")
 					parser.appearances[Cnode.apperanceRef]->appCGF->apply();
 
-				bool anim = false;
+				glMultMatrixf(Cnode.matrix);
 
 				if(Cnode.animIndex < Cnode.animation.size())
 				{
-					anim = true;
+					
 					Cnode.animation[Cnode.animIndex]->apply();
 					if(!Cnode.animation[Cnode.animIndex]->valid)
 					{
@@ -1473,9 +1473,7 @@ void ANFScene::drawGraph(string nodeID,string app,bool init)
 					}
 
 				}
-				if(!anim)
-					glMultMatrixf(Cnode.matrix);
-
+				
 
 
 				for(unsigned int i = 0; i < Cnode.primitives.size(); i++)

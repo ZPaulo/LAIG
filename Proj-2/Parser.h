@@ -114,6 +114,7 @@ public:
 private:
 	virtual void init(unsigned long t) = 0;
 	unsigned long startTime;
+	
 };
 
 class LinearAnimation : public Animation
@@ -125,18 +126,18 @@ public:
 
 private:
 	void init(unsigned long t);
-	float  obj_translate,velocity;
 	unsigned long startTime, controlTime;
 	unsigned int indexCP;
 	vector<vector<float>> directions;
 	float initX,initY,initZ, angle;
 	bool resetTime;
+	float  obj_translate,velocity;
 };
 
 class CircularAnimation : public Animation
 {
 	public:
-	float span,radius,startang,rotang,center[3];
+	float span,radius,startAng,rotAng,center[3];
 
 	void apply();
 	void update(unsigned long t);
@@ -144,6 +145,7 @@ class CircularAnimation : public Animation
 
 private:
 	void init(unsigned long t);
+	float  obj_translate,velocity,obj_rotate;
 	unsigned long startTime;
 	vector<vector<float>> directions;
 };
