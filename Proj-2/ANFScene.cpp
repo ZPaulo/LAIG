@@ -288,7 +288,7 @@ ANFScene::ANFScene(char *filename)
 		if(parser.initCam==""&&parser.cameras.size()>0)
 			parser.initCam=parser.cameras[0]->id;
 
-		for(int i = 0; i < parser.cameras.size();i++)
+		for(unsigned int i = 0; i < parser.cameras.size();i++)
 		{
 			if(parser.cameras[i]->id == parser.initCam)
 			{
@@ -615,29 +615,29 @@ ANFScene::ANFScene(char *filename)
 
 		while (animation)
 		{
-			string id;
 			char* center;
 			float span,startang,rotang,radius,b1,b2,b3;
-			Animation* anim= new Animation();
+			string id,type;
 			if(animation->Attribute("id"))
-				anim->id = animation->Attribute("id");
+				id = animation->Attribute("id");
 			else
 				printf("Missing ID.\n");
-			if(animation->QueryFloatAttribute("span",&span)==TIXML_SUCCESS)
-				anim->span = span;
-			else
+			if(animation->QueryFloatAttribute("span",&span)!=TIXML_SUCCESS)
 			{
 				printf("Value Missing\n");
-				anim->span = 0.0;
+				span = 0.0;
 			}
 			if(!animation->Attribute("type"))
 				printf("Missing type.\n");
 			else{
-				anim->type=animation->Attribute("type");
-				if(anim->type=="linear")
+				type=animation->Attribute("type");
+				if(type=="linear")
 				{
+					LinearAnimation* anim = new LinearAnimation();
+					anim->id = id;
+					anim->span = span;
 					TiXmlElement *controlpoint = animation->FirstChildElement("controlpoint");
-				
+
 					while(controlpoint){
 						vector<float>coord;
 
@@ -663,14 +663,18 @@ ANFScene::ANFScene(char *filename)
 							printf("Value Missing\n");
 							coord.push_back(0);
 						}
-					
+
 						anim->controlPoint.push_back(coord);
 						controlpoint = controlpoint->NextSiblingElement("controlpoint");
 					}
+					parser.animations.push_back(anim);
 
 				}
-				else if(anim->type=="circular")
+				else if(type=="circular")
 				{
+					CircularAnimation* anim = new CircularAnimation();
+					anim->id = id;
+					anim->span = span;
 					center=(char *) animation->Attribute("center");
 
 					if(center && sscanf(center,"%f %f %f",&b1, &b2, &b3)==3)
@@ -706,9 +710,9 @@ ANFScene::ANFScene(char *filename)
 						printf("Value Missing\n");
 						anim->rotang = 0.0;
 					}
+					parser.animations.push_back(anim);
 				}
 			}
-			parser.animations.push_back(anim);
 			animation = animation->NextSiblingElement();
 		}
 	}
@@ -827,17 +831,17 @@ ANFScene::ANFScene(char *filename)
 
 					TiXmlElement *animationr = node->FirstChildElement("animationref");
 					pNode->animationRef="";
+					pNode->animIndex = 0;
 					if(animationr)
 						pNode->animationRef=animationr->Attribute("id");
 
-					if(pNode->animationRef == "")
-						pNode->animation = NULL;
-					else
+					if(pNode->animationRef != "")
 					{
+
 						for(unsigned int i = 0; i < parser.animations.size(); i++)
 						{
 							if(parser.animations[i]->id == pNode->animationRef)
-								pNode->animation = parser.animations[i];
+								pNode->animation.push_back(parser.animations[i]);
 						}
 					}
 
@@ -1227,7 +1231,7 @@ void ANFScene::init()
 {
 
 	float globalAmbientLight[4];
-	for(int i = 0; i < 4 ;i++)
+	for(unsigned int i = 0; i < 4 ;i++)
 		globalAmbientLight[i] = parser.globals->lighting.ambient[i];
 
 	if(parser.globals->lighting.enabled)
@@ -1295,14 +1299,14 @@ void ANFScene::init()
 		CGFlight* light;
 		Light* recentlight = parser.lights[i];
 		float pos[4],dir[3], unit;
-		for(int i = 0; i< 3; i++)
+		for(unsigned int i = 0; i< 3; i++)
 		{
 			pos[i] = recentlight->pos[i];
 			dir[i]= recentlight->target[i] - pos[i];
 		}
 		pos[3] = 1;
 		unit = sqrt(dir[0]*dir[0]+dir[1]*dir[1]+dir[2]*dir[2]);
-		for(int i = 0; i< 3; i++)
+		for(unsigned int i = 0; i< 3; i++)
 		{
 			dir[i] = dir[i] / unit;
 		}
@@ -1387,95 +1391,106 @@ void ANFScene::display()
 
 	if(parser.graph->nodes[parser.graph->rootID])
 	{
-		drawGraph(parser.graph->rootID,parser.graph->nodes[parser.graph->rootID]->apperanceRef,false);
+		if(!parser.graph->nodes[parser.graph->rootID])
+			printf("Node not found!\n");
+		else
+			drawGraph(parser.graph->nodes[parser.graph->rootID],parser.graph->nodes[parser.graph->rootID]->apperanceRef,false);
 	}
 
 	glutSwapBuffers();
 }
 
 
-void ANFScene::drawGraph(string nodeID,string app,bool init)
+void ANFScene::drawGraph(Node *Cnode,string app,bool init)
 {
 
-	Node Cnode;
-	if(!parser.graph->nodes[nodeID])
-		printf("Node not found!\n");
+	
+
+	if(app != "" && app != "inherit")
+		if(Cnode->apperanceRef == "" || Cnode->apperanceRef == "inherit")
+			Cnode->apperanceRef = app;
+
+	if(init)
+	{
+		if(Cnode->apperanceRef != "" && Cnode->apperanceRef != "inherit")
+			parser.appearances[Cnode->apperanceRef]->appCGF->apply();
+
+		glMultMatrixf(Cnode->matrix);
+
+		for(unsigned int i = 0; i < Cnode->primitives.size(); i++)
+		{
+			if(Cnode->apperanceRef != "inherit" && Cnode->apperanceRef != "")
+			{
+				if(parser.appearances[Cnode->apperanceRef]->isTexApp)
+					(*Cnode->primitives[i]).draw(parser.textures[parser.appearances[Cnode->apperanceRef]->textureRef]);
+				else
+					(*Cnode->primitives[i]).draw();
+			}
+			else
+				(*Cnode->primitives[i]).draw();
+		}
+
+		for(unsigned int i = 0; i < Cnode->descendants.size(); i++)
+		{
+			glPushMatrix();
+			cout << Cnode->descendants[i] << endl;
+			drawGraph(parser.graph->nodes[Cnode->descendants[i]],Cnode->apperanceRef,init);
+			glPopMatrix();
+		}
+	}
 	else
 	{
-		Cnode = *parser.graph->nodes[nodeID];
-		if(app != "" && app != "inherit")
-			if(Cnode.apperanceRef == "" || Cnode.apperanceRef == "inherit")
-				Cnode.apperanceRef = app;
-
-		if(init)
+		if(Cnode->displayList)
 		{
-			if(Cnode.apperanceRef != "" && Cnode.apperanceRef != "inherit")
-				parser.appearances[Cnode.apperanceRef]->appCGF->apply();
-
-			glMultMatrixf(Cnode.matrix);
-
-			for(int i = 0; i < Cnode.primitives.size(); i++)
-			{
-				if(Cnode.apperanceRef != "inherit" && Cnode.apperanceRef != "")
-				{
-					if(parser.appearances[Cnode.apperanceRef]->isTexApp)
-						(*Cnode.primitives[i]).draw(parser.textures[parser.appearances[Cnode.apperanceRef]->textureRef]);
-					else
-						(*Cnode.primitives[i]).draw();
-				}
-				else
-					(*Cnode.primitives[i]).draw();
-			}
-
-			for(int i = 0; i < Cnode.descendants.size(); i++)
-			{
-				glPushMatrix();
-				drawGraph(Cnode.descendants[i],Cnode.apperanceRef,init);
-				glPopMatrix();
-			}
+			glCallList(Cnode->indexDList);
 		}
 		else
 		{
-			if(Cnode.displayList)
+			if(Cnode->apperanceRef != "" && Cnode->apperanceRef != "inherit")
+				parser.appearances[Cnode->apperanceRef]->appCGF->apply();
+
+			
+			cout <<Cnode->id << " " <<Cnode->apperanceRef << " " << parser.appearances[Cnode->apperanceRef]->textureRef<< endl;
+
+			bool anim;
+			if(Cnode->animIndex < Cnode->animation.size())
 			{
-				glCallList(Cnode.indexDList);
+				if(Cnode->animation[Cnode->animIndex]->valid)
+				{
+					Cnode->animation[Cnode->animIndex]->apply();
+				}
+				else
+					Cnode->animIndex++;
+				anim = true;
 			}
 			else
+				anim = false;
+
+			if(!anim)
+				glMultMatrixf(Cnode->matrix);
+
+
+
+			for(unsigned int i = 0; i < Cnode->primitives.size(); i++)
 			{
-				if(Cnode.apperanceRef != "" && Cnode.apperanceRef != "inherit")
-					parser.appearances[Cnode.apperanceRef]->appCGF->apply();
-
-
-				if(!Cnode.animation)
+				if(Cnode->apperanceRef != "inherit" && Cnode->apperanceRef != "")
 				{
-					glMultMatrixf(Cnode.matrix);
-				}
-				else 
-					if(!Cnode.animation->valid)
-						glMultMatrixf(Cnode.matrix);
+					if(parser.appearances[Cnode->apperanceRef]->isTexApp)
+						(*Cnode->primitives[i]).draw(parser.textures[parser.appearances[Cnode->apperanceRef]->textureRef]);
 					else
-						Cnode.animation->apply();
-
-				for(int i = 0; i < Cnode.primitives.size(); i++)
-				{
-					if(Cnode.apperanceRef != "inherit" && Cnode.apperanceRef != "")
-					{
-						if(parser.appearances[Cnode.apperanceRef]->isTexApp)
-							(*Cnode.primitives[i]).draw(parser.textures[parser.appearances[Cnode.apperanceRef]->textureRef]);
-						else
-							(*Cnode.primitives[i]).draw();
-					}
-					else
-						(*Cnode.primitives[i]).draw();
+						(*Cnode->primitives[i]).draw();
 				}
-				for(int i = 0; i < Cnode.descendants.size(); i++)
-				{
-					glPushMatrix();
-					drawGraph(Cnode.descendants[i],Cnode.apperanceRef,init);
-					glPopMatrix();
-				}
+				else
+					(*Cnode->primitives[i]).draw();
+			}
+			for(unsigned int i = 0; i < Cnode->descendants.size(); i++)
+			{
+				glPushMatrix();
+				drawGraph(parser.graph->nodes[Cnode->descendants[i]],Cnode->apperanceRef,init);
+				glPopMatrix();
 			}
 		}
+
 	}
 }
 
@@ -1493,12 +1508,12 @@ void ANFScene::createDisplayList(string nodeID,string app)
 			numberOfList = glGenLists(1);
 			glNewList(numberOfList,GL_COMPILE);
 			parser.graph->nodes[nodeID]->indexDList = numberOfList;
-			drawGraph(nodeID,Cnode.apperanceRef,true);
+			drawGraph(parser.graph->nodes[nodeID],Cnode.apperanceRef,true);
 			glEndList();
 		}
 		else
 		{
-			for(int i = 0; i < Cnode.descendants.size(); i++)
+			for(unsigned int i = 0; i < Cnode.descendants.size(); i++)
 			{
 				createDisplayList(Cnode.descendants[i],Cnode.apperanceRef);
 			}

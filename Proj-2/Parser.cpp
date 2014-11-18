@@ -38,7 +38,7 @@ Graph::~Graph()
 	nodes.clear();
 }
 
-void Animation::init(unsigned long t)
+void LinearAnimation::init(unsigned long t)
 {
 	startTime=t;
 	controlTime = t;
@@ -80,7 +80,7 @@ void Animation::init(unsigned long t)
 	glPushMatrix();
 }
 
-void Animation::update(unsigned long t)
+void LinearAnimation::update(unsigned long t)
 {
 	if (doReset)
 		init(t);
@@ -100,15 +100,12 @@ void Animation::update(unsigned long t)
 		}
 		else
 		{
-			//obj_rotate= START_ANGLE + animT* rotate_speed_ms;
-			//obj_radius= START_RADIUS + animT* radius_speed_ms;
-
 			obj_translate = velocity*animT;
 		}
 	}
 }
 
-void Animation::apply(){
+void LinearAnimation::apply(){
 	if(valid)
 	{
 		bool flag = false;
@@ -166,7 +163,12 @@ void Animation::apply(){
 
 			float product;
 			if(directions[indexCP+1][1] != 0)
-				product = directions[indexCP+1][2]/(abs(directions[indexCP+1][2]));
+			{
+				if(directions[indexCP+1][2] == 0)
+					product = 1;
+				else
+					product = directions[indexCP+1][2]/(abs(directions[indexCP+1][2]));
+			}
 			else
 				product = directions[indexCP+1][2];
 
@@ -186,6 +188,24 @@ void Animation::apply(){
 
 
 
+
+	}
+
+}
+
+void CircularAnimation::init(unsigned long t)
+{
+
+}
+
+void CircularAnimation::update(unsigned long t)
+{
+
+}
+
+void CircularAnimation::apply(){
+	if(valid)
+	{
 
 	}
 
