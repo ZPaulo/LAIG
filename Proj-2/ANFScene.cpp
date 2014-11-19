@@ -1243,6 +1243,12 @@ void ANFScene::resetAnimations()
 {
 	for(unsigned int i = 0; i < parser.animations.size();i++)
 		parser.animations[i]->doReset = true;
+
+
+	map<string,Node*>::iterator it = parser.graph->nodes.begin();
+	for(it;it != parser.graph->nodes.end();it++){
+		it->second->animIndex = 0;
+	}
 }
 
 

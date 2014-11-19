@@ -6,6 +6,7 @@ Parser::Parser()
 	graph = new Graph();
 	wind = 0;
 
+
 }
 
 
@@ -285,9 +286,6 @@ void Flag::bind(){
 void Flag::draw(){
 
 	bind();
-	glTranslated(2.5, 2, 0);
-	glRotated(90, 1, 0, 0);
-	glRotated(90, 0, 1, 0);
 
 	float controlPoints[4][3] =
 	{ { 0.5, 0, -0.5 }, { -0.5, 0, -0.5 },

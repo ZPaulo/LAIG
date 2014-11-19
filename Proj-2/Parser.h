@@ -1055,6 +1055,7 @@ public:
 	vector<Flag*> flags;
 	int wind;
 
+
 	Graph* graph;
 };
 
