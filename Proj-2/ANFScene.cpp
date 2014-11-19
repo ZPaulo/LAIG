@@ -1354,7 +1354,7 @@ void ANFScene::init()
 void ANFScene::update(unsigned long t)
 {
 	for(unsigned int i = 0; i < parser.animations.size();i++)
-		parser.animations[i]->update(t);
+			parser.animations[i]->update(t);
 }
 
 void ANFScene::display() 
@@ -1460,20 +1460,20 @@ void ANFScene::drawGraph(string nodeID,string app,bool init)
 
 				if(Cnode.animIndex < Cnode.animation.size())
 				{
-					
 					Cnode.animation[Cnode.animIndex]->apply();
+					cout << Cnode.animation[Cnode.animIndex]->id << endl;
 					if(!Cnode.animation[Cnode.animIndex]->valid)
 					{
 						parser.graph->nodes[nodeID]->animIndex++;
 						if(parser.graph->nodes[nodeID]->animIndex < Cnode.animation.size())
 						{
-							parser.animations[parser.graph->nodes[nodeID]->animIndex]->doReset = true;
-							parser.animations[parser.graph->nodes[nodeID]->animIndex]->valid= true;
+							parser.graph->nodes[nodeID]->animation[parser.graph->nodes[nodeID]->animIndex]->doReset = true;
+							parser.graph->nodes[nodeID]->animation[parser.graph->nodes[nodeID]->animIndex]->valid= true;
 						}
 					}
 
 				}
-				
+
 
 
 				for(unsigned int i = 0; i < Cnode.primitives.size(); i++)

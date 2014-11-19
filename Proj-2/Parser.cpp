@@ -42,6 +42,7 @@ void LinearAnimation::init(unsigned long t)
 {
 	startTime=t;
 	controlTime = t;
+
 	valid = true;
 	resetTime = false;
 	indexCP = 0;
@@ -216,6 +217,7 @@ void CircularAnimation::update(unsigned long t)
 			double animT = (t-startTime)/1000.0;
 			if(animT >= span)
 			{
+				cout << "stop\n";
 				valid = false;
 				glPopMatrix();
 			}

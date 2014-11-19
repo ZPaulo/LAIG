@@ -124,6 +124,7 @@ public:
 	void apply();
 	void update(unsigned long t);
 
+
 private:
 	void init(unsigned long t);
 	unsigned long startTime, controlTime;
@@ -141,7 +142,6 @@ class CircularAnimation : public Animation
 
 	void apply();
 	void update(unsigned long t);
-	bool valid,doReset;
 
 private:
 	void init(unsigned long t);
