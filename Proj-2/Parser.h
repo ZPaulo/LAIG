@@ -472,8 +472,48 @@ public:
 class Plane:public Primitives{
 public:
 	int parts;
-	void draw(){}
-	void draw(Texture *t){}
+	void draw(){
+		float controlPoints[4][3] =
+		{ { 0.5, 0, -0.5 }, { -0.5, 0, -0.5 },
+		{ 0.5, 0, 0.5 }, { -0.5, 0, 0.5 }
+		};
+		float controlPointsNorm[4][3] =
+		{ { 0, 1, 0 }, { 0, 1, 0 },
+		{ 0, 1, 0 }, { 0, 1, 0 }
+		};
+
+		glMap2f(GL_MAP2_VERTEX_3, 0, 1, 6, 2, 0, 1, 3, 2, &controlPoints[0][0]);
+		glMap2f(GL_MAP2_NORMAL, 0, 1, 6, 2, 0, 1, 3, 2, &controlPointsNorm[0][0]);
+
+		glEnable(GL_MAP2_VERTEX_3);
+		glEnable(GL_MAP2_NORMAL);
+		glMapGrid2f(parts, 0, 1, parts, 0, 1);
+	}
+	void draw(Texture *t){
+		float controlPoints[4][3] =
+		{ { 0.5, 0, -0.5 }, { -0.5, 0, -0.5 },
+		{ 0.5, 0, 0.5 }, {- 0.5, 0, 0.5 }
+		};
+		float controlPointsNorm[4][3] =
+		{ { 0, 1, 0 }, { 0, 1, 0 },
+		{ 0, 1, 0 }, { 0, 1, 0 }
+		};
+		float controlPointsText[4][2] =
+		{ { 1, 0 }, { 0, 0 },
+		{ 1, 1 }, { 0, 1 }
+		};
+
+		glMap2f(GL_MAP2_VERTEX_3, 0, 1, 6, 2, 0, 1, 3, 2, &controlPoints[0][0]);
+		glMap2f(GL_MAP2_NORMAL, 0, 1, 6, 2, 0, 1, 3, 2, &controlPointsNorm[0][0]);
+		glMap2f(GL_MAP2_TEXTURE_COORD_2, 0, 1, 4, 2, 0, 1, 2, 2, &controlPointsText[0][0]);
+
+		glEnable(GL_MAP2_VERTEX_3);
+		glEnable(GL_MAP2_NORMAL);
+		glEnable(GL_MAP2_TEXTURE_COORD_2);
+		glMapGrid2f(parts, 0, 1, parts, 0, 1);
+		glEvalMesh2(GL_FILL, 0, parts, 0, parts);
+
+	}
 };
 
 class Patch: public Primitives{
@@ -482,9 +522,49 @@ public:
 	int partsU;
 	int partsV;
 	string compute;
-	float controlPoint[3];
-	void draw(){}
-	void draw(Texture *t){}
+	vector<vector<GLfloat>> controlPoint;
+	void draw(){
+		int x = controlPoint.size();
+		glMap2f(GL_MAP2_VERTEX_3, 0, 1, (order + 1) * 3, x / (order + 1), 0, 1, 3, (order + 1), &controlPoint[0][0]);
+
+		glEnable(GL_MAP2_VERTEX_3);
+		glEnable(GL_AUTO_NORMAL);
+
+		glMapGrid2f(partsU, 0, 1, partsV, 0, 1);
+		if (compute == "point")
+			glEvalMesh2(GL_POINT, 0, partsU, 0, partsV);
+		else if (compute == "line")
+			glEvalMesh2(GL_LINE, 0, partsU, 0, partsV);
+		else
+			glEvalMesh2(GL_FILL, 0, partsU, 0, partsV);
+	}
+	void draw(Texture *t){
+		float controlPointsText[4][2] =
+		{ { 1, 0 }, { 0, 0 },
+		{ 1, 1 }, { 0, 1 }
+		};
+		
+		float controlPoint2[100][3];
+		for (int i = 0; i < controlPoint.size(); i++)
+			for (int f = 0; f < 3; f++)
+				controlPoint2[i][f] = controlPoint[i][f];
+
+		int x = controlPoint.size();
+
+		glMap2f(GL_MAP2_VERTEX_3, 0, 1, 3, (order + 1), 0, 1, (order + 1) * 3, x / (order + 1), &controlPoint2[0][0]);
+		glMap2f(GL_MAP2_TEXTURE_COORD_2, 0, 1, 4, 2, 0, 1, 2, 2, &controlPointsText[0][0]);
+		glEnable(GL_MAP2_VERTEX_3);
+		glEnable(GL_AUTO_NORMAL);
+		glEnable(GL_MAP2_TEXTURE_COORD_2);
+
+		glMapGrid2f(partsU, 0, 1, partsV, 0, 1);
+		if (compute == "point")
+			glEvalMesh2(GL_POINT, 0, partsU, 0, partsV);
+		else if (compute == "line")
+			glEvalMesh2(GL_LINE, 0, partsU, 0, partsV);
+		else
+			glEvalMesh2(GL_FILL, 0, partsU, 0, partsV);
+	}
 };
 
 class Flag: public Primitives{

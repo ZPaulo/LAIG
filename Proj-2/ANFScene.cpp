@@ -913,8 +913,7 @@ ANFScene::ANFScene(char *filename)
 							Patch* pa= new Patch();
 							pa->name="patch";
 							int order,partsU,partsV;
-							float x,y,z;
-							TiXmlElement *controlpoint = patch->FirstChildElement("controlpoint");
+							
 
 							if(patch->QueryIntAttribute("order",&order)==TIXML_SUCCESS)
 								pa->order = order;
@@ -939,33 +938,38 @@ ANFScene::ANFScene(char *filename)
 							}
 
 							pa->compute=(string)patch->Attribute("compute");
-
-
-							if(controlpoint->QueryFloatAttribute("x",&x)==TIXML_SUCCESS)
-								pa->controlPoint[0] = x;
-							else
-							{
-								save = false;
-								printf("\tError reading controlpoint x\n");
+							TiXmlElement *controlpoint = patch->FirstChildElement("controlpoint");
+							
+							while (controlpoint){
+								GLfloat x=0, y=0, z=0;
+								vector<GLfloat> inter1(3);
+								if (controlpoint->QueryFloatAttribute("x", &x) == TIXML_SUCCESS){
+									inter1[0] = x;
+								}
+								else
+								{
+									save = false;
+									printf("\tError reading controlpoint x\n");
+								}
+								if (controlpoint->QueryFloatAttribute("y", &y) == TIXML_SUCCESS)
+									inter1[1]=y;
+								else
+								{
+									save = false;
+									printf("\tError reading controlpoint y\n");
+								}
+								if (controlpoint->QueryFloatAttribute("z", &z) == TIXML_SUCCESS)
+									inter1[2]=z;
+								else
+								{
+									save = false;
+									printf("\tError reading controlpoint z\n");
+								}
+								pa->controlPoint.push_back(inter1);
+								
+								controlpoint=controlpoint->NextSiblingElement("controlpoint");
 							}
-							if(controlpoint->QueryFloatAttribute("y",&y)==TIXML_SUCCESS)
-								pa->controlPoint[1] = y;
-							else
-							{
-								save = false;
-								printf("\tError reading controlpoint y\n");
-							}
-							if(controlpoint->QueryFloatAttribute("z",&z)==TIXML_SUCCESS)
-								pa->controlPoint[2] = z;
-							else
-							{
-								save = false;
-								printf("\tError reading controlpoint z\n");
-							}
-
-
-
-							if(save)
+							if (save)
 								pNode->primitives.push_back(pa);
 
 							patch=patch->NextSiblingElement("patch");
