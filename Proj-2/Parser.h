@@ -104,21 +104,50 @@ public:
 class Animation
 {
 public:
-	string id,type;
-	float span,radius,startang,rotang,center[3];
+	string id;
+	float span;
+
+	virtual void apply() = 0;
+	virtual void update(unsigned long t) = 0;
+	bool valid,doReset;
+
+private:
+	virtual void init(unsigned long t) = 0;
+	unsigned long startTime;
+	
+};
+
+class LinearAnimation : public Animation
+{
+public:
 	vector<vector<float>> controlPoint;
+	void apply();
+	void update(unsigned long t);
+
+private:
+	void init(unsigned long t);
+	unsigned long startTime, controlTime;
+	unsigned int indexCP;
+	vector<vector<float>> directions;
+	float initX,initY,initZ, angle;
+	bool resetTime;
+	float  obj_translate,velocity;
+};
+
+class CircularAnimation : public Animation
+{
+	public:
+	float span,radius,startAng,rotAng,center[3];
+
 	void apply();
 	void update(unsigned long t);
 	bool valid,doReset;
 
 private:
 	void init(unsigned long t);
+	float  obj_translate,velocity,obj_rotate;
 	unsigned long startTime;
-	float  obj_radius, obj_rotate, obj_translate,velocity;
-	unsigned int indexCP;
 	vector<vector<float>> directions;
-	float initX,initY,initZ, angle;
-	
 };
 
 class Appearance
@@ -374,10 +403,10 @@ public:
 				dist = outer + inner * cosPhi;
 
 				glNormal3f(cosTheta1 * cosPhi, -sinTheta1  *cosPhi, sinPhi);
-					//glTexCoord3f(cosTheta1 * cosPhi, -sinTheta1  *cosPhi, sinPhi);
+				//glTexCoord3f(cosTheta1 * cosPhi, -sinTheta1  *cosPhi, sinPhi);
 				glVertex3f(cosTheta1  *dist, -sinTheta1  *dist, inner * sinPhi);
 				glNormal3f(cosTheta  *cosPhi, -sinTheta  *cosPhi, sinPhi);
-					//glTexCoord3f(cosTheta  *cosPhi, -sinTheta  *cosPhi, sinPhi);
+				//glTexCoord3f(cosTheta  *cosPhi, -sinTheta  *cosPhi, sinPhi);
 				glVertex3f(cosTheta  *dist, -sinTheta * dist,  inner * sinPhi);
 			}
 			glEnd();
@@ -421,7 +450,7 @@ public:
 				else
 					glTexCoord3f(cosTheta1 * (-cosPhi)*lenT, -sinTheta1  *cosPhi*heiT, -sinPhi);
 				glVertex3f(cosTheta1  *dist, -sinTheta1  *dist, inner * sinPhi);
-				
+
 				glNormal3f(cosTheta  *cosPhi, -sinTheta  *cosPhi, sinPhi);
 				//glTexCoord2f((j-1) / slices, ((j-1) / slices-i) / loops);
 				if(cosTheta * (cosPhi)>0)
@@ -429,7 +458,7 @@ public:
 				else
 					glTexCoord3f(cosTheta  *(-cosPhi)*lenT, -sinTheta  *cosPhi*heiT, -sinPhi);
 				glVertex3f(cosTheta  *dist, -sinTheta * dist,  inner * sinPhi);
-				
+
 
 			}
 			glEnd();
@@ -557,9 +586,9 @@ public:
 	string id;
 	float matrix[16];
 	string apperanceRef;
-	string animationRef;
-	Animation* animation;
+	vector<Animation*> animation;
 	vector<Primitives*> primitives;
+	int animIndex;
 	bool displayList;
 	int indexDList;
 	vector<string> descendants;
