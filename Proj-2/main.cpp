@@ -13,7 +13,7 @@ int main(int argc, char* argv[]){
 	try {
 		app.init(&argc, argv);
 
-		app.setScene(new ANFScene("LAIG_TP1_ANF_T4_G8_v21.anf"));
+		app.setScene(new ANFScene("LAIG_TP1_ANF_T4_G8_v2.anf"));
 		app.setInterface(new Interface());
 		app.run();
 	}

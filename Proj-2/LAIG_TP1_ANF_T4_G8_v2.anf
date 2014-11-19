@@ -48,11 +48,11 @@
     <!--   ver topico 'Notas finais' no enunciado sobre os parametros texlength_... -->
    
     <textures>       
-         <texture id="text_balcon" file="balcon.jpg" texlength_s="5" texlength_t="5" />
-		 <texture id="text_balcon_post" file="balcon_post.jpg" texlength_s="1" texlength_t="1" />
-		 <texture id="text_floor" file="floor.jpg" texlength_s="4" texlength_t="4" />
-		 <texture id="text_stool_post" file="stool_post.jpg" texlength_s="1" texlength_t="1" />
-		 <texture id="text_stool_top" file="11.jpg" texlength_s="1" texlength_t="1" />
+         <texture id="text_balcon" file="textures/robot4.png" texlength_s="0.1" texlength_t="0.5" />
+		 <texture id="text_balcon_post" file="textures/balcon_post.jpg" texlength_s="1" texlength_t="1" />
+		 <texture id="text_floor" file="textures/floor.jpg" texlength_s="4" texlength_t="4" />
+		 <texture id="text_stool_post" file="textures/stool_post.jpg" texlength_s="1" texlength_t="1" />
+		 <texture id="text_stool_top" file="textures/stool_top.jpg" texlength_s="1" texlength_t="1" />
     </textures>
 
     <!-- bloco de materiais; -->
@@ -66,39 +66,62 @@
                <component type="specular" value="1 1 1 1" />
         </appearance>
 		<appearance id="app_floor" shininess="45" textureref="text_floor" >
-               <component type="ambient" value="0.8 0.4 0.0 0.5" />
-               <component type="diffuse" value="0.8 0.4 0.0 0.5" />
-               <component type="specular" value="0.8 0.4 0.0 0.0.6" />
+               <component type="ambient" value="0.8 0.4 0.0 1" />
+               <component type="diffuse" value="0.8 0.4 0.0 1" />
+               <component type="specular" value="0.8 0.4 0.0 1" />
         </appearance>
 		<appearance id="app_balcon_top" shininess="45" textureref="text_balcon" >
-               <component type="ambient" value="0.8 0.4 0.0 0.5" />
-               <component type="diffuse" value="0.8 0.4 0.0 0.5" />
-               <component type="specular" value="0.8 0.4 0.0 0.6" />
+               <component type="ambient" value="0.8 0.4 0.0 1" />
+               <component type="diffuse" value="0.8 0.4 0.0 1" />
+               <component type="specular" value="0.8 0.4 0.0 1" />
         </appearance>
 		<appearance id="app_balcon_post" shininess="100" textureref="text_balcon_post" >
-               <component type="ambient" value="0.5 0.5 0.5 0.5" />
-               <component type="diffuse" value="0.7 0.7 0.7 0.4" />
+               <component type="ambient" value="0.5 0.5 0.5 1" />
+               <component type="diffuse" value="0.7 0.7 0.7 1" />
                <component type="specular" value="1 1 1 1" />
         </appearance>
 		<appearance id="app_stool_top" shininess="45" textureref="text_stool_top" >
-               <component type="ambient" value="0.8 0.4 0.0 0.5" />
-               <component type="diffuse" value="0.8 0.4 0.0 0.5" />
-               <component type="specular" value="0.8 0.4 0.0 0.6" />
+               <component type="ambient" value="0.8 0.4 0.0 1" />
+               <component type="diffuse" value="0.8 0.4 0.0 1" />
+               <component type="specular" value="0.8 0.4 0.0 1" />
         </appearance>
 		<appearance id="app_stool_post" shininess="100" textureref="text_stool_post" >
-               <component type="ambient" value="0.5 0.5 0.5 0.5" />
-               <component type="diffuse" value="0.7 0.7 0.7 0.4" />
+               <component type="ambient" value="0.5 0.5 0.5 1" />
+               <component type="diffuse" value="0.7 0.7 0.7 1" />
                <component type="specular" value="1 1 1 1" />
         </appearance>
     </appearances>
 
+    <animations>
+          <animation id="test" span="10" type="linear">
+                <controlpoint xx="0" yy="0" zz="0" />
+                <controlpoint xx="10" yy="0" zz="0" />
+                <controlpoint xx="10" yy="0" zz="10" />
+                <controlpoint xx="0" yy="0" zz="10" />
+                <controlpoint xx="0" yy="10" zz="0" />
+                 <controlpoint xx="0" yy="0" zz="0" />
+          </animation>
+
+          <animation id="test1" span="10" type="linear">
+                <controlpoint xx="0" yy="0" zz="0" />
+                <controlpoint xx="10" yy="0" zz="0" />
+                <controlpoint xx="10" yy="0" zz="10" />
+                <controlpoint xx="0" yy="0" zz="10" />
+                <controlpoint xx="0" yy="10" zz="0" />
+                 <controlpoint xx="15" yy="0" zz="5" />
+          </animation>
+
+          <animation id="rot" span="3" type="circular" center= "-5 0 0" radius = "5" startang="0" rotang = "70"/>
+    </animations>
     
    <graph rootid="bar">
-		<node id="bar">
+		<node id="bar" displaylist="false">
 			<transforms>
             </transforms>
           
 			<appearanceref id="default" />
+            
+
 
             <primitives>   
              </primitives>
@@ -111,44 +134,43 @@
         </node>
 		
 		<node id="floor">
-			<transforms>
-				<!-- <transform type="translate" to="15 0 5" /> -->
-				<!-- <transform type="scale" factor="30 0.5 20" /> -->
+            <transforms>
+                <!-- <transform type="translate" to="15 0 5" /> -->
+                <!-- <transform type="scale" factor="30 0.5 20" /> -->
             </transforms>
-			
-			<appearanceref id="app_stool_top" />
+            
+            <appearanceref id="app_stool_top" />
 
             <primitives>  
-            	<!-- <plane parts="10" /> -->
-            	  <patch order="3" partsU="10" partsV="10" compute="fill">
+                <patch order="3" partsU="10" partsV="10" compute="fill">
 
-           			 <controlpoint x="0" y="0" z="0" />
-           			 <controlpoint x="0" y="5" z="-2" />
-           			 <controlpoint x="0" y="-5" z="-4" />
-           			 <controlpoint x="0" y="0" z="-6" />
+                     <controlpoint x="0" y="0" z="0" />
+                     <controlpoint x="0" y="5" z="-2" />
+                     <controlpoint x="0" y="-5" z="-4" />
+                     <controlpoint x="0" y="0" z="-6" />
 
-           			 <controlpoint x="2" y="0" z="0" />
-           			 <controlpoint x="2" y="-5" z="-2" />
-           			 <controlpoint x="2" y="5" z="-4" />
-           			 <controlpoint x="2" y="0" z="-6" />
+                     <controlpoint x="2" y="0" z="0" />
+                     <controlpoint x="2" y="-5" z="-2" />
+                     <controlpoint x="2" y="5" z="-4" />
+                     <controlpoint x="2" y="0" z="-6" />
 
-           			 <controlpoint x="4" y="0" z="0" />
-           			 <controlpoint x="4" y="5" z="-2" />
-           			 <controlpoint x="4" y="-5" z="-4" />
-           			 <controlpoint x="4" y="0" z="-6" />
-   				 </patch>
+                     <controlpoint x="4" y="0" z="0" />
+                     <controlpoint x="4" y="5" z="-2" />
+                     <controlpoint x="4" y="-5" z="-4" />
+                     <controlpoint x="4" y="0" z="-6" />
+                 </patch>
              </primitives>
                
             <descendants>
-				<!--<noderef id="cube" /> -->
+                <!--<noderef id="cube" /> -->
             </descendants>
         </node>
 		
-		<node id="counter">
+		<node id="counter" displaylist="false">
 			<transforms>
             </transforms>
 			
-			<appearanceref id="default" />
+			<appearanceref id="app_balcon_top" />
 
             <primitives>  
              </primitives>
@@ -181,6 +203,8 @@
             </transforms>
 			
 			<appearanceref id="default" />
+             <animationref id="test1" />
+
 
             <primitives>  
              </primitives>
@@ -196,7 +220,7 @@
             </transforms>
 			
 			<appearanceref id="default" />
-
+             <animationref id="rot" />
             <primitives>  
              </primitives>
                
@@ -211,7 +235,6 @@
             </transforms>
 			
 			<appearanceref id="default" />
-
             <primitives>  
              </primitives>
                
@@ -274,7 +297,7 @@
 				<transform type="scale" factor="1 1 0.5" />
             </transforms>
 			
-			<appearanceref id="app_stool_post" />
+			<appearanceref id="app_balcon_top" />
 
             <primitives> 
 				<torus inner="0.5" outer="1.5" slices="20" loops="20" />
@@ -288,9 +311,10 @@
 			<transforms>
 				<transform type="translate" to="12.5 6 2.5" />
                 <transform type="scale" factor="15 1 5" />
+
             </transforms>
 			
-			<appearanceref id="app_balcon_top" />
+			<appearanceref id="inherit" />
 
             <primitives>  
              </primitives>
@@ -306,7 +330,7 @@
                 <transform type="scale" factor="1 6 1" />
             </transforms>
 			
-			<appearanceref id="app_balcon_post" />
+			<appearanceref id="inherit" />
 
             <primitives>  
              </primitives>
@@ -322,7 +346,7 @@
 				<transform type="translate" to="16.25 0 0" />
             </transforms>
 			
-			<appearanceref id="inherit" />
+			<appearanceref id="app_balcon_post" />
 
             <primitives>  
              </primitives>

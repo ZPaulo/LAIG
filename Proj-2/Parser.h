@@ -567,6 +567,7 @@ public:
 	}
 };
 
+
 class Flag: public Primitives{
 public:
 	string texture;
