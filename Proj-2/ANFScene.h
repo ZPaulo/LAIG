@@ -23,6 +23,7 @@ public:
 
 	vector<CGFlight*> lightsV;
 	void activateLight(int id,bool enable);
+	void resetAnimations();
 	
 protected:
 

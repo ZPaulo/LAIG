@@ -56,14 +56,29 @@ void Interface::initGUI()
 	addRadioButtonToGroup(drawList, "Fill");
 	addRadioButtonToGroup(drawList, "Line");
 	addRadioButtonToGroup(drawList, "Point");
+
+	addColumnToPanel(geral);
+	GLUI_Panel *windPanel = addPanelToPanel(geral,"Wind Value", 1);
+
+	GLUI_Spinner *spinner = addSpinnerToPanel(windPanel, "windScale",GLUI_SPINNER_INT,&(((ANFScene *) scene)->parser.wind),9);
+	
+	spinner->set_speed(0.5);
+	spinner->set_int_limits(0,10,GLUI_LIMIT_WRAP);
+
+	
+	GLUI_Panel *varPanel= addPanelToPanel(geral,"Animations", 1);
+	addButtonToPanel(varPanel, "Reset", 8);
 }
 
 void Interface::processGUI(GLUI_Control *ctrl)
 {
-	if(ctrl->user_id >=0)
+	if(ctrl->user_id >=0 && ctrl->user_id < 8)
 		if( ctrl->get_int_val() == 1)
 			((ANFScene *) scene)->activateLight(ctrl->user_id,true);
 		else 
 			((ANFScene *) scene)->activateLight(ctrl->user_id,false);
+	else
+		if(ctrl->user_id == 8)
+			((ANFScene *) scene)->resetAnimations();
 
 }

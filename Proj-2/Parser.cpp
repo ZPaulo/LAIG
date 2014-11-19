@@ -1,9 +1,10 @@
 #include "Parser.h"
-
+#include <iostream>
 Parser::Parser()
 {
 	globals = new Globals();
 	graph = new Graph();
+	wind = 0;
 
 }
 
@@ -90,6 +91,7 @@ void LinearAnimation::update(unsigned long t)
 		{
 			controlTime = t;
 			resetTime = false;
+			
 		}
 		double animT = (t-controlTime)/1000.0;
 		double checkSpan = (t-startTime)/1000.0;
@@ -157,28 +159,29 @@ void LinearAnimation::apply(){
 
 		if(flag)
 		{
-			initX = controlPoint[indexCP+1][0];
-			initY = controlPoint[indexCP+1][1];
-			initZ = controlPoint[indexCP+1][2];
+			indexCP++;
+			initX = controlPoint[indexCP][0];
+			initY = controlPoint[indexCP][1];
+			initZ = controlPoint[indexCP][2];
 
 			float product;
 
-			if(directions[indexCP+1][1] != 0)
+			if(directions[indexCP][1] != 0)
 			{
-				if(directions[indexCP+1][2] == 0)
+				if(directions[indexCP][2] == 0)
 					product = 1;
 				else
-					product = directions[indexCP+1][2]/(abs(directions[indexCP+1][2]));
+					product = directions[indexCP][2]/(abs(directions[indexCP][2]));
 			}
 			else
-				product = directions[indexCP+1][2];
+				product = directions[indexCP][2];
 
 			angle = acos(product)*180/PI;
-			if(directions[indexCP+1][0] < 0)
+			if(directions[indexCP][0] < 0)
 				angle *= -1;
 			resetTime = true;
 			obj_translate = 0;
-			indexCP++;
+			
 		}
 		else
 		{
@@ -186,10 +189,10 @@ void LinearAnimation::apply(){
 			glTranslatef(currX,currY,currZ);
 			glRotatef(angle,0,1,0);
 		}
-
-
-
-
+	}
+	else if(isSequence){
+		glTranslatef(controlPoint[controlPoint.size()-1][0],controlPoint[controlPoint.size()-1][1],controlPoint[controlPoint.size()-1][2]);
+		glRotatef(angle,0,1,0);
 	}
 
 }
@@ -234,6 +237,11 @@ void CircularAnimation::apply(){
 		glRotated(obj_rotate, 0,1,0);
 		glTranslatef(-center[0],-center[1],-center[2]);
 	}
+	else if(isSequence){
+		glTranslatef(center[0],center[1],center[2]);
+		glRotated(obj_rotate, 0,1,0);
+		glTranslatef(-center[0],-center[1],-center[2]);
+	}
 
 }
 
@@ -249,7 +257,7 @@ Flag::Flag(string text){
 	baseTexture=new CGFtexture(text);
 
 	Timer = glGetUniformLocation(id(), "timer");
-	windLoc = glGetUniformLocation(id(), "wind");
+	windLoc = glGetUniformLocation(id(), "windV");
 
 	baseImageLoc = glGetUniformLocation(id(), "baseImage");
 
@@ -262,6 +270,8 @@ void Flag::bind(){
 
 	// update uniforms
 	glUniform1f(Timer, elapsedTime);
+	glUniform1f(windLoc, wind);
+
 
 	// make sure the correct texture unit is active
 	glActiveTexture(GL_TEXTURE0);
@@ -304,7 +314,7 @@ void Flag::draw(){
 
 }
 
-void Flag::update(unsigned long t)
+void Flag::update(unsigned long t,int wind)
 {
 	if(elapsedTime==0){
 		startTime = t;
@@ -314,5 +324,9 @@ void Flag::update(unsigned long t)
 	{
 		elapsedTime = (t-startTime)/1000.0;
 	}
+
+
+	this->wind =(float) wind;
+	printf(" %d %d\n",this->wind,wind);
 
 }

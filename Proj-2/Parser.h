@@ -114,12 +114,12 @@ public:
 class Animation
 {
 public:
-	string id;
+	string id,type;
 	float span;
 
 	virtual void apply() = 0;
 	virtual void update(unsigned long t) = 0;
-	bool valid,doReset;
+	bool valid,doReset,isSequence;
 
 private:
 	virtual void init(unsigned long t) = 0;
@@ -592,12 +592,12 @@ public:
 class Flag: public Primitives, CGFshader{
 public:
 	string textureMap;
-	int wind;
+	float wind;
 	float parts;
 	Flag(string text);
 	Flag(){}
 	void bind();
-	void update(unsigned long t);
+	void update(unsigned long t,int wind);
 	void draw();
 	void draw(Texture *t){}
 
@@ -1053,6 +1053,7 @@ public:
 	map<string, Appearance*> appearances;
 	vector<Animation*> animations;
 	vector<Flag*> flags;
+	int wind;
 
 	Graph* graph;
 };

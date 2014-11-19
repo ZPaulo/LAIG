@@ -1274,7 +1274,11 @@ ANFScene::~ANFScene()
 	delete(doc);
 }
 
-//-------------------------------------------------------
+void ANFScene::resetAnimations()
+{
+	for(unsigned int i = 0; i < parser.animations.size();i++)
+		parser.animations[i]->doReset = true;
+}
 
 
 void ANFScene::init() 
@@ -1401,7 +1405,9 @@ void ANFScene::update(unsigned long t)
 		parser.animations[i]->update(t);
 
 	for(unsigned int i = 0; i < parser.flags.size();i++)
-		parser.flags[i]->update(t);
+	{
+		parser.flags[i]->update(t,parser.wind);
+	}
 
 }
 
@@ -1509,39 +1515,47 @@ void ANFScene::drawGraph(string nodeID,string app,bool init)
 
 				if(Cnode.animIndex < Cnode.animation.size())
 				{
+					if(Cnode.animIndex > 0)
+						Cnode.animation[Cnode.animIndex-1]->apply();
 					Cnode.animation[Cnode.animIndex]->apply();
 					if(!Cnode.animation[Cnode.animIndex]->valid)
 					{
 						parser.graph->nodes[nodeID]->animIndex++;
 						if(parser.graph->nodes[nodeID]->animIndex < Cnode.animation.size())
 						{
+							parser.graph->nodes[nodeID]->animation[parser.graph->nodes[nodeID]->animIndex-1]->isSequence = true;
 							parser.graph->nodes[nodeID]->animation[parser.graph->nodes[nodeID]->animIndex]->doReset = true;
 							parser.graph->nodes[nodeID]->animation[parser.graph->nodes[nodeID]->animIndex]->valid= true;
 						}
 					}
 
 				}
-
-
-
-				for(unsigned int i = 0; i < Cnode.primitives.size(); i++)
+				else if(Cnode.animIndex >1)
 				{
-					if(Cnode.apperanceRef != "inherit" && Cnode.apperanceRef != "")
+					for(unsigned int i = 0; i < Cnode.animation.size();i++)
+						parser.graph->nodes[nodeID]->animation[i]->isSequence = false;
+				}
+
+
+
+					for(unsigned int i = 0; i < Cnode.primitives.size(); i++)
 					{
-						if(parser.appearances[Cnode.apperanceRef]->isTexApp)
-							(*Cnode.primitives[i]).draw(parser.textures[parser.appearances[Cnode.apperanceRef]->textureRef]);
+						if(Cnode.apperanceRef != "inherit" && Cnode.apperanceRef != "")
+						{
+							if(parser.appearances[Cnode.apperanceRef]->isTexApp)
+								(*Cnode.primitives[i]).draw(parser.textures[parser.appearances[Cnode.apperanceRef]->textureRef]);
+							else
+								(*Cnode.primitives[i]).draw();
+						}
 						else
 							(*Cnode.primitives[i]).draw();
 					}
-					else
-						(*Cnode.primitives[i]).draw();
-				}
-				for(unsigned int i = 0; i < Cnode.descendants.size(); i++)
-				{
-					glPushMatrix();
-					drawGraph(Cnode.descendants[i],Cnode.apperanceRef,init);
-					glPopMatrix();
-				}
+					for(unsigned int i = 0; i < Cnode.descendants.size(); i++)
+					{
+						glPushMatrix();
+						drawGraph(Cnode.descendants[i],Cnode.apperanceRef,init);
+						glPopMatrix();
+					}
 			}
 		}
 	}
