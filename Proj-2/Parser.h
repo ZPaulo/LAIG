@@ -535,8 +535,14 @@ public:
 	vector<vector<GLfloat>> controlPoint;
 	void draw(){
 		glFrontFace(GL_CW);
+		float controlPoint2[100][3];
+		for (int i = 0; i < controlPoint.size(); i++)
+		for (int f = 0; f < 3; f++)
+			controlPoint2[i][f] = controlPoint[i][f];
+
 		int x = controlPoint.size();
-		glMap2f(GL_MAP2_VERTEX_3, 0, 1, (order + 1) * 3, x / (order + 1), 0, 1, 3, (order + 1), &controlPoint[0][0]);
+
+		glMap2f(GL_MAP2_VERTEX_3, 0, 1, 3, (order + 1), 0, 1, (order + 1) * 3, x / (order + 1), &controlPoint2[0][0]);
 
 		glEnable(GL_MAP2_VERTEX_3);
 		glEnable(GL_AUTO_NORMAL);
@@ -606,10 +612,406 @@ private:
 	
 };
 
-class Vehicle: public Primitives{
+class Vehicle : public Primitives{
 public:
-	void draw(){}
-	void draw(Texture *t){}
+	float angleF, angleB;
+	
+	float ambC[4], difC[4], specC[4], shininessC;
+	float ambF[4], difF[4], specF[4], shininessF;
+	float ambV[4], difV[4], specV[4], shininessV;
+	CGFappearance* metal;
+	CGFappearance* vidro;
+	CGFappearance* metal2;
+	CGFappearance* default1;
+
+	Vehicle(){
+		angleF = 45;
+		angleB = 45;
+		
+		ambC[0] = 0.3; ambC[1] = 0.3; ambC[2] = 0.3; ambC[3] = 1;
+		difC[0] = 0.3; difC[1] = 0.3; difC[2] = 0.3; difC[3] = 1;
+		specC[0] = 0.3; specC[1] = 0.3; specC[2] = 0.3; specC[3] = 1;
+		shininessC = 75.f;
+
+		ambV[0] = 0.6; ambV[1] = 0.6; ambV[2] = 0.6; ambV[3] = 1;
+		difV[0] = 0.6; difV[1] = 0.6; difV[2] = 0.6; difV[3] = 1;
+		specV[0] = 0.6; specV[1] = 0.6; specV[2] = 0.6; specV[3] = 1;
+		shininessV = 100.f;
+
+		ambF[0] = 0.4; ambF[1] = 0.4; ambF[2] = 0.4; ambF[3] = 1;
+		difF[0] = 0.4; difF[1] = 0.4; difF[2] = 0.4; difF[3] = 1;
+		specF[0] = 0.4; specF[1] = 0.4; specF[2] = 0.4; specF[3] = 1;
+		shininessF = 75.f;
+
+		metal = new CGFappearance(ambF, difF, specF, shininessF);
+		metal->setTexture("textures/gettodachopper.jpg");
+		metal2 = new CGFappearance(ambC, difC, specC, shininessC);
+		metal2->setTexture("textures/metal.jpg");
+		vidro = new CGFappearance(ambV, difV, specV, shininessV);
+		vidro->setTexture("textures/vidro.jpg");
+		default1 = new CGFappearance(ambF, difF, specF, shininessF);
+		
+
+	}
+	void pes(Cylinder cil){
+		glPushMatrix();
+		glScaled(0.5, 0.5, 5);
+		cil.draw();
+		glPopMatrix();
+
+		glPushMatrix();
+		glRotated(-90, 1, 0, 0);
+		glScaled(0.25, 0.25, 1);
+		glTranslated(0, -5, 0);
+		cil.draw();
+		glPopMatrix();
+
+		glPushMatrix();
+		glRotated(-90, 1, 0, 0);
+		glScaled(0.25, 0.25, 1);
+		glTranslated(0, -10, 0);
+		cil.draw();
+		glPopMatrix();
+	}
+	void connector(Cylinder cil){
+		glPushMatrix();
+		glScaled(0.5, 0.5, 5);
+		cil.draw();
+		glPopMatrix();
+
+		glPushMatrix();
+		glRotated(-90, 0, 1, 0);
+		glScaled(0.25, 0.25, 1);
+		glTranslated(1.5, 0, -0.15);
+		cil.draw();
+		glPopMatrix();
+	}
+	Patch front(Patch back){
+		back.controlPoint.clear();
+		vector<GLfloat> temp(3);
+		temp[0] = 2.0; temp[1] = 0.0; temp[2] = 0.0;
+		back.controlPoint.push_back(temp);
+		temp[0] = 2.0; temp[1] = 1.0; temp[2] = 0.0;
+		back.controlPoint.push_back(temp);
+		temp[0] = 1.12; temp[1] = 2.0; temp[2] = 0.0;
+		back.controlPoint.push_back(temp);
+
+		temp[0] = 1.0; temp[1] = 0.0; temp[2] = 6.0;
+		back.controlPoint.push_back(temp);
+		temp[0] = 1.0; temp[1] = 1.0; temp[2] = 4.0;
+		back.controlPoint.push_back(temp);
+		temp[0] = 1.0; temp[1] = 2.0; temp[2] = 0.0;
+		back.controlPoint.push_back(temp);
+
+		temp[0] = 0.0; temp[1] = 0.0; temp[2] = 0.0;
+		back.controlPoint.push_back(temp);
+		temp[0] = 0.0; temp[1] = 1.0; temp[2] = 0.0;
+		back.controlPoint.push_back(temp);
+		temp[0] = 0.82; temp[1] = 2.0; temp[2] = 0.0;
+		back.controlPoint.push_back(temp);
+		return back;
+	}
+	Patch base1(Patch back){
+		back.controlPoint.clear();
+		vector<GLfloat> temp(3);
+		temp[0] = 1.0; temp[1] = 0.0; temp[2] = 3.25;
+		back.controlPoint.push_back(temp);
+		temp[0] = 0.0; temp[1] = 0.0; temp[2] = 1.25;
+		back.controlPoint.push_back(temp);
+		temp[0] = 0.0; temp[1] = 0.0; temp[2] = 0.0;
+		back.controlPoint.push_back(temp);
+
+		temp[0] = 1.0; temp[1] = 0.0; temp[2] = 3.25;
+		back.controlPoint.push_back(temp);
+		temp[0] = 1.0; temp[1] = 0.0; temp[2] = 1.25;
+		back.controlPoint.push_back(temp);
+		temp[0] = 1.0; temp[1] = 0.0; temp[2] = 0.0;
+		back.controlPoint.push_back(temp);
+
+		temp[0] = 1.0; temp[1] = 0.0; temp[2] = 3.25;
+		back.controlPoint.push_back(temp);
+		temp[0] = 2.0; temp[1] = 0.0; temp[2] = 1.25;
+		back.controlPoint.push_back(temp);
+		temp[0] = 2.0; temp[1] = 0.0; temp[2] = 0.0;
+		back.controlPoint.push_back(temp);
+		return back;
+	}
+	Patch base2(Patch back){
+		back.order = 1;
+		back.controlPoint.clear();
+		vector<GLfloat> temp(3);
+		temp[0] = 0.0; temp[1] = 0.0; temp[2] = 0.0;
+		back.controlPoint.push_back(temp);
+		temp[0] = 0.0; temp[1] = 0.0; temp[2] = -4;
+		back.controlPoint.push_back(temp);
+
+		temp[0] = 2.0; temp[1] = 0.0; temp[2] = 0.0;
+		back.controlPoint.push_back(temp);
+		temp[0] = 2.0; temp[1] = 0.0; temp[2] = -4;
+		back.controlPoint.push_back(temp);
+		return back;
+	}
+	Patch backD(Patch back){
+		back.order = 2;
+		back.controlPoint.clear();
+		vector<GLfloat> temp(3);
+		temp[0] = 0.0; temp[1] = 0.0; temp[2] = -4.0;
+		back.controlPoint.push_back(temp);
+		temp[0] = 0.0; temp[1] = 1.0; temp[2] = -4.0;
+		back.controlPoint.push_back(temp);
+		temp[0] = 0.82; temp[1] = 2.0; temp[2] = -4.0;
+		back.controlPoint.push_back(temp);
+
+		temp[0] = 1.0; temp[1] = 0.0; temp[2] = -4.0;
+		back.controlPoint.push_back(temp);
+		temp[0] = 1.0; temp[1] = 1.0; temp[2] = -4.0;
+		back.controlPoint.push_back(temp);
+		temp[0] = 1.0; temp[1] = 2.0; temp[2] = -4.0;
+		back.controlPoint.push_back(temp);
+
+		temp[0] = 2.0; temp[1] = 0.0; temp[2] = -4.0;
+		back.controlPoint.push_back(temp);
+		temp[0] = 2.0; temp[1] = 1.0; temp[2] = -4.0;
+		back.controlPoint.push_back(temp);
+		temp[0] = 1.18; temp[1] = 2.0; temp[2] = -4.0;
+		back.controlPoint.push_back(temp);
+		return back;
+	}
+	Patch roof(Patch back){
+		back.order = 2;
+		back.controlPoint.clear();
+		vector<GLfloat> temp(3);
+
+		temp[0] = 2.0; temp[1] = 0.0; temp[2] = 0.0;
+		back.controlPoint.push_back(temp);
+		temp[0] = 2.0; temp[1] = 0.0; temp[2] = -2.0;
+		back.controlPoint.push_back(temp);
+		temp[0] = 2.0; temp[1] = 0.0; temp[2] = -4.0;
+		back.controlPoint.push_back(temp);
+
+		temp[0] = 2.0; temp[1] = 0.5; temp[2] = 0.0;
+		back.controlPoint.push_back(temp);
+		temp[0] = 2.0; temp[1] = 0.5; temp[2] = -2.0;
+		back.controlPoint.push_back(temp);
+		temp[0] = 2.0; temp[1] = 0.5; temp[2] = -4.0;
+		back.controlPoint.push_back(temp);
+
+		temp[0] = 1.0; temp[1] = 4.5; temp[2] = 0.0;
+		back.controlPoint.push_back(temp);
+		temp[0] = 1.0; temp[1] = 4.5; temp[2] = -2.0;
+		back.controlPoint.push_back(temp);
+		temp[0] = 1.0; temp[1] = 4.5; temp[2] = -4.0;
+		back.controlPoint.push_back(temp);
+
+		temp[0] = 0.0; temp[1] = 0.5; temp[2] = 0.0;
+		back.controlPoint.push_back(temp);
+		temp[0] = 0.0; temp[1] = 0.5; temp[2] = -2.0;
+		back.controlPoint.push_back(temp);
+		temp[0] = 0.0; temp[1] = 0.5; temp[2] = -4.0;
+		back.controlPoint.push_back(temp);
+
+		temp[0] = 0.0; temp[1] = 0.0; temp[2] = 0.0;
+		back.controlPoint.push_back(temp);
+		temp[0] = 0.0; temp[1] = 0.0; temp[2] = -2.0;
+		back.controlPoint.push_back(temp);
+		temp[0] = 0.0; temp[1] = 0.0; temp[2] = -4.0;
+		back.controlPoint.push_back(temp);
+		return back;
+	}
+	void cube(){
+		Rectangle rec1;
+		rec1.xy1[0] = 0; rec1.xy1[1] = 0; rec1.xy2[0] = 1; rec1.xy2[1] = 1;
+		glPushMatrix();
+		glPushMatrix();
+		glTranslated(-0.5,-0.5,0.5);
+		rec1.draw();
+		glPopMatrix();
+
+		glPushMatrix();
+		glTranslated(0.5, -0.5, -0.5);
+		glRotated(180, 0, 1, 0);
+		rec1.draw();
+		glPopMatrix();
+
+		glPushMatrix();
+		glTranslated(-0.5, 0.5, 0.5);
+		glRotated(-90, 1, 0, 0);
+		rec1.draw();
+		glPopMatrix();
+
+		glPushMatrix();
+		glTranslated(-0.5, -0.5, -0.5);
+		glRotated(90, 1, 0, 0);
+		rec1.draw();
+		glPopMatrix();
+
+		glPushMatrix();
+		glTranslated(0.5, -0.5, 0.5);
+		glRotated(90, 0, 1, 0);
+		rec1.draw();
+		glPopMatrix();
+
+		glPushMatrix();
+		glTranslated(-0.5, -0.5, -0.5);
+		glRotated(-90, 0, 1, 0);
+		rec1.draw();
+		glPopMatrix();
+		glPopMatrix();
+	}
+	void setangleF(){
+		glPushMatrix();
+		glRotated(angleF, 0, 1, 0);
+		glTranslated(0, 4.75, 0);
+		glScaled(1, 0.25, 15);
+		cube();
+		glPopMatrix();
+	}
+	void setangleB(){
+		glPushMatrix();
+		glTranslated(-1, 2.5, -9.7);
+		glRotated(angleB, 1, 0, 0);
+		glScaled(0.10, 0.5, 4);
+		cube();
+		glPopMatrix();
+	}
+	void draw(){
+		Cylinder cil;
+		cil.base = 0.5; cil.height = 1; cil.top = 0.5; cil.slices = 10; cil.stacks = 10;
+		metal2->setTextureWrap(GL_CLAMP, GL_CLAMP);
+		metal2->apply();
+		//Helice
+			//Frente
+		setangleF();
+			//Tras
+		setangleB();
+		//Pes
+			//Esq
+		glPushMatrix();
+		glTranslated(-1, 0, -1);
+		pes(cil);
+		glPopMatrix();
+			//Dir
+		glPushMatrix();
+		glTranslated(1, 0, -1);
+		pes(cil);
+		glPopMatrix();
+
+
+		glPushMatrix();
+		glTranslated(-1.5, 1, 3);
+		glScaled(1.5, 1.5, 1.5);
+		
+		vidro->setTextureWrap(GL_CLAMP, GL_CLAMP);
+		vidro->apply();
+		//Body
+		Patch back;
+		back.compute = "fill"; back.order = 2; back.partsU = 20; back.partsV = 20;
+			//Frente
+		back = front(back);
+		back.draw();
+
+		metal->setTextureWrap(GL_CLAMP, GL_CLAMP);
+		metal->apply();
+			//Base
+		back = base1(back);
+		back.draw();
+		back = base2(back);
+		back.draw();
+			//Tras
+		back = backD(back);
+		back.draw();
+			//cima
+		back = roof(back);
+		back.draw();
+
+		//Conector
+		glPushMatrix();
+		glTranslated(1, 1, -9);
+		connector(cil);
+		glPopMatrix();
+
+		metal2->setTextureWrap(GL_CLAMP, GL_CLAMP);
+		metal2->apply();
+				//Encaixe
+		glPushMatrix();
+		glRotated(-90, 1, 0, 0);
+		glTranslated(1, 2, 1.5);
+		glScaled(0.25, 0.25, 1);
+		cil.draw();
+		glPopMatrix();
+
+		glPopMatrix();
+		default1->apply();
+	}
+	void draw(Texture *t){
+		Cylinder cil;
+		cil.base = 0.5; cil.height = 1; cil.top = 0.5; cil.slices = 10; cil.stacks = 10;
+		metal2->setTextureWrap(GL_CLAMP, GL_CLAMP);
+		metal2->apply();
+		//Helice
+		//Frente
+		setangleF();
+		//Tras
+		setangleB();
+		//Pes
+		//Esq
+		glPushMatrix();
+		glTranslated(-1, 0, -1);
+		pes(cil);
+		glPopMatrix();
+		//Dir
+		glPushMatrix();
+		glTranslated(1, 0, -1);
+		pes(cil);
+		glPopMatrix();
+
+
+		glPushMatrix();
+		glTranslated(-1.5, 1, 3);
+		glScaled(1.5, 1.5, 1.5);
+
+		vidro->setTextureWrap(GL_CLAMP, GL_CLAMP);
+		vidro->apply();
+		//Body
+		Patch back;
+		back.compute = "fill"; back.order = 2; back.partsU = 20; back.partsV = 20;
+		//Frente
+		back = front(back);
+		back.draw();
+
+		metal->setTextureWrap(GL_CLAMP, GL_CLAMP);
+		metal->apply();
+		//Base
+		back = base1(back);
+		back.draw();
+		back = base2(back);
+		back.draw();
+		//Tras
+		back = backD(back);
+		back.draw();
+		//cima
+		back = roof(back);
+		back.draw();
+
+		//Conector
+		glPushMatrix();
+		glTranslated(1, 1, -9);
+		connector(cil);
+		glPopMatrix();
+
+		metal2->setTextureWrap(GL_CLAMP, GL_CLAMP);
+		metal2->apply();
+		//Encaixe
+		glPushMatrix();
+		glRotated(-90, 1, 0, 0);
+		glTranslated(1, 2, 1.5);
+		glScaled(0.25, 0.25, 1);
+		cil.draw();
+		glPopMatrix();
+
+		glPopMatrix();
+		default1->apply();
+	}
 };
 
 class Node

@@ -905,6 +905,40 @@ ANFScene::ANFScene(char *filename)
 							save=true;
 							Vehicle* ve= new Vehicle();
 							ve->name="vehicle";
+							LinearAnimation *lin1 = new LinearAnimation(); 
+							LinearAnimation *lin2 = new LinearAnimation();
+							CircularAnimation *cir1 = new CircularAnimation();
+							lin1->id = "lin1Vehicle";
+							lin2->id = "lin2Vehicle";
+							lin1->span = 10;
+							lin2->span = 20;
+							vector<float> temp; 
+							temp.push_back(0); temp.push_back(20); temp.push_back(0);
+							lin1->controlPoint.push_back(temp); temp.clear();
+							temp.push_back(30); temp.push_back(20); temp.push_back(0);
+							lin1->controlPoint.push_back(temp); temp.clear();
+							
+							temp.push_back(30); temp.push_back(20); temp.push_back(0);
+							lin2->controlPoint.push_back(temp); temp.clear();
+							temp.push_back(30); temp.push_back(20); temp.push_back(30);
+							lin2->controlPoint.push_back(temp); temp.clear();
+							temp.push_back(0); temp.push_back(20); temp.push_back(0);
+							lin2->controlPoint.push_back(temp); temp.clear();
+							
+							cir1->center[0] = 15; cir1->center[1] = 20; cir1->center[2] = 15;
+							cir1->id = "cir1Vehicle";
+							cir1->radius = 15;
+							cir1->rotAng = 360;
+							cir1->span = 10;
+							cir1->startAng=0;
+						
+							parser.animations.push_back(lin1);
+							parser.animations.push_back(lin2);
+							parser.animations.push_back(cir1);
+							pNode->animation.push_back(lin1);
+							pNode->animation.push_back(lin2);
+							pNode->animation.push_back(cir1);
+
 							if(save)
 								pNode->primitives.push_back(ve);
 
