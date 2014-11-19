@@ -93,6 +93,20 @@
     </appearances>
 
     <animations>
+     	 <animation id="helilin1" span="10" type="linear">
+                <controlpoint xx="0" yy="0" zz="0" />
+                <controlpoint xx="0" yy="20" zz="0" />
+                <controlpoint xx="30" yy="20" zz="0" />
+          </animation>  
+
+          <animation id="helilin2" span="20" type="linear">
+                <controlpoint xx="30" yy="20" zz="0" />
+                <controlpoint xx="30" yy="20" zz="30" />
+                <controlpoint xx="0" yy="20" zz="0" />
+          </animation>   
+
+          <animation id="helicir1" span="5" type="circular" center= "15 20 15" radius = "15" startang="0" rotang = "360"/>
+
           <animation id="test" span="10" type="linear">
                 <controlpoint xx="0" yy="0" zz="0" />
                 <controlpoint xx="10" yy="0" zz="0" />
@@ -131,37 +145,23 @@
 				<noderef id="counter" />
 				<noderef id="stools" />
 				<noderef id="carro" />
+				<noderef id="patchtest" />
             </descendants>
         </node>
 
-<node id="carro" displaylist="false">
+
+		<node id="patchtest" displaylist="false">
 			<transforms>
+			<transform type="rotate" axis="x" angle="-90" />
             </transforms>
           
-			<appearanceref id="default" />
-            
+			<appearanceref id="app_floor" />
 
 
             <primitives>   
-            <vehicle />
-             </primitives>
-               
-            <descendants>
-            </descendants>
-        </node>
-     
-		
-		<node id="floor">
-            <transforms>
-               
-            </transforms>
-            
-            <appearanceref id="app_stool_top" />
 
-            <primitives>  
-                
 
-                    <patch order="2" partsU="20" partsV="20" compute="fill">
+            <patch order="2" partsU="20" partsV="20" compute="fill">
             <controlpoint x="2" y="0" z="0" />
             <controlpoint x="2" y="1" z="0" />
             <controlpoint x="2" y="2" z="0" />
@@ -175,7 +175,43 @@
              </primitives>
                
             <descendants>
-                <!--<noderef id="cube" /> -->
+            </descendants>
+        </node>
+
+<node id="carro" displaylist="false">
+			<transforms>
+            </transforms>
+          
+			<appearanceref id="default" />
+			
+             <animationref id="helilin1" />
+              <animationref id="helilin2" />
+               <animationref id="helicir1" />
+              s
+
+            <primitives>   
+            <vehicle />
+             </primitives>
+               
+            <descendants>
+            </descendants>
+        </node>
+     
+		
+		<node id="floor">
+            <transforms>
+              <transform type="translate" to="15 0 5" />
+				<transform type="scale" factor="30 0.5 20" />
+            </transforms>
+            
+            <appearanceref id="app_floor" />
+
+            <primitives>  
+             
+             </primitives>
+               
+            <descendants>
+                <noderef id="cube" />
             </descendants>
         </node>
 		
