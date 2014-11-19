@@ -1,33 +1,17 @@
 <anf>
 
-    <!-- bloco de configuracoes globais -->
-    <!-- a declaracao dos componentes deste bloco e' obrigatoria --> 
     <globals>
-        <!-- Parametros de desenho -->
-        <!-- Valores para mode: "fill" , "line", "point" -->
-        <!-- Valores para shading: "flat", "gouraud" ) -->
         <drawing mode="fill" shading="flat" background="0.2 0.0 0.2 0.9" />
- 
-        <!-- Parametros de culling -->
-        <!-- Valores para cullface: "none", "back" , "front" ou "both" -->
-        <!-- Valores para cullorder : "ccw" ou "cw" -->
         <culling face="back" order="ccw" />
- 
-        <!-- Parametros de iluminacao; seguem os parametros do OpenGL  -->
         <lighting doublesided="true" local="true" enabled="true" ambient="0.2 0.6 1.0 0.7" />
- 
-    </globals>
+	</globals>
     
-    <!-- bloco de camaras: o atributo "initial" identifica a camara/ponto de vista inicial, que tem de existir -->
-
     <cameras initial="C1" >
-        <!-- tem de existir, pelo menos uma camara dos tipos seguintes (perspective ou ortho) -->
-        <!-- no caso da camara ortho, o atributo "direction" define o eixo segundo o qual se efetua a projecao -->
 
         <perspective id="C1" near="0.0" far="70.0" angle="90.0" pos="12.5 10 12" target="12.5 5 5" />
 		<perspective id="C2" near="0.0" far="70.0" angle="140.0" pos="25 10 12" target="12.5 5 5" />
-        <ortho id="C3" direction="x" near="0.0" far="70.0" left="0.5" right="30.0" top="20" bottom="0.5" />
-		<ortho id="C4" direction="y" near="0.0" far="70.0" left="0.5" right="30.0" top="20.0" bottom="0.5" />
+        <ortho id="C3" direction="x" near="-20.0" far="20.0" left="-10" right="10" top="10" bottom="-10" />
+		<ortho id="C4" direction="y" near="-60.0" far="70.0" left="0" right="15" top="5.0" bottom="-15" />
 
     </cameras>
   
@@ -42,7 +26,6 @@
                <component type="specular" value="1.0 0.8 0.0 0.4" />
 
             </light>
-	<lights>
             <!-- Deve existir pelo menos uma luz declarada -->
             <!-- Atributo "marker" indica se deve ou nao desenhar-se uma esfera representativa -->
             <light id="L2" type="omni" enabled="true" marker="false" pos="17.5 20 5" >
@@ -63,12 +46,13 @@
 
     <!-- bloco de texturas. Este bloco tem de existir mas pode estar vazio, se nao forem usadas texturas -->
     <!--   ver topico 'Notas finais' no enunciado sobre os parametros texlength_... -->
+   
     <textures>       
          <texture id="text_balcon" file="balcon.jpg" texlength_s="5" texlength_t="5" />
 		 <texture id="text_balcon_post" file="balcon_post.jpg" texlength_s="1" texlength_t="1" />
 		 <texture id="text_floor" file="floor.jpg" texlength_s="4" texlength_t="4" />
 		 <texture id="text_stool_post" file="stool_post.jpg" texlength_s="1" texlength_t="1" />
-		 <texture id="text_stool_top" file="stool_top.jpg" texlength_s="1" texlength_t="1" />
+		 <texture id="text_stool_top" file="11.jpg" texlength_s="1" texlength_t="1" />
     </textures>
 
     <!-- bloco de materiais; -->
@@ -109,7 +93,7 @@
     </appearances>
 
     
-    <graph rootid="bar">
+   <graph rootid="bar">
 		<node id="bar">
 			<transforms>
             </transforms>
@@ -128,17 +112,35 @@
 		
 		<node id="floor">
 			<transforms>
-				<transform type="translate" to="15 0 5" />
-                <transform type="scale" factor="30 0.5 5" />
+				<!-- <transform type="translate" to="15 0 5" /> -->
+				<!-- <transform type="scale" factor="30 0.5 20" /> -->
             </transforms>
 			
-			<appearanceref id="app_floor" />
+			<appearanceref id="app_stool_top" />
 
             <primitives>  
+            	<!-- <plane parts="10" /> -->
+            	  <patch order="3" partsU="10" partsV="10" compute="fill">
+
+           			 <controlpoint x="0" y="0" z="0" />
+           			 <controlpoint x="0" y="5" z="-2" />
+           			 <controlpoint x="0" y="-5" z="-4" />
+           			 <controlpoint x="0" y="0" z="-6" />
+
+           			 <controlpoint x="2" y="0" z="0" />
+           			 <controlpoint x="2" y="-5" z="-2" />
+           			 <controlpoint x="2" y="5" z="-4" />
+           			 <controlpoint x="2" y="0" z="-6" />
+
+           			 <controlpoint x="4" y="0" z="0" />
+           			 <controlpoint x="4" y="5" z="-2" />
+           			 <controlpoint x="4" y="-5" z="-4" />
+           			 <controlpoint x="4" y="0" z="-6" />
+   				 </patch>
              </primitives>
                
             <descendants>
-				<noderef id="cube" />
+				<!--<noderef id="cube" /> -->
             </descendants>
         </node>
 		
@@ -237,7 +239,7 @@
 		<node id="stool_top">
 			<transforms>
 				<transform type="translate" to="0 3 0" />
-				<transform type="scale" factor="4 1 4" />
+				<transform type="scale" factor="2 1 2" />
             </transforms>
 			
 			<appearanceref id="app_stool_top" />
@@ -267,14 +269,15 @@
 		
 		<node id="stool_foot">
 			<transforms>
-				<transform type="translate" to="0 2 0" />
-				<transform type="scale" factor="2 1 2" />
+				<transform type="rotate" axis="x" angle="90" />
+				<transform type="translate" to="0 0 -1.5" />
+				<transform type="scale" factor="1 1 0.5" />
             </transforms>
 			
 			<appearanceref id="app_stool_post" />
 
             <primitives> 
-				<torus inner="2" outer="3" slices="20" loops="20" />
+				<torus inner="0.5" outer="1.5" slices="20" loops="20" />
              </primitives>
                
             <descendants>
@@ -283,7 +286,7 @@
 		
 		<node id="countertop">
 			<transforms>
-				<transform type="translate" to="17.5 9 5" />
+				<transform type="translate" to="12.5 6 2.5" />
                 <transform type="scale" factor="15 1 5" />
             </transforms>
 			
@@ -299,8 +302,8 @@
 		
 		<node id="counterpost">
 			<transforms>
-				<transform type="translate" to="8.75 0 5" />
-                <transform type="scale" factor="2 1 2" />
+				<transform type="translate" to="0 0 2" />
+                <transform type="scale" factor="1 6 1" />
             </transforms>
 			
 			<appearanceref id="app_balcon_post" />
@@ -316,7 +319,22 @@
 		
 		<node id="cil1">
 			<transforms>
-				<transform type="translate" to="7.5 0 0" />
+				<transform type="translate" to="16.25 0 0" />
+            </transforms>
+			
+			<appearanceref id="inherit" />
+
+            <primitives>  
+             </primitives>
+               
+            <descendants>
+				<noderef id="cil" />
+            </descendants>
+        </node>
+		
+		<node id="cil2">
+			<transforms>
+				<transform type="translate" to="8.75 0 0" />
             </transforms>
 			
 			<appearanceref id="inherit" />
@@ -331,12 +349,13 @@
 		
 		<node id="cil">
 			<transforms>
+				<transform type="rotate" axis="x" angle="-90" />
             </transforms>
 			
 			<appearanceref id="inherit" />
 
             <primitives>  
-				<cylinder base="0" top="1" height="1" slices="20" stacks="20" />
+				<cylinder base="1" top="1" height="1" slices="20" stacks="20" />
              </primitives>
                
             <descendants>
@@ -364,7 +383,7 @@
 		
 		<node id="r1">
 			<transforms>
-				<transform type="translate" to="-0.5 -0.5 -0.5" />
+				<transform type="translate" to="-0.5 -0.5 0.5" />
             </transforms>
 			
 			<appearanceref id="inherit" />
@@ -379,7 +398,8 @@
 		
 		<node id="r2">
 			<transforms>
-				<transform type="translate" to="-0.5 -0.5 0.5" />
+				<transform type="translate" to="0.5 -0.5 -0.5" />
+				<transform type="rotate" axis="y" angle="180" />	
             </transforms>
 			
 			<appearanceref id="inherit" />
@@ -394,8 +414,8 @@
 		
 		<node id="r3">
 			<transforms>
-				<transform type="rotate" axis="x" angle="-90" />
 				<transform type="translate" to="-0.5 0.5 0.5" />
+				<transform type="rotate" axis="x" angle="-90" />
             </transforms>
 			
 			<appearanceref id="inherit" />
@@ -410,8 +430,8 @@
 		
 		<node id="r4">
 			<transforms>
-				<transform type="rotate" axis="x" angle="90" />
 				<transform type="translate" to="-0.5 -0.5 -0.5" />
+				<transform type="rotate" axis="x" angle="90" />
             </transforms>
 			
 			<appearanceref id="inherit" />
@@ -426,8 +446,8 @@
 		
 		<node id="r5">
 			<transforms>
-				<transform type="rotate" axis="y" angle="90" />
 				<transform type="translate" to="0.5 -0.5 0.5" />
+				<transform type="rotate" axis="y" angle="90" />
             </transforms>
 			
 			<appearanceref id="inherit" />
@@ -442,8 +462,8 @@
 		
 		<node id="r6">
 			<transforms>
-				<transform type="rotate" axis="y" angle="-90" />
 				<transform type="translate" to="-0.5 -0.5 -0.5" />
+				<transform type="rotate" axis="y" angle="-90" />
             </transforms>
 			
 			<appearanceref id="inherit" />
