@@ -588,42 +588,42 @@ public:
 class Vehicle : public Primitives{
 public:
 	float angleF, angleB;
-	/*
-	float ambC[3], difC[3], specC[3], shininessC;
-	float ambF[3], difF[3], specF[3], shininessF;
-	float ambV[3], difV[3], specV[3], shininessV;
+	
+	float ambC[4], difC[4], specC[4], shininessC;
+	float ambF[4], difF[4], specF[4], shininessF;
+	float ambV[4], difV[4], specV[4], shininessV;
 	CGFappearance* metal;
 	CGFappearance* vidro;
 	CGFappearance* metal2;
 	CGFappearance* default1;
-	*/
+
 	Vehicle(){
 		angleF = 45;
 		angleB = 45;
-		/*
-		ambC[0] = 0.3; ambC[1] = 0.3; ambC[2] = 0.3; 
-		difC[0] = 0.3; difC[1] = 0.3; difC[2] = 0.3;
-		specC[0] = 0.3; specC[1] = 0.3; specC[2] = 0.3;
+		
+		ambC[0] = 0.3; ambC[1] = 0.3; ambC[2] = 0.3; ambC[3] = 1;
+		difC[0] = 0.3; difC[1] = 0.3; difC[2] = 0.3; difC[3] = 1;
+		specC[0] = 0.3; specC[1] = 0.3; specC[2] = 0.3; specC[3] = 1;
 		shininessC = 75.f;
 
-		ambV[0] = 0.6; ambV[1] = 0.6; ambV[2] = 0.6;
-		difV[0] = 0.6; difV[1] = 0.6; difV[2] = 0.6;
-		specV[0] = 0.6; specV[1] = 0.6; specV[2] = 0.6;
+		ambV[0] = 0.6; ambV[1] = 0.6; ambV[2] = 0.6; ambV[3] = 1;
+		difV[0] = 0.6; difV[1] = 0.6; difV[2] = 0.6; difV[3] = 1;
+		specV[0] = 0.6; specV[1] = 0.6; specV[2] = 0.6; specV[3] = 1;
 		shininessV = 100.f;
 
-		ambF[0] = 0.4; ambF[1] = 0.4; ambF[2] = 0.4;
-		difF[0] = 0.4; difF[1] = 0.4; difF[2] = 0.4;
-		specF[0] = 0.4; specF[1] = 0.4; specF[2] = 0.4;
+		ambF[0] = 0.4; ambF[1] = 0.4; ambF[2] = 0.4; ambF[3] = 1;
+		difF[0] = 0.4; difF[1] = 0.4; difF[2] = 0.4; difF[3] = 1;
+		specF[0] = 0.4; specF[1] = 0.4; specF[2] = 0.4; specF[3] = 1;
 		shininessF = 75.f;
 
 		metal = new CGFappearance(ambF, difF, specF, shininessF);
-		metal->setTexture("textures/gettodachopper.jgp");
+		metal->setTexture("textures/gettodachopper.jpg");
 		metal2 = new CGFappearance(ambC, difC, specC, shininessC);
 		metal2->setTexture("textures/metal.jpg");
 		vidro = new CGFappearance(ambV, difV, specV, shininessV);
 		vidro->setTexture("textures/vidro.jpg");
 		default1 = new CGFappearance(ambF, difF, specF, shininessF);
-		*/
+		
 
 	}
 	void pes(Cylinder cil){
@@ -850,8 +850,8 @@ public:
 	void draw(){
 		Cylinder cil;
 		cil.base = 0.5; cil.height = 1; cil.top = 0.5; cil.slices = 10; cil.stacks = 10;
-		Rectangle rec;
-		rec.xy1[0] = -0.5; rec.xy1[1] = -0.5; rec.xy2[0] = 0.5; rec.xy2[1] = 0.5;
+		metal2->setTextureWrap(GL_CLAMP, GL_CLAMP);
+		metal2->apply();
 		//Helice
 			//Frente
 		setangleF();
@@ -874,12 +874,17 @@ public:
 		glTranslated(-1.5, 1, 3);
 		glScaled(1.5, 1.5, 1.5);
 		
+		vidro->setTextureWrap(GL_CLAMP, GL_CLAMP);
+		vidro->apply();
 		//Body
 		Patch back;
 		back.compute = "fill"; back.order = 2; back.partsU = 20; back.partsV = 20;
 			//Frente
 		back = front(back);
 		back.draw();
+
+		metal->setTextureWrap(GL_CLAMP, GL_CLAMP);
+		metal->apply();
 			//Base
 		back = base1(back);
 		back.draw();
@@ -891,11 +896,15 @@ public:
 			//cima
 		back = roof(back);
 		back.draw();
+
 		//Conector
 		glPushMatrix();
 		glTranslated(1, 1, -9);
 		connector(cil);
 		glPopMatrix();
+
+		metal2->setTextureWrap(GL_CLAMP, GL_CLAMP);
+		metal2->apply();
 				//Encaixe
 		glPushMatrix();
 		glRotated(-90, 1, 0, 0);
@@ -905,20 +914,18 @@ public:
 		glPopMatrix();
 
 		glPopMatrix();
+		default1->apply();
 	}
 	void draw(Texture *t){
-		
-
 		Cylinder cil;
 		cil.base = 0.5; cil.height = 1; cil.top = 0.5; cil.slices = 10; cil.stacks = 10;
-		Rectangle rec;
-		rec.xy1[0] = -0.5; rec.xy1[1] = -0.5; rec.xy2[0] = 0.5; rec.xy2[1] = 0.5;
+		metal2->setTextureWrap(GL_CLAMP, GL_CLAMP);
+		metal2->apply();
 		//Helice
 		//Frente
 		setangleF();
 		//Tras
 		setangleB();
-
 		//Pes
 		//Esq
 		glPushMatrix();
@@ -936,12 +943,17 @@ public:
 		glTranslated(-1.5, 1, 3);
 		glScaled(1.5, 1.5, 1.5);
 
+		vidro->setTextureWrap(GL_CLAMP, GL_CLAMP);
+		vidro->apply();
 		//Body
 		Patch back;
 		back.compute = "fill"; back.order = 2; back.partsU = 20; back.partsV = 20;
 		//Frente
 		back = front(back);
 		back.draw();
+
+		metal->setTextureWrap(GL_CLAMP, GL_CLAMP);
+		metal->apply();
 		//Base
 		back = base1(back);
 		back.draw();
@@ -953,11 +965,15 @@ public:
 		//cima
 		back = roof(back);
 		back.draw();
+
 		//Conector
 		glPushMatrix();
 		glTranslated(1, 1, -9);
 		connector(cil);
 		glPopMatrix();
+
+		metal2->setTextureWrap(GL_CLAMP, GL_CLAMP);
+		metal2->apply();
 		//Encaixe
 		glPushMatrix();
 		glRotated(-90, 1, 0, 0);
@@ -967,6 +983,7 @@ public:
 		glPopMatrix();
 
 		glPopMatrix();
+		default1->apply();
 	}
 };
 
