@@ -164,6 +164,7 @@ void LinearAnimation::apply(){
 			initZ = controlPoint[indexCP+1][2];
 
 			float product;
+
 			if(directions[indexCP+1][1] != 0)
 			{
 				if(directions[indexCP+1][2] == 0)
