@@ -41,7 +41,7 @@ void LinearAnimation::init(unsigned long t)
 {
 	startTime=t;
 	controlTime = t;
-
+	isSequence = false;
 	valid = true;
 	resetTime = false;
 	indexCP = 0;
@@ -201,6 +201,7 @@ void CircularAnimation::init(unsigned long t)
 {
 	startTime=t;
 	valid = true;
+	isSequence = false;
 	doReset=false;
 
 	velocity = rotAng/span;

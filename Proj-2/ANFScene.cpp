@@ -1480,8 +1480,8 @@ void ANFScene::drawGraph(string nodeID,string app,bool init)
 
 				if(Cnode.animIndex < Cnode.animation.size())
 				{
-					if(Cnode.animIndex > 0)
-						Cnode.animation[Cnode.animIndex-1]->apply();
+					for(int i = 0;i < Cnode.animIndex; i++)
+						Cnode.animation[i]->apply();
 					Cnode.animation[Cnode.animIndex]->apply();
 					if(!Cnode.animation[Cnode.animIndex]->valid)
 					{
