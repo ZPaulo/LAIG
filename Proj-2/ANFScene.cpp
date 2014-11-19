@@ -905,6 +905,7 @@ ANFScene::ANFScene(char *filename)
 						while(vehicle){
 							save=true;
 							Vehicle* ve= new Vehicle();
+<<<<<<< HEAD
 							ve->name="vehicle";
 							LinearAnimation *lin1 = new LinearAnimation(); 
 							LinearAnimation *lin2 = new LinearAnimation();
@@ -941,6 +942,9 @@ ANFScene::ANFScene(char *filename)
 							pNode->animation.push_back(lin1);
 							pNode->animation.push_back(lin2);
 							pNode->animation.push_back(cir1);
+=======
+							ve->name="vehicle";		
+>>>>>>> 701e6596c9dc7ec09e78508affe11cc1d1db01aa
 
 							if(save)
 								pNode->primitives.push_back(ve);
