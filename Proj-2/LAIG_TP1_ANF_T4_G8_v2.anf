@@ -111,7 +111,7 @@
                  <controlpoint xx="15" yy="0" zz="5" />
           </animation>
 
-          <animation id="rot" span="3" type="circular" center= "-5 0 0" radius = "5" startang="0" rotang = "70"/>
+          <animation id="rot" span="3" type="circular" center= "-5 10 0" radius = "5" startang="0" rotang = "70"/>
     </animations>
     
    <graph rootid="bar">
@@ -130,35 +130,48 @@
                 <noderef id="floor" />
 				<noderef id="counter" />
 				<noderef id="stools" />
+				<noderef id="carro" />
             </descendants>
         </node>
+
+<node id="carro" displaylist="false">
+			<transforms>
+            </transforms>
+          
+			<appearanceref id="default" />
+            
+
+
+            <primitives>   
+            <vehicle />
+             </primitives>
+               
+            <descendants>
+            </descendants>
+        </node>
+     
 		
 		<node id="floor">
             <transforms>
-                <!-- <transform type="translate" to="15 0 5" /> -->
-                <!-- <transform type="scale" factor="30 0.5 20" /> -->
+               
             </transforms>
             
             <appearanceref id="app_stool_top" />
 
             <primitives>  
-                <patch order="3" partsU="10" partsV="10" compute="fill">
+                
 
-                     <controlpoint x="0" y="0" z="0" />
-                     <controlpoint x="0" y="5" z="-2" />
-                     <controlpoint x="0" y="-5" z="-4" />
-                     <controlpoint x="0" y="0" z="-6" />
-
-                     <controlpoint x="2" y="0" z="0" />
-                     <controlpoint x="2" y="-5" z="-2" />
-                     <controlpoint x="2" y="5" z="-4" />
-                     <controlpoint x="2" y="0" z="-6" />
-
-                     <controlpoint x="4" y="0" z="0" />
-                     <controlpoint x="4" y="5" z="-2" />
-                     <controlpoint x="4" y="-5" z="-4" />
-                     <controlpoint x="4" y="0" z="-6" />
-                 </patch>
+                    <patch order="2" partsU="20" partsV="20" compute="fill">
+            <controlpoint x="2" y="0" z="0" />
+            <controlpoint x="2" y="1" z="0" />
+            <controlpoint x="2" y="2" z="0" />
+            <controlpoint x="1" y="0" z="0" />
+            <controlpoint x="1" y="1" z="9" />
+            <controlpoint x="1" y="2" z="0" />
+            <controlpoint x="0" y="0" z="0" />
+            <controlpoint x="0" y="1" z="0" />
+            <controlpoint x="0" y="2" z="0" />
+            </patch>
              </primitives>
                
             <descendants>
