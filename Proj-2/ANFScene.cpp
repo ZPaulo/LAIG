@@ -913,6 +913,8 @@ ANFScene::ANFScene(char *filename)
 							lin1->span = 10;
 							lin2->span = 20;
 							vector<float> temp; 
+							temp.push_back(0); temp.push_back(0); temp.push_back(0);
+							lin1->controlPoint.push_back(temp); temp.clear();
 							temp.push_back(0); temp.push_back(20); temp.push_back(0);
 							lin1->controlPoint.push_back(temp); temp.clear();
 							temp.push_back(30); temp.push_back(20); temp.push_back(0);
