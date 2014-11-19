@@ -888,18 +888,19 @@ ANFScene::ANFScene(char *filename)
 						}
 
 						while(flag){
-							save=true;
-							
-							
+
+
 							string text;
 							text= (string) flag->Attribute("texture");
 							Flag* fl = new Flag(text);
 							fl->name="flag";
 
-							if(save)
-								pNode->primitives.push_back(fl);
+							pNode->primitives.push_back(fl);
+							parser.flags.push_back(fl);
 
 							flag=flag->NextSiblingElement("flag");
+
+
 						}
 						while(vehicle){
 							save=true;
@@ -917,21 +918,21 @@ ANFScene::ANFScene(char *filename)
 							lin1->controlPoint.push_back(temp); temp.clear();
 							temp.push_back(30); temp.push_back(20); temp.push_back(0);
 							lin1->controlPoint.push_back(temp); temp.clear();
-							
+
 							temp.push_back(30); temp.push_back(20); temp.push_back(0);
 							lin2->controlPoint.push_back(temp); temp.clear();
 							temp.push_back(30); temp.push_back(20); temp.push_back(30);
 							lin2->controlPoint.push_back(temp); temp.clear();
 							temp.push_back(0); temp.push_back(20); temp.push_back(0);
 							lin2->controlPoint.push_back(temp); temp.clear();
-							
+
 							cir1->center[0] = 15; cir1->center[1] = 20; cir1->center[2] = 15;
 							cir1->id = "cir1Vehicle";
 							cir1->radius = 15;
 							cir1->rotAng = 360;
 							cir1->span = 10;
 							cir1->startAng=0;
-						
+
 							parser.animations.push_back(lin1);
 							parser.animations.push_back(lin2);
 							parser.animations.push_back(cir1);
@@ -1397,7 +1398,8 @@ void ANFScene::update(unsigned long t)
 	for(unsigned int i = 0; i < parser.animations.size();i++)
 		parser.animations[i]->update(t);
 
-	parser.flag->update(t);
+	for(unsigned int i = 0; i < parser.flags.size();i++)
+		parser.flags[i]->update(t);
 
 }
 
@@ -1440,12 +1442,6 @@ void ANFScene::display()
 	else
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-	glPushMatrix();
-	//glRotatef(-90,0,0,1);
-	//glRotatef(90,1,0,0);
-    glScalef(5,5,5); 
-	parser.flag->draw();
-	glPopMatrix();
 
 	if(parser.graph->nodes[parser.graph->rootID])
 	{

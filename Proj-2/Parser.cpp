@@ -4,7 +4,6 @@ Parser::Parser()
 {
 	globals = new Globals();
 	graph = new Graph();
-	flag = new Flag("textures/flag.jpg");
 
 }
 
@@ -241,6 +240,7 @@ void CircularAnimation::apply(){
 Flag::Flag(string text){
 	parts=100;
 	elapsedTime=0;
+	wind = 0;
 
 	init("flag.vert", "flag.frag");
 
@@ -249,6 +249,7 @@ Flag::Flag(string text){
 	baseTexture=new CGFtexture(text);
 
 	Timer = glGetUniformLocation(id(), "timer");
+	windLoc = glGetUniformLocation(id(), "wind");
 
 	baseImageLoc = glGetUniformLocation(id(), "baseImage");
 

@@ -592,6 +592,7 @@ public:
 class Flag: public Primitives, CGFshader{
 public:
 	string textureMap;
+	int wind;
 	float parts;
 	Flag(string text);
 	Flag(){}
@@ -603,7 +604,7 @@ public:
 private:
 	CGFtexture * baseTexture;
 
-	GLint baseImageLoc;
+	GLint baseImageLoc,windLoc;
 	
 	float elapsedTime, Timer,startTime;
 
@@ -1051,7 +1052,7 @@ public:
 	map<string, Texture*> textures;
 	map<string, Appearance*> appearances;
 	vector<Animation*> animations;
-	Flag *flag;
+	vector<Flag*> flags;
 
 	Graph* graph;
 };

@@ -8,7 +8,7 @@ using namespace std;
 
 int main(int argc, char* argv[]){
 
-
+	char a;
 	CGFapplication app = CGFapplication();
 
 	try {
@@ -20,10 +20,12 @@ int main(int argc, char* argv[]){
 	}
 	catch(GLexception& ex) {
 		cout << "Erro: " << ex.what();
+		getchar();
 		return -1;
 	}
 	catch(exception& ex) {
 		cout << "Erro inesperado: " << ex.what();
+		getchar();
 		return -1;
 	}
 	return 0;
