@@ -1,11 +1,10 @@
 #include "Parser.h"
 
-#include <iostream>
-
 Parser::Parser()
 {
 	globals = new Globals();
 	graph = new Graph();
+	flag = new Flag("textures/flag.jpg");
 
 }
 
@@ -86,25 +85,25 @@ void LinearAnimation::update(unsigned long t)
 	if (doReset){
 		init(t);
 	}
+	else
+	{
+		if(resetTime)
+		{
+			controlTime = t;
+			resetTime = false;
+		}
+		double animT = (t-controlTime)/1000.0;
+		double checkSpan = (t-startTime)/1000.0;
+		if(checkSpan >= span)
+		{
+			valid = false;
+			glPopMatrix();
+		}
 		else
 		{
-			if(resetTime)
-			{
-				controlTime = t;
-				resetTime = false;
-			}
-			double animT = (t-controlTime)/1000.0;
-			double checkSpan = (t-startTime)/1000.0;
-			if(checkSpan >= span)
-			{
-				valid = false;
-				glPopMatrix();
-			}
-			else
-			{
-				obj_translate = velocity*animT;
-			}
+			obj_translate = velocity*animT;
 		}
+	}
 }
 
 void LinearAnimation::apply(){
@@ -212,22 +211,21 @@ void CircularAnimation::update(unsigned long t)
 	if (doReset){
 		init(t);
 	}
+	else
+	{
+
+		double animT = (t-startTime)/1000.0;
+		if(animT >= span)
+		{
+			valid = false;
+			glPopMatrix();
+		}
 		else
 		{
-			
-			double animT = (t-startTime)/1000.0;
-			if(animT >= span)
-			{
-				cout << "stop\n";
-				valid = false;
-				glPopMatrix();
-			}
-			else
-			{
-				//obj_translate = ;
-				obj_rotate = velocity*animT;
-			}
+			//obj_translate = ;
+			obj_rotate = velocity*animT;
 		}
+	}
 }
 
 void CircularAnimation::apply(){
@@ -236,6 +234,84 @@ void CircularAnimation::apply(){
 		glTranslatef(center[0],center[1],center[2]);
 		glRotated(obj_rotate, 0,1,0);
 		glTranslatef(-center[0],-center[1],-center[2]);
+	}
+
+}
+
+Flag::Flag(string text){
+	parts=100;
+	elapsedTime=0;
+
+	init("flag.vert", "flag.frag");
+
+	CGFshader::bind();
+
+	baseTexture=new CGFtexture(text);
+
+	Timer = glGetUniformLocation(id(), "timer");
+
+	baseImageLoc = glGetUniformLocation(id(), "baseImage");
+
+	glUniform1i(baseImageLoc, 0);		
+
+}
+
+void Flag::bind(){
+	CGFshader::bind();
+
+	// update uniforms
+	glUniform1f(Timer, elapsedTime);
+
+	// make sure the correct texture unit is active
+	glActiveTexture(GL_TEXTURE0);
+
+	// apply/activate the texture you want, so that it is bound to GL_TEXTURE0
+	baseTexture->apply();
+
+}
+
+void Flag::draw(){
+
+	bind();
+	
+
+
+	float controlPoints[4][3] =
+	{ { 0.5, 0, -0.5 }, { -0.5, 0, -0.5 },
+	{ 0.5, 0, 0.5 }, {- 0.5, 0, 0.5 }
+	};
+	float controlPointsNorm[4][3] =
+	{ { 0, 1, 0 }, { 0, 1, 0 },
+	{ 0, 1, 0 }, { 0, 1, 0 }
+	};
+	float controlPointsText[4][2] =
+	{ { 1, 0 }, { 0, 0 },
+	{ 1, 1 }, { 0, 1 }
+	};
+
+	glMap2f(GL_MAP2_VERTEX_3, 0, 1, 6, 2, 0, 1, 3, 2, &controlPoints[0][0]);
+	glMap2f(GL_MAP2_NORMAL, 0, 1, 6, 2, 0, 1, 3, 2, &controlPointsNorm[0][0]);
+	glMap2f(GL_MAP2_TEXTURE_COORD_2, 0, 1, 2, 2, 0, 1, 4, 2, &controlPointsText[0][0]);
+
+	glEnable(GL_MAP2_VERTEX_3);
+	glEnable(GL_MAP2_NORMAL);
+	glEnable(GL_MAP2_TEXTURE_COORD_2);
+	glMapGrid2f(parts, 0, 1, parts, 0, 1);
+	glEvalMesh2(GL_FILL, 0, parts, 0, parts);
+
+	CGFshader::unbind();
+
+}
+
+void Flag::update(unsigned long t)
+{
+	if(elapsedTime==0){
+		startTime = t;
+		elapsedTime = startTime/1000.0;
+	}
+	else
+	{
+		elapsedTime = (t-startTime)/1000.0;
 	}
 
 }

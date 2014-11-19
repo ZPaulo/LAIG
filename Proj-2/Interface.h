@@ -1,5 +1,5 @@
-#ifndef TPinterface_H
-#define TPinterface_H
+#ifndef INTERFACE_H
+#define INTERFACE_H
 
 #include "CGFinterface.h"
 

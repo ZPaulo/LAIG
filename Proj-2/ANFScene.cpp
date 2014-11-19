@@ -2,7 +2,6 @@
 #include <string>
 #include <iostream>
 #include "CGFaxis.h"
-#include "CGFapplication.h"
 #include <math.h>
 
 using namespace std;
@@ -887,12 +886,15 @@ ANFScene::ANFScene(char *filename)
 
 							plane=plane->NextSiblingElement("plane");
 						}
+
 						while(flag){
 							save=true;
-							Flag* fl = new Flag();
-							fl->name="flag";
+							
+							
 							string text;
 							text= (string) flag->Attribute("texture");
+							Flag* fl = new Flag(text);
+							fl->name="flag";
 
 							if(save)
 								pNode->primitives.push_back(fl);
@@ -913,7 +915,7 @@ ANFScene::ANFScene(char *filename)
 							Patch* pa= new Patch();
 							pa->name="patch";
 							int order,partsU,partsV;
-							
+
 
 							if(patch->QueryIntAttribute("order",&order)==TIXML_SUCCESS)
 								pa->order = order;
@@ -939,7 +941,7 @@ ANFScene::ANFScene(char *filename)
 
 							pa->compute=(string)patch->Attribute("compute");
 							TiXmlElement *controlpoint = patch->FirstChildElement("controlpoint");
-							
+
 							while (controlpoint){
 								GLfloat x=0, y=0, z=0;
 								vector<GLfloat> inter1(3);
@@ -966,7 +968,7 @@ ANFScene::ANFScene(char *filename)
 									printf("\tError reading controlpoint z\n");
 								}
 								pa->controlPoint.push_back(inter1);
-								
+
 								controlpoint=controlpoint->NextSiblingElement("controlpoint");
 							}
 							if (save)
@@ -1353,12 +1355,16 @@ void ANFScene::init()
 	for(unsigned int i = 0; i < parser.animations.size();i++)
 		parser.animations[i]->doReset = true;
 
+
 }
 
 void ANFScene::update(unsigned long t)
 {
 	for(unsigned int i = 0; i < parser.animations.size();i++)
-			parser.animations[i]->update(t);
+		parser.animations[i]->update(t);
+
+	parser.flag->update(t);
+
 }
 
 void ANFScene::display() 
@@ -1399,6 +1405,13 @@ void ANFScene::display()
 		glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
 	else
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+	glPushMatrix();
+	//glRotatef(-90,0,0,1);
+	//glRotatef(90,1,0,0);
+    glScalef(5,5,5); 
+	parser.flag->draw();
+	glPopMatrix();
 
 	if(parser.graph->nodes[parser.graph->rootID])
 	{
@@ -1465,7 +1478,6 @@ void ANFScene::drawGraph(string nodeID,string app,bool init)
 				if(Cnode.animIndex < Cnode.animation.size())
 				{
 					Cnode.animation[Cnode.animIndex]->apply();
-					cout << Cnode.animation[Cnode.animIndex]->id << endl;
 					if(!Cnode.animation[Cnode.animIndex]->valid)
 					{
 						parser.graph->nodes[nodeID]->animIndex++;

@@ -1,15 +1,25 @@
+#ifndef _PARSER_H_
+#define _PARSER_H_
+
+
+#include <stdlib.h>
+#include <GL/glew.h>
+#include <GL/gl.h>
+#include <GL/glut.h>
 #include <String>
 #include <vector>
 #include <map>
 #include <math.h>
-#include "CGFapplication.h"
-#include "CGFobject.h"
+#include <CGFapplication.h>
+#include <CGFshader.h>
+#include <CGFtexture.h>
+
+
 
 
 using namespace std;
 
 #define PI  3.14159265359
-
 
 
 class Drawing
@@ -114,7 +124,7 @@ public:
 private:
 	virtual void init(unsigned long t) = 0;
 	unsigned long startTime;
-	
+
 };
 
 class LinearAnimation : public Animation
@@ -137,7 +147,7 @@ private:
 
 class CircularAnimation : public Animation
 {
-	public:
+public:
 	float span,radius,startAng,rotAng,center[3];
 
 	void apply();
@@ -524,6 +534,7 @@ public:
 	string compute;
 	vector<vector<GLfloat>> controlPoint;
 	void draw(){
+		glFrontFace(GL_CW);
 		int x = controlPoint.size();
 		glMap2f(GL_MAP2_VERTEX_3, 0, 1, (order + 1) * 3, x / (order + 1), 0, 1, 3, (order + 1), &controlPoint[0][0]);
 
@@ -537,21 +548,23 @@ public:
 			glEvalMesh2(GL_LINE, 0, partsU, 0, partsV);
 		else
 			glEvalMesh2(GL_FILL, 0, partsU, 0, partsV);
+
+		glFrontFace(GL_CCW);
 	}
 	void draw(Texture *t){
+		glFrontFace(GL_CW);
 		float controlPointsText[4][2] =
 		{ { 1, 0 }, { 0, 0 },
 		{ 1, 1 }, { 0, 1 }
 		};
-		
-		float controlPoint2[100][3];
+
+		float controlPoint2[16][3];
 		for (int i = 0; i < controlPoint.size(); i++)
 			for (int f = 0; f < 3; f++)
 				controlPoint2[i][f] = controlPoint[i][f];
 
-		int x = controlPoint.size();
 
-		glMap2f(GL_MAP2_VERTEX_3, 0, 1, 3, (order + 1), 0, 1, (order + 1) * 3, x / (order + 1), &controlPoint2[0][0]);
+		glMap2f(GL_MAP2_VERTEX_3, 0, 1, 3, (order + 1), 0, 1, (order + 1) * 3, order + 1, &controlPoint2[0][0]);
 		glMap2f(GL_MAP2_TEXTURE_COORD_2, 0, 1, 4, 2, 0, 1, 2, 2, &controlPointsText[0][0]);
 		glEnable(GL_MAP2_VERTEX_3);
 		glEnable(GL_AUTO_NORMAL);
@@ -564,15 +577,33 @@ public:
 			glEvalMesh2(GL_LINE, 0, partsU, 0, partsV);
 		else
 			glEvalMesh2(GL_FILL, 0, partsU, 0, partsV);
+		glFrontFace(GL_CCW);
+
+
 	}
 };
 
-
-class Flag: public Primitives{
+class Flag: public Primitives, CGFshader{
 public:
-	string texture;
-	void draw(){}
+	string textureMap;
+	float parts;
+	Flag(string text);
+	Flag(){}
+	void bind();
+	void update(unsigned long t);
+	void draw();
 	void draw(Texture *t){}
+
+private:
+	CGFtexture * baseTexture;
+
+	GLint baseImageLoc;
+	
+	float elapsedTime, Timer,startTime;
+
+	bool first;
+
+	
 };
 
 class Vehicle: public Primitives{
@@ -618,5 +649,9 @@ public:
 	map<string, Texture*> textures;
 	map<string, Appearance*> appearances;
 	vector<Animation*> animations;
+	Flag *flag;
+
 	Graph* graph;
 };
+
+#endif
