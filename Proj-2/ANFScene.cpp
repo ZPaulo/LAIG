@@ -288,7 +288,7 @@ ANFScene::ANFScene(char *filename)
 		if(parser.initCam==""&&parser.cameras.size()>0)
 			parser.initCam=parser.cameras[0]->id;
 
-		for(unsigned int i = 0; i < parser.cameras.size();i++)
+		for(int i = 0; i < parser.cameras.size();i++)
 		{
 			if(parser.cameras[i]->id == parser.initCam)
 			{
@@ -615,29 +615,29 @@ ANFScene::ANFScene(char *filename)
 
 		while (animation)
 		{
+			string id;
 			char* center;
 			float span,startang,rotang,radius,b1,b2,b3;
-			string id,type;
+			Animation* anim= new Animation();
 			if(animation->Attribute("id"))
-				id = animation->Attribute("id");
+				anim->id = animation->Attribute("id");
 			else
 				printf("Missing ID.\n");
-			if(animation->QueryFloatAttribute("span",&span)!=TIXML_SUCCESS)
+			if(animation->QueryFloatAttribute("span",&span)==TIXML_SUCCESS)
+				anim->span = span;
+			else
 			{
 				printf("Value Missing\n");
-				span = 0.0;
+				anim->span = 0.0;
 			}
 			if(!animation->Attribute("type"))
 				printf("Missing type.\n");
 			else{
-				type=animation->Attribute("type");
-				if(type=="linear")
+				anim->type=animation->Attribute("type");
+				if(anim->type=="linear")
 				{
-					LinearAnimation* anim = new LinearAnimation();
-					anim->id = id;
-					anim->span = span;
 					TiXmlElement *controlpoint = animation->FirstChildElement("controlpoint");
-
+				
 					while(controlpoint){
 						vector<float>coord;
 
@@ -663,18 +663,14 @@ ANFScene::ANFScene(char *filename)
 							printf("Value Missing\n");
 							coord.push_back(0);
 						}
-
+					
 						anim->controlPoint.push_back(coord);
 						controlpoint = controlpoint->NextSiblingElement("controlpoint");
 					}
-					parser.animations.push_back(anim);
 
 				}
-				else if(type=="circular")
+				else if(anim->type=="circular")
 				{
-					CircularAnimation* anim = new CircularAnimation();
-					anim->id = id;
-					anim->span = span;
 					center=(char *) animation->Attribute("center");
 
 					if(center && sscanf(center,"%f %f %f",&b1, &b2, &b3)==3)
@@ -697,22 +693,22 @@ ANFScene::ANFScene(char *filename)
 						anim->radius = 0.0;
 					}
 					if(animation->QueryFloatAttribute("startang",&startang)==TIXML_SUCCESS)
-						anim->startAng = startang;
+						anim->startang = startang;
 					else
 					{
 						printf("Value Missing\n");
-						anim->startAng = 0.0;
+						anim->startang = 0.0;
 					}
 					if(animation->QueryFloatAttribute("rotang",&rotang)==TIXML_SUCCESS)
-						anim->rotAng = rotang;
+						anim->rotang = rotang;
 					else
 					{
 						printf("Value Missing\n");
-						anim->rotAng = 0.0;
+						anim->rotang = 0.0;
 					}
-					parser.animations.push_back(anim);
 				}
 			}
+			parser.animations.push_back(anim);
 			animation = animation->NextSiblingElement();
 		}
 	}
@@ -830,26 +826,19 @@ ANFScene::ANFScene(char *filename)
 					}
 
 					TiXmlElement *animationr = node->FirstChildElement("animationref");
+					pNode->animationRef="";
+					if(animationr)
+						pNode->animationRef=animationr->Attribute("id");
 
-					string animationRef="";
-					pNode->animIndex = 0;
-
-					while(animationr)
+					if(pNode->animationRef == "")
+						pNode->animation = NULL;
+					else
 					{
-						animationRef=animationr->Attribute("id");
-
-						if(animationRef != "")
+						for(unsigned int i = 0; i < parser.animations.size(); i++)
 						{
-							for(unsigned int i = 0; i < parser.animations.size(); i++)
-							{
-								if(parser.animations[i]->id == animationRef)
-								{
-									pNode->animation.push_back(parser.animations[i]);
-									break;
-								}
-							}
+							if(parser.animations[i]->id == pNode->animationRef)
+								pNode->animation = parser.animations[i];
 						}
-						animationr = animationr->NextSiblingElement("animationref");
 					}
 
 					TiXmlElement *primitives = node->FirstChildElement("primitives");
@@ -1242,7 +1231,7 @@ void ANFScene::init()
 {
 
 	float globalAmbientLight[4];
-	for(unsigned int i = 0; i < 4 ;i++)
+	for(int i = 0; i < 4 ;i++)
 		globalAmbientLight[i] = parser.globals->lighting.ambient[i];
 
 	if(parser.globals->lighting.enabled)
@@ -1310,14 +1299,14 @@ void ANFScene::init()
 		CGFlight* light;
 		Light* recentlight = parser.lights[i];
 		float pos[4],dir[3], unit;
-		for(unsigned int i = 0; i< 3; i++)
+		for(int i = 0; i< 3; i++)
 		{
 			pos[i] = recentlight->pos[i];
 			dir[i]= recentlight->target[i] - pos[i];
 		}
 		pos[3] = 1;
 		unit = sqrt(dir[0]*dir[0]+dir[1]*dir[1]+dir[2]*dir[2]);
-		for(unsigned int i = 0; i< 3; i++)
+		for(int i = 0; i< 3; i++)
 		{
 			dir[i] = dir[i] / unit;
 		}
@@ -1344,7 +1333,7 @@ void ANFScene::init()
 
 
 	// Animation-related code
-	unsigned long updatePeriod=10;
+	unsigned long updatePeriod=30;
 	setUpdatePeriod(updatePeriod);
 
 	if(parser.graph->nodes[parser.graph->rootID])
@@ -1429,7 +1418,7 @@ void ANFScene::drawGraph(string nodeID,string app,bool init)
 
 			glMultMatrixf(Cnode.matrix);
 
-			for(unsigned int i = 0; i < Cnode.primitives.size(); i++)
+			for(int i = 0; i < Cnode.primitives.size(); i++)
 			{
 				if(Cnode.apperanceRef != "inherit" && Cnode.apperanceRef != "")
 				{
@@ -1442,7 +1431,7 @@ void ANFScene::drawGraph(string nodeID,string app,bool init)
 					(*Cnode.primitives[i]).draw();
 			}
 
-			for(unsigned int i = 0; i < Cnode.descendants.size(); i++)
+			for(int i = 0; i < Cnode.descendants.size(); i++)
 			{
 				glPushMatrix();
 				drawGraph(Cnode.descendants[i],Cnode.apperanceRef,init);
@@ -1460,27 +1449,18 @@ void ANFScene::drawGraph(string nodeID,string app,bool init)
 				if(Cnode.apperanceRef != "" && Cnode.apperanceRef != "inherit")
 					parser.appearances[Cnode.apperanceRef]->appCGF->apply();
 
-				glMultMatrixf(Cnode.matrix);
 
-				if(Cnode.animIndex < Cnode.animation.size())
+				if(!Cnode.animation)
 				{
-					
-					Cnode.animation[Cnode.animIndex]->apply();
-					if(!Cnode.animation[Cnode.animIndex]->valid)
-					{
-						parser.graph->nodes[nodeID]->animIndex++;
-						if(parser.graph->nodes[nodeID]->animIndex < Cnode.animation.size())
-						{
-							parser.animations[parser.graph->nodes[nodeID]->animIndex]->doReset = true;
-							parser.animations[parser.graph->nodes[nodeID]->animIndex]->valid= true;
-						}
-					}
-
+					glMultMatrixf(Cnode.matrix);
 				}
-				
+				else 
+					if(!Cnode.animation->valid)
+						glMultMatrixf(Cnode.matrix);
+					else
+						Cnode.animation->apply();
 
-
-				for(unsigned int i = 0; i < Cnode.primitives.size(); i++)
+				for(int i = 0; i < Cnode.primitives.size(); i++)
 				{
 					if(Cnode.apperanceRef != "inherit" && Cnode.apperanceRef != "")
 					{
@@ -1492,7 +1472,7 @@ void ANFScene::drawGraph(string nodeID,string app,bool init)
 					else
 						(*Cnode.primitives[i]).draw();
 				}
-				for(unsigned int i = 0; i < Cnode.descendants.size(); i++)
+				for(int i = 0; i < Cnode.descendants.size(); i++)
 				{
 					glPushMatrix();
 					drawGraph(Cnode.descendants[i],Cnode.apperanceRef,init);
@@ -1522,7 +1502,7 @@ void ANFScene::createDisplayList(string nodeID,string app)
 		}
 		else
 		{
-			for(unsigned int i = 0; i < Cnode.descendants.size(); i++)
+			for(int i = 0; i < Cnode.descendants.size(); i++)
 			{
 				createDisplayList(Cnode.descendants[i],Cnode.apperanceRef);
 			}
