@@ -1,5 +1,5 @@
 #include "Parser.h"
-#include <iostream>
+
 Parser::Parser()
 {
 	globals = new Globals();
@@ -226,7 +226,6 @@ void CircularAnimation::update(unsigned long t)
 		}
 		else
 		{
-			//obj_translate = ;
 			obj_rotate = velocity*animT;
 		}
 	}
@@ -236,8 +235,9 @@ void CircularAnimation::apply(){
 	if(valid)
 	{
 		glTranslatef(center[0],center[1],center[2]);
-		glRotated(obj_rotate, 0,1,0);
+		glRotatef(obj_rotate, 0,1,0);
 		glTranslatef(-center[0],-center[1],-center[2]);
+		
 	}
 	else if(isSequence){
 		glTranslatef(center[0],center[1],center[2]);
@@ -327,6 +327,5 @@ void Flag::update(unsigned long t,int wind)
 
 
 	this->wind =(float) wind;
-	printf(" %d %d\n",this->wind,wind);
 
 }
