@@ -19,7 +19,126 @@ public:
 	string id, file;
 	float texLengthS,texLengthT;
 };
+class Sphere
+{
+private:
+	float radius;
+	int slices, stacks;
+public:
+	Sphere(){
+		radius=1.5;
+		slices=20;
+		stacks=20;
+	}
+	
+	void draw(){
+		glPushMatrix();
+		glTranslated(5,6,5);
+		GLUquadric *sphere = gluNewQuadric();
+		gluQuadricTexture(sphere, GL_TRUE);
+		gluQuadricNormals(sphere,GL_SMOOTH);
 
+		gluSphere(sphere,radius,slices,stacks);
+
+		gluDeleteQuadric(sphere);
+		glPopMatrix();
+	}
+	void draw(Texture *t){
+		glPushMatrix();
+		glTranslated(5,6,5);
+		GLUquadric *sphere = gluNewQuadric();
+		gluQuadricTexture(sphere, GL_TRUE);
+		gluQuadricNormals(sphere,GL_SMOOTH);
+
+		gluSphere(sphere,radius,slices,stacks);
+
+		gluDeleteQuadric(sphere);
+		glPopMatrix();
+	}
+
+};
+class Cylinder
+{
+private:
+	float base, top, height;
+	int slices, stacks;
+public:
+	Cylinder(float b, float t){
+		base=b; top=t; height=1;
+		slices=20; stacks=20;
+	}
+	void draw(){
+		GLUquadric * quad,*botD,*topD;
+
+		quad = gluNewQuadric();
+		botD = gluNewQuadric();
+		topD = gluNewQuadric();
+
+
+		gluQuadricNormals(quad,GL_SMOOTH);
+		gluQuadricNormals(botD,GL_SMOOTH);
+		gluQuadricNormals(topD,GL_SMOOTH);
+
+
+		gluQuadricTexture(quad, GL_TRUE);
+		gluQuadricTexture(botD, GL_TRUE);
+		gluQuadricTexture(topD, GL_TRUE);
+		glPushMatrix();
+		glTranslated(5,0.5,5);
+		glRotated(-90,1,0,0);
+		gluCylinder(quad,base,top,height,slices,stacks);
+
+		glPushMatrix();
+		glTranslated(0,0,height);
+		gluDisk(topD,0,top,slices,stacks);
+		glPopMatrix();
+
+		glPushMatrix();
+		glRotated(180,0,1,0);
+		gluDisk(botD,0,base,slices,stacks);
+		glPopMatrix();
+		glPopMatrix();
+		gluDeleteQuadric(quad);
+		gluDeleteQuadric(botD);
+		gluDeleteQuadric(topD);
+	}
+	void draw(Texture *t){
+		GLUquadric * quad,*botD,*topD;
+
+		quad = gluNewQuadric();
+		botD = gluNewQuadric();
+		topD = gluNewQuadric();
+
+
+		gluQuadricNormals(quad,GL_SMOOTH);
+		gluQuadricNormals(botD,GL_SMOOTH);
+		gluQuadricNormals(topD,GL_SMOOTH);
+
+
+		gluQuadricTexture(quad, GL_TRUE);
+		gluQuadricTexture(botD, GL_TRUE);
+		gluQuadricTexture(topD, GL_TRUE);
+		glPushMatrix();
+		glTranslated(5,0.5,5);
+		glRotated(-90,1,0,0);
+		gluCylinder(quad,base,top,height,slices,stacks);
+
+		glPushMatrix();
+		glTranslated(0,0,height);
+		gluDisk(topD,0,top,slices,stacks);
+		glPopMatrix();
+
+		glPushMatrix();
+		glRotated(180,0,1,0);
+		gluDisk(botD,0,base,slices,stacks);
+		glPopMatrix();
+		glPopMatrix();
+		gluDeleteQuadric(quad);
+		gluDeleteQuadric(botD);
+		gluDeleteQuadric(topD);
+	}
+
+};
 class Rectangle
 {
 public:
@@ -159,117 +278,79 @@ public:
 };
 class TowerP
 {
-private:
-	float base, top, height;
-	int slices, stacks;
 public:
-	TowerP(){
-		base=4; top=4; height=1;
-		slices=20; stacks=20;
-	}
 	void draw(){
-		GLUquadric * quad,*botD,*topD;
-
-		quad = gluNewQuadric();
-		botD = gluNewQuadric();
-		topD = gluNewQuadric();
-
-
-		gluQuadricNormals(quad,GL_SMOOTH);
-		gluQuadricNormals(botD,GL_SMOOTH);
-		gluQuadricNormals(topD,GL_SMOOTH);
-
-
-		gluQuadricTexture(quad, GL_TRUE);
-		gluQuadricTexture(botD, GL_TRUE);
-		gluQuadricTexture(topD, GL_TRUE);
-		glPushMatrix();
-		glTranslated(5,1,5);
-		glRotated(-90,1,0,0);
-		gluCylinder(quad,base,top,height,slices,stacks);
-
-		glPushMatrix();
-		glTranslated(0,0,height);
-		gluDisk(topD,0,top,slices,stacks);
-		glPopMatrix();
-
-		glPushMatrix();
-		glRotated(180,0,1,0);
-		gluDisk(botD,0,base,slices,stacks);
-		glPopMatrix();
-		glPopMatrix();
-		gluDeleteQuadric(quad);
-		gluDeleteQuadric(botD);
-		gluDeleteQuadric(topD);
+		Cylinder cil(4,4);
+		cil.draw();
 	}
 	void draw(Texture *t){
-		GLUquadric * quad,*botD,*topD;
-
-		quad = gluNewQuadric();
-		botD = gluNewQuadric();
-		topD = gluNewQuadric();
-
-
-		gluQuadricNormals(quad,GL_SMOOTH);
-		gluQuadricNormals(botD,GL_SMOOTH);
-		gluQuadricNormals(topD,GL_SMOOTH);
-
-
-		gluQuadricTexture(quad, GL_TRUE);
-		gluQuadricTexture(botD, GL_TRUE);
-		gluQuadricTexture(topD, GL_TRUE);
-		glPushMatrix();
-		glTranslated(5,1,5);
-		glRotated(-90,1,0,0);
-		gluCylinder(quad,base,top,height,slices,stacks);
-
-		glPushMatrix();
-		glTranslated(0,0,height);
-		gluDisk(topD,0,top,slices,stacks);
-		glPopMatrix();
-
-		glPushMatrix();
-		glRotated(180,0,1,0);
-		gluDisk(botD,0,base,slices,stacks);
-		glPopMatrix();
-		glPopMatrix();
-		gluDeleteQuadric(quad);
-		gluDeleteQuadric(botD);
-		gluDeleteQuadric(topD);
+		Cylinder cil(4,4);
+		cil.draw(t);
 	}
 };
 class PlayerP
 {
 public:
-	PlayerP();
 	void draw(){
-		
+		glPushMatrix();
+		glTranslated(0,-1.,0);
+		glScaled(1,5,1);
+		Cylinder cil(4,0);
+		cil.draw();
+		glPopMatrix();
+
+		glPushMatrix();
+		Sphere sp;
+		sp.draw();
+		glPopMatrix();
 	}
 	void draw(Texture *t){
+		glPushMatrix();
+		glTranslated(0,-1.,0);
+		glScaled(1,5,1);
+		Cylinder cil(4,0);
+		cil.draw(t);
+		glPopMatrix();
 
+		glPushMatrix();
+		Sphere sp;
+		sp.draw(t);
+		glPopMatrix();
 	}
 };
 class Board
 {
 private:
 	int size;
-	Texture *texBranco;
-	Texture *texPreto;
+	CGFappearance *appBr;
+	CGFappearance *appPr;
 
 public:
 	Board(int s,string branco,string preto){
 		size=s;
-		Texture *texBranco = new Texture();
-		Texture *texPreto = new Texture();
-		texBranco->file = branco;
-		texPreto->file = preto;
-		texBranco->texLengthS = 1;
-		texBranco->texLengthT = 1;
-		texPreto->texLengthS = 1;
-		texPreto->texLengthT = 1;
-		texBranco->id="branco";
-		texPreto->id="preto";
-		///////////////////////////////////////definir texturas pelas strings
+		
+		///////////////////////////////////////definir texturas pelas 
+		/*
+		
+		float ambient[4]; float diffuse[4]; float specular[4];
+		ambient[0] = 0.5; ambient[1] = 0.5; ambient[2] = 0.5; ambient[3] = 0.5; 
+		diffuse[0] = 0.5; diffuse[1] = 0.5; diffuse[2] = 0.5; diffuse[3] = 0.5;
+		specular[0] = 0.5; specular[1] = 0.5; specular[2] = 0.5; specular[3] = 0.5;
+		
+		CGFappearance *appBr = new CGFappearance(ambient,diffuse,specular,1);
+		CGFappearance *appPr = new CGFappearance(ambient,diffuse,specular,1);
+
+		if(FILE *file = fopen(branco.c_str(), "r")) 
+					{
+						printf("ooooooooooooo\n");
+		}
+		appBr->setTexture(branco);
+		appBr->setTextureWrap(GL_REPEAT,GL_REPEAT);
+
+		
+		appPr->setTexture(preto);
+		appPr->setTextureWrap(GL_REPEAT,GL_REPEAT);
+		*/
 	}
 	void draw(){
 		Cube cubo;
@@ -286,13 +367,14 @@ public:
 				glTranslated(a*10,0,0);
 				if(a%2==change){
 					//branco
+					////////////appBr->apply();
 					cubo.draw();/////////////////////////////////////////////////////textura branca	
 				}
 				else{
 					//preto
+					/////////////->apply();
 					cubo.draw();////////////////////////////////////////////////////////textura preto
-					TowerP o;
-					o.draw();
+					
 				}
 				glPopMatrix();
 			}
