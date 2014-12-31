@@ -3,49 +3,50 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 :-use_module(library(sockets)).
+:-use_module(library(random)).
+:-use_module(library(lists)).
 
 port(60070).
 
 % launch me in sockets mode
 server:-
-	port(Port),
-	socket_server_open(Port, Socket),
-	socket_server_accept(Socket, _Client, Stream, [type(text)]),
-	write('Accepted connection'), nl,
-	serverLoop(Stream),
-	socket_server_close(Socket).
+        port(Port),
+        socket_server_open(Port, Socket),
+        socket_server_accept(Socket, _Client, Stream, [type(text)]),
+        write('Accepted connection'), nl,
+        start(Stream),
+        socket_server_close(Socket).
 
 % wait for commands
 serverLoop(Stream) :-
-	repeat,
-	read(Stream, ClientMsg),
-	write('Received: '), write(ClientMsg), nl,
-	parse_input(ClientMsg, MyReply),
-	format(Stream, '~q.~n', [MyReply]),
-	write('Wrote: '), write(MyReply), nl,
-	flush_output(Stream),
-	(ClientMsg == quit; ClientMsg == end_of_file), !.
+        repeat,
+        read(Stream, ClientMsg),
+        write('Received: '), write(ClientMsg), nl,
+        parse_input(ClientMsg, MyReply,Stream),
+        format(Stream, '~q.~n', [MyReply]),
+        write('Wrote: '), write(MyReply), nl,
+        flush_output(Stream),
+        (ClientMsg == quit; ClientMsg == end_of_file), !.
 
-parse_input(_, Answer) :-
-	Answer = 5.
-	
-parse_input(quit, ok-bye) :- !.
-		
+parse_input(start,start-game,S) :-
+        start(S).
+        
+parse_input(quit, ok-bye,_) :- !.
+                
 comando(Arg1, Arg2, Answer) :-
-	write(Arg1), nl, write(Arg2), nl,
-	Answer = '(5)'.
+        write(Arg1), nl, write(Arg2), nl,
+        Answer = '(5)'.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%                   Stack                   %%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-:-use_module(library(random)).
-:-use_module(library(lists)).
 
 
-start:- 
-        createBoardInput(Lines,Columns),
+
+start(Stream):- 
+        createBoardInput(Lines,Columns,Stream),
         createBoard(Brd,Lines,Columns),
         selectGameModeInput(Mode,AIInt),
         printBoard(Brd),
@@ -67,11 +68,15 @@ selectGameModeInput(Mode,AIInt):-
          name(AIInt,Int).
 
 %createBoardInput(-Number of Lines,-Number of Columns)
-createBoardInput(Lines,Columns):-
+createBoardInput(Lines,Columns,Stream):-
         write('How many lines will the board have?\n'),
-        read(Lines),
+        format(Stream, '~q.~n', ['Size-Lines']),
+        read(Stream,Lines),
+        flush_output(Stream),
         write('How many columns will the board have?\n'),
-        read(Columns),
+        format(Stream, '~q.~n', ['Size-Columns']),
+        read(Stream,Columns),
+        flush_output(Stream),
         integer(Lines),
         integer(Columns),
         Lines > 1,
