@@ -8,12 +8,19 @@
 //#include "Interface.h"
 #include "PickScene.h"
 #include "PickInterface.h"
-
+#include "socket.h"
 using std::cout;
 using std::exception;
 
-int main(int argc, char* argv[]){
 
+
+int main(int argc, char* argv[]){
+	socketConnect();
+	char *s = "comando(1, 2).\n";
+	envia(s, strlen(s));
+	char ans[128];
+	recebe(ans);
+	
 	CGFapplication app = CGFapplication();
 
 	try {
@@ -35,5 +42,7 @@ int main(int argc, char* argv[]){
 		getchar();
 		return -1;
 	}
+	
+	quit();
 	return 0;
 }
