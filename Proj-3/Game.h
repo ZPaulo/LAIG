@@ -9,7 +9,7 @@ public:
 	Board brd;
 	Game(){}
 	Game(int size){
-		brd = Board(size,"branco","preto"); 
+		brd = Board(size,"textures/Border.jpg","textures/Border.jpg"); 
 	}
 };
 

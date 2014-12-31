@@ -15,12 +15,13 @@ using std::exception;
 
 
 int main(int argc, char* argv[]){
+	/*
 	socketConnect();
 	char *s = "comando(1, 2).\n";
 	envia(s, strlen(s));
 	char ans[128];
 	recebe(ans);
-	
+	*/
 	CGFapplication app = CGFapplication();
 
 	try {

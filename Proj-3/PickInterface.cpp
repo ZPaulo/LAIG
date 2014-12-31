@@ -1,5 +1,5 @@
 #include "PickInterface.h"
-#include "ANFScene.h"
+#include "PickScene.h"
 #include "CGFapplication.h"
 
 // buffer to be used to store the hits during picking
@@ -86,7 +86,7 @@ void PickInterface::processHits (GLint hits, GLuint buffer[])
 		for (int j=0; j < num; j++) 
 			ptr++;
 	}
-	
+
 	// if there were hits, the one selected is in "selected", and it consist of nselected "names" (integer ID's)
 	if (selected!=NULL)
 	{
@@ -96,7 +96,25 @@ void PickInterface::processHits (GLint hits, GLuint buffer[])
 		for (int i=0; i<nselected; i++)
 			printf("%d ",selected[i]);
 		printf("\n");
+		if(nselected == 2){
+			float pos[4];
+			pos[0] = ((PickScene *) scene)->elements.brd.coords[selected[0]][selected[1]][0]+2.5;
+			pos[1] = ((PickScene *) scene)->elements.brd.coords[selected[0]][selected[1]][1]+3;
+			pos[2] = ((PickScene *) scene)->elements.brd.coords[selected[0]][selected[1]][2]+2.5;
+			pos[3] = 1;
+			printf("coord %f %f %f\n",pos[0],pos[1],pos[2]);
+			((PickScene *) scene)->setSel(pos,true);
+		}
+		else
+		{
+			float pos[4] = {0,0,0,1};
+			((PickScene *) scene)->setSel(pos,false);
+		}
+
 	}
-	else
+	else{
 		printf("Nothing selected while picking \n");	
+		float pos[4] = {0,0,0,1};
+		((PickScene *) scene)->setSel(pos,false);
+	}
 }
