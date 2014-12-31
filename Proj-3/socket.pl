@@ -17,25 +17,7 @@ server:-
         start(Stream),
         socket_server_close(Socket).
 
-% wait for commands
-serverLoop(Stream) :-
-        repeat,
-        read(Stream, ClientMsg),
-        write('Received: '), write(ClientMsg), nl,
-        parse_input(ClientMsg, MyReply,Stream),
-        format(Stream, '~q.~n', [MyReply]),
-        write('Wrote: '), write(MyReply), nl,
-        flush_output(Stream),
-        (ClientMsg == quit; ClientMsg == end_of_file), !.
 
-parse_input(start,start-game,S) :-
-        start(S).
-        
-parse_input(quit, ok-bye,_) :- !.
-                
-comando(Arg1, Arg2, Answer) :-
-        write(Arg1), nl, write(Arg2), nl,
-        Answer = '(5)'.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -48,23 +30,31 @@ comando(Arg1, Arg2, Answer) :-
 start(Stream):- 
         createBoardInput(Lines,Columns,Stream),
         createBoard(Brd,Lines,Columns),
-        selectGameModeInput(Mode,AIInt),
+        
+        selectGameModeInput(Mode,AIInt,Stream),
         printBoard(Brd),
+        format(Stream, '~q.~n', [Brd]),
         write('Press enter to start'),
+        format(Stream, '~q.~n', ['Press enter to start']),
         ((Mode == 'AI-AI';Mode == 'AI-H')->
-         get_char(_);!),
+         get_char(Stream,_);!),
         Column is Columns-1,
         Line is Lines-1, 
-        game('X',0,Column,Line,0,Brd,0,0,'N','N',Mode,[Lines,Columns|[]],AIInt).
+        game('X',0,Column,Line,0,Brd,0,0,'N','N',Mode,[Lines,Columns|[]],AIInt,Stream).
 
 %selectGameModeInput(-PlayerVsPlayer,-LevelOfIntelligence)
-selectGameModeInput(Mode,AIInt):-
+selectGameModeInput(Mode,AIInt,Stream):-
         write('In which mode do you want to play?(ex: H-H or AI-H)\n'),
-        get_char(_),
-        read_line([X1,X2|Xs]),
+        format(Stream, '~q.~n', ['Mode: H-H or AI-H?']),
+        get_char(Stream,_),
+        flush_output(Stream),
+        read_line(Stream,[X1,X2|Xs]),
         name(Mode,[X1,X2|Xs]),
          write('How should AI be?(Random or Smart)\n'),
-         read_line(Int),
+         flush_output(Stream),
+         format(Stream, '~q.~n', ['Random or Smart?']),
+         read_line(Stream,Int),
+         flush_output(Stream),
          name(AIInt,Int).
 
 %createBoardInput(-Number of Lines,-Number of Columns)
@@ -199,85 +189,92 @@ replaceL(Column, X,[H|T], [H|T1]) :-
 replaceL(0,X, [_H|T], [X|T]):-!.
   
 %gameOver(+Player that won)
-gameOver(Pl) :-
+gameOver(Pl,Stream) :-
         nl,
-        write('Player '), write(Pl), write(' has won!!!').
+        write('Player '), write(Pl), write(' has won!!!'),
+         format(Stream, '~q.~n', ['Winnner']),
+          format(Stream, '~q.~n', [Pl]).
 
 %game(+Player,+LineOfX,+ColumnOfX,+LineOfY,+ColumnOfY,+Board,+PointsOfX,+PointsOfY,+PrevChoiceOfX,+PrevChoiceOfY,+Mode,+BoardSize,+AILevel)
-game('X',LineX,ColumnX,LineY,ColumnY,Brd,PointsX,PointsY,PrevChoiceX,PrevChoiceY,Mode,BrdSize,AILevel):-
+game('X',LineX,ColumnX,LineY,ColumnY,Brd,PointsX,PointsY,PrevChoiceX,PrevChoiceY,Mode,BrdSize,AILevel,Stream):-
         PointsY < 4,
-        printPoints(PointsX,PointsY),
+        printPoints(PointsX,PointsY,Stream),
         (Mode == 'H-H'->
-         gameLogic('X','$',LineX,ColumnX,NewLine,NewColumn,LineY,ColumnY,Brd,BrdR,PointsX,NewPoints,PrevChoiceX,'H',BrdSize,AILevel),!,
-         game('Y',NewLine,NewColumn,LineY,ColumnY,BrdR,NewPoints,PointsY,PrevChoiceX,PrevChoiceY,Mode,BrdSize,AILevel);!),
+         gameLogic('X','$',LineX,ColumnX,NewLine,NewColumn,LineY,ColumnY,Brd,BrdR,PointsX,NewPoints,PrevChoiceX,'H',BrdSize,AILevel,Stream),!,
+         game('Y',NewLine,NewColumn,LineY,ColumnY,BrdR,NewPoints,PointsY,PrevChoiceX,PrevChoiceY,Mode,BrdSize,AILevel,Stream);!),
         (Mode == 'H-AI'->
-         gameLogic('X','$',LineX,ColumnX,NewLine,NewColumn,LineY,ColumnY,Brd,BrdR,PointsX,NewPoints,PrevChoiceX,'H',BrdSize,AILevel),!,
-         game('Y',NewLine,NewColumn,LineY,ColumnY,BrdR,NewPoints,PointsY,PrevChoiceX,PrevChoiceY,'AI-H',BrdSize,AILevel);!),
+         gameLogic('X','$',LineX,ColumnX,NewLine,NewColumn,LineY,ColumnY,Brd,BrdR,PointsX,NewPoints,PrevChoiceX,'H',BrdSize,AILevel,Stream),!,
+         game('Y',NewLine,NewColumn,LineY,ColumnY,BrdR,NewPoints,PointsY,PrevChoiceX,PrevChoiceY,'AI-H',BrdSize,AILevel,Stream);!),
         (Mode == 'AI-H'->
-         gameLogic('X','$',LineX,ColumnX,NewLine,NewColumn,LineY,ColumnY,Brd,BrdR,PointsX,NewPoints,PrevChoiceX,'AI',BrdSize,AILevel),!,
-         game('Y',NewLine,NewColumn,LineY,ColumnY,BrdR,NewPoints,PointsY,PrevChoiceX,PrevChoiceY,'H-AI',BrdSize,AILevel);!),
+         gameLogic('X','$',LineX,ColumnX,NewLine,NewColumn,LineY,ColumnY,Brd,BrdR,PointsX,NewPoints,PrevChoiceX,'AI',BrdSize,AILevel,Stream),!,
+         game('Y',NewLine,NewColumn,LineY,ColumnY,BrdR,NewPoints,PointsY,PrevChoiceX,PrevChoiceY,'H-AI',BrdSize,AILevel,Stream);!),
         (Mode == 'AI-AI'->
-         gameLogic('X','$',LineX,ColumnX,NewLine,NewColumn,LineY,ColumnY,Brd,BrdR,PointsX,NewPoints,PrevChoiceX,'AI',BrdSize,AILevel),!,
-         game('Y',NewLine,NewColumn,LineY,ColumnY,BrdR,NewPoints,PointsY,PrevChoiceX,PrevChoiceY,Mode,BrdSize,AILevel);!).
+         gameLogic('X','$',LineX,ColumnX,NewLine,NewColumn,LineY,ColumnY,Brd,BrdR,PointsX,NewPoints,PrevChoiceX,'AI',BrdSize,AILevel,Stream),!,
+         game('Y',NewLine,NewColumn,LineY,ColumnY,BrdR,NewPoints,PointsY,PrevChoiceX,PrevChoiceY,Mode,BrdSize,AILevel,Stream);!).
 
-game('Y',LineX,ColumnX,LineY,ColumnY,Brd,PointsX,PointsY,PrevChoiceX,PrevChoiceY,Mode,BrdSize,AILevel):-
+game('Y',LineX,ColumnX,LineY,ColumnY,Brd,PointsX,PointsY,PrevChoiceX,PrevChoiceY,Mode,BrdSize,AILevel,Stream):-
         PointsX < 4,
-        printPoints(PointsX,PointsY),
+        printPoints(PointsX,PointsY,Stream),
         (Mode == 'H-H'->
-         gameLogic('Y','#',LineY,ColumnY,NewLine,NewColumn,LineX,ColumnX,Brd,BrdR,PointsY,NewPoints,PrevChoiceY,'H',BrdSize,AILevel),!,
-         game('X',LineX,ColumnX,NewLine,NewColumn,BrdR,PointsX,NewPoints,PrevChoiceX,PrevChoiceY,Mode,BrdSize,AILevel);!),
+         gameLogic('Y','#',LineY,ColumnY,NewLine,NewColumn,LineX,ColumnX,Brd,BrdR,PointsY,NewPoints,PrevChoiceY,'H',BrdSize,AILevel,Stream),!,
+         game('X',LineX,ColumnX,NewLine,NewColumn,BrdR,PointsX,NewPoints,PrevChoiceX,PrevChoiceY,Mode,BrdSize,AILevel,Stream);!),
         (Mode == 'H-AI'->
-         gameLogic('Y','#',LineY,ColumnY,NewLine,NewColumn,LineX,ColumnX,Brd,BrdR,PointsY,NewPoints,PrevChoiceY,'H',BrdSize,AILevel),!,
-         game('X',LineX,ColumnX,NewLine,NewColumn,BrdR,PointsX,NewPoints,PrevChoiceX,PrevChoiceY,'AI-H',BrdSize,AILevel);!),
+         gameLogic('Y','#',LineY,ColumnY,NewLine,NewColumn,LineX,ColumnX,Brd,BrdR,PointsY,NewPoints,PrevChoiceY,'H',BrdSize,AILevel,Stream),!,
+         game('X',LineX,ColumnX,NewLine,NewColumn,BrdR,PointsX,NewPoints,PrevChoiceX,PrevChoiceY,'AI-H',BrdSize,AILevel,Stream);!),
         (Mode == 'AI-H'->
-         gameLogic('Y','#',LineY,ColumnY,NewLine,NewColumn,LineX,ColumnX,Brd,BrdR,PointsY,NewPoints,PrevChoiceY,'AI',BrdSize,AILevel),!,
-         game('X',LineX,ColumnX,NewLine,NewColumn,BrdR,PointsX,NewPoints,PrevChoiceX,PrevChoiceY,'H-AI',BrdSize,AILevel);!),
+         gameLogic('Y','#',LineY,ColumnY,NewLine,NewColumn,LineX,ColumnX,Brd,BrdR,PointsY,NewPoints,PrevChoiceY,'AI',BrdSize,AILevel,Stream),!,
+         game('X',LineX,ColumnX,NewLine,NewColumn,BrdR,PointsX,NewPoints,PrevChoiceX,PrevChoiceY,'H-AI',BrdSize,AILevel,Stream);!),
         (Mode == 'AI-AI'->
-         gameLogic('Y','#',LineY,ColumnY,NewLine,NewColumn,LineX,ColumnX,Brd,BrdR,PointsY,NewPoints,PrevChoiceY,'AI',BrdSize,AILevel),!,
-         game('X',LineX,ColumnX,NewLine,NewColumn,BrdR,PointsX,NewPoints,PrevChoiceX,PrevChoiceY,Mode,BrdSize,AILevel);!).
+         gameLogic('Y','#',LineY,ColumnY,NewLine,NewColumn,LineX,ColumnX,Brd,BrdR,PointsY,NewPoints,PrevChoiceY,'AI',BrdSize,AILevel,Stream),!,
+         game('X',LineX,ColumnX,NewLine,NewColumn,BrdR,PointsX,NewPoints,PrevChoiceX,PrevChoiceY,Mode,BrdSize,AILevel,Stream);!).
 
         
-game('X',_LineX,_ColumnX,_LineY,_ColumnY,_Brd,_PointsX,4,_PrevChoiceX,_PrevChoiceY,_Mode,_BrdSize,_AILevel):-
-        gameOver('Y').
+game('X',_LineX,_ColumnX,_LineY,_ColumnY,_Brd,_PointsX,4,_PrevChoiceX,_PrevChoiceY,_Mode,_BrdSize,_AILevel,Stream):-
+        gameOver('Y',Stream).
 
-game('Y',_LineX,_ColumnX,_LineY,_ColumnY,_Brd,4,_PointsY,_PrevChoiceX,_PrevChoiceY,_Mode,_BrdSize,_AILevel):-
-        gameOver('X').
+game('Y',_LineX,_ColumnX,_LineY,_ColumnY,_Brd,4,_PointsY,_PrevChoiceX,_PrevChoiceY,_Mode,_BrdSize,_AILevel,Stream):-
+        gameOver('X',Stream).
 
 %gameLogic(+Player,+SymbolOfComplete,+LineOfPlayer,+ColumnOfPlayer,-NewLineOfPlayer,-NewColumnOfPlayer,+LineOfEnemy,+ColumnEnemy,+Board,-ResultingBoard,+PointsOfPlayer,-NewPointsOfPlayer,+PrevChoiceOfPlayer,+TypeOfPlayer,+BoardSize,+AILevel)
-gameLogic(Pl,Symbol,Line,Column,NewLine,NewColumn,LineE,ColumnE,Brd,BrdR,Points,NewPoints,PrevChoice,'H',BrdSize,AILevel):-
-        readInput(Pl,Dir,Nmb,Dsk),!,
-        (validateMove(Line,Column,NewLine,NewColumn, LineE,ColumnE,Dir,Nmb,Dsk,Brd,NewPrevStack,NewNextStack,Symbol,Points,NewPoints,PrevChoice)->
+gameLogic(Pl,Symbol,Line,Column,NewLine,NewColumn,LineE,ColumnE,Brd,BrdR,Points,NewPoints,PrevChoice,'H',BrdSize,AILevel,Stream):-
+        readInput(Pl,Dir,Nmb,Dsk,Stream),!,
+        (validateMove(Line,Column,NewLine,NewColumn, LineE,ColumnE,Dir,Nmb,Dsk,Brd,NewPrevStack,NewNextStack,Symbol,Points,NewPoints,PrevChoice,Stream)->
         move(Pl,Line,Column,NewLine,NewColumn,Brd,BrdR,NewPrevStack,NewNextStack),
         printBoard(BrdR);
-        gameLogic(Pl,Symbol,Line,Column,NewLine,NewColumn,LineE,ColumnE,Brd,BrdR,Points,NewPoints,PrevChoice,'H',BrdSize,AILevel)).
+        format(Stream, '~q.~n', [BrdR]),
+        gameLogic(Pl,Symbol,Line,Column,NewLine,NewColumn,LineE,ColumnE,Brd,BrdR,Points,NewPoints,PrevChoice,'H',BrdSize,AILevel,Stream)).
 
-gameLogic(Pl,Symbol,Line,Column,NewLine,NewColumn,LineE,ColumnE,Brd,BrdR,Points,NewPoints,PrevChoice,'AI',[MaxLine,MaxColumn|[]],'Random'):-
+gameLogic(Pl,Symbol,Line,Column,NewLine,NewColumn,LineE,ColumnE,Brd,BrdR,Points,NewPoints,PrevChoice,'AI',[MaxLine,MaxColumn|[]],'Random',Stream):-
         generateRandomInput(Dir,Nmb,Dsk,MaxColumn,MaxLine),!,
-        (validateMove(Line,Column,NewLine,NewColumn, LineE,ColumnE,Dir,Nmb,Dsk,Brd,NewPrevStack,NewNextStack,Symbol,Points,NewPoints,PrevChoice)->
+        (validateMove(Line,Column,NewLine,NewColumn, LineE,ColumnE,Dir,Nmb,Dsk,Brd,NewPrevStack,NewNextStack,Symbol,Points,NewPoints,PrevChoice,Stream)->
         move(Pl,Line,Column,NewLine,NewColumn,Brd,BrdR,NewPrevStack,NewNextStack),
         printBoard(BrdR),
-        advance(Dir,Nmb,Dsk); 
-        gameLogic(Pl,Symbol,Line,Column,NewLine,NewColumn,LineE,ColumnE,Brd,BrdR,Points,NewPoints,PrevChoice,'AI',[MaxLine,MaxColumn|[]],'Random')).
+        format(Stream, '~q.~n', [BrdR]),
+        advance(Dir,Nmb,Dsk,Stream); 
+        gameLogic(Pl,Symbol,Line,Column,NewLine,NewColumn,LineE,ColumnE,Brd,BrdR,Points,NewPoints,PrevChoice,'AI',[MaxLine,MaxColumn|[]],'Random',Stream)).
 
-gameLogic(Pl,Symbol,Line,Column,NewLine,NewColumn,LineE,ColumnE,Brd,BrdR,Points,NewPoints,PrevChoice,'AI',[MaxLine,MaxColumn|[]],'Smart'):-
+gameLogic(Pl,Symbol,Line,Column,NewLine,NewColumn,LineE,ColumnE,Brd,BrdR,Points,NewPoints,PrevChoice,'AI',[MaxLine,MaxColumn|[]],'Smart',Stream):-
         getAvailableMoves(Moves,Brd,Line,Column,MaxLine,MaxColumn),
         getElementM(Line,Column,Brd,[_H|PrevStack]),
-        chooseValidPlay(Moves,Nmb,Dsk,Dir,Brd,PrevStack,Line,Column,NewLine,NewColumn,LineE,ColumnE,NewPrevStack,NewNextStack,Symbol,Points,NewPoints,PrevChoice),
+        chooseValidPlay(Moves,Nmb,Dsk,Dir,Brd,PrevStack,Line,Column,NewLine,NewColumn,LineE,ColumnE,NewPrevStack,NewNextStack,Symbol,Points,NewPoints,PrevChoice,Stream),
         move(Pl,Line,Column,NewLine,NewColumn,Brd,BrdR,NewPrevStack,NewNextStack),
         printBoard(BrdR),
+        format(Stream, '~q.~n', [BrdR]),
         write('Player '),write(Pl),write('s turn (AI)\n'),
-        advance(Dir,Nmb,Dsk).
+        format(Stream, '~q.~n', ['Player turn (AI): ']),
+        format(Stream, '~q.~n', [Pl]),
+        advance(Dir,Nmb,Dsk,Stream).
 
 
 
 %chooseValidPlay(+AvailableMoves,-NumberOfTravel,-CarryingDisk,-Direction,+Board,+StackWherePlayerIs,+LineOfPlayer,+ColumnOfPlayer,-NewLineOfPlayer,-NewColumnOfPlayer,+LineOfEnemy,+ColumnEnemy,-StackAfterPlayerLeaves,-StackAfterPlayerArrives,+SymbolOfComplete,+PointsOfPlayer,+NewPointsOfPlayer,+PrevChoiceOfPlayer)
-chooseValidPlay(Moves,Nmb,Dsk,Dir,Brd,PrevStack,Line,Column,NewLine,NewColumn,LineF,ColumnF,NewPrevStack,NewNextStack,Symbol,Points,NewPoints,PrevChoice):-
+chooseValidPlay(Moves,Nmb,Dsk,Dir,Brd,PrevStack,Line,Column,NewLine,NewColumn,LineF,ColumnF,NewPrevStack,NewNextStack,Symbol,Points,NewPoints,PrevChoice,Stream):-
         decidePlay(Moves,Play,PrevStack),
         processPlay(Play,Nmb,Dsk,Dir,Line,Column),
-        (validateMove(Line,Column,NewLine,NewColumn, LineF,ColumnF,Dir,Nmb,Dsk,Brd,NewPrevStack,NewNextStack,Symbol,Points,NewPoints,PrevChoice)->
+        (validateMove(Line,Column,NewLine,NewColumn, LineF,ColumnF,Dir,Nmb,Dsk,Brd,NewPrevStack,NewNextStack,Symbol,Points,NewPoints,PrevChoice,Stream)->
          !;
          deleteInvalid(Moves,Play,MovesR),
-          chooseValidPlay(MovesR,_Nmb,_Dsk,_Dir,Brd,PrevStack,Line,Column,NewLine,NewColumn,LineF,ColumnF,NewPrevStack,NewNextStack,Symbol,Points,NewPoints,PrevChoice)).
+          chooseValidPlay(MovesR,_Nmb,_Dsk,_Dir,Brd,PrevStack,Line,Column,NewLine,NewColumn,LineF,ColumnF,NewPrevStack,NewNextStack,Symbol,Points,NewPoints,PrevChoice,Stream)).
 
 %deleteInvalid(+AvailableMoves,+PlayToDelete,-ResultingListOfMoves)
 deleteInvalid(Moves,[H|_T],MovesR):-
@@ -396,42 +393,51 @@ processFirstElement([H|_T],P,Y):-
         
 
 %advance(+DirectionOfTravel,+NumberOfTravel,+CarryingDisk)
-advance(Dir,Nmb,Dsk):-
-        write('Direction: \n'),
-        write(Dir),
+advance(Dir,Nmb,Dsk,Stream):-
+        format(Stream, '~q.~n', ['Direction: ']),
+        format(Stream, '~q.~n', [Dir]),
+        
+        format(Stream, '~q.~n', ['Number of movement: ']),
+        format(Stream, '~q.~n', [Nmb]),
         nl,
-        write('Number of movement: \n'),
-        write(Nmb),
+        format(Stream, '~q.~n', ['Disk?']),
+        format(Stream, '~q.~n', [Dsk]),
         nl,
-        write('Disk? \n'),
-        write(Dsk),
-        nl,
-        write('Press enter to continue\n'),
-        get_char(_).
+        format(Stream, '~q.~n', ['Press enter to continue']),
+        get_char(Stream,_).
 
 %printPoints(+PointsOfX,+PointsOfY)
-printPoints(PointsX,PointsY) :-
+printPoints(PointsX,PointsY,Stream) :-
         write('\nPlayer X has '),
         write(PointsX),write(' points'),
         write('\nPlayer Y has '),
-        write(PointsY),write(' points'),nl,nl.
+        write(PointsY),write(' points'),nl,nl,
+        format(Stream, '~q.~n', ['Points: ']),
+        format(Stream, '~q.~n', [PointsX]),
+        format(Stream, '~q.~n', [PointsY]).
 
 
 
 %readInput(-Player,-DirectionOfTravel,-NumberOfTravel,-CarryingDisk)
-readInput(Pl,Dir,Nmb,Dsk) :- 
+readInput(Pl,Dir,Nmb,Dsk,Stream) :- 
         nl, 
-        get_char(_),
+      
         write('Player '),write(Pl),write('s turn\n'),
+        format(Stream, '~q.~n', ['Player Turn: ']),
+        format(Stream, '~q.~n', [Pl]),
         write('In which direction do you wish to move? (L,D,U or R)\n'),
-        get_char(Dir),
+        format(Stream, '~q.~n', ['Direction: (L,D,U or R)']),
+        flush_output(Stream),
+        get_char(Stream,Dir),
         write('How many houses are you traveling? (integer)\n'),
-        get_char(_),
-        get_code(X),
+        format(Stream, '~q.~n', ['How many houses are you traveling? (integer)']),
+        flush_output(Stream),
+        get_code(Stream,X),
         Nmb is X-48,
         write('Do you want to carry a disk? (Y or N)\n'),
-        get_char(_),
-        get_char(Dsk).
+        format(Stream, '~q.~n', ['Do you want to carry a disk? (Y or N)']),
+        flush_output(Stream),
+        get_char(Stream,Dsk).
 
 
 %moveDisk(+CarryingDisk,+ValueOfStackWherePlayerIs,+ValueOfStackWherePlayerIsHeaded,-ValueOfStackWherePlayerWas,-ValueOfStackAfterPlayerArrives,+PointsOfPlayer,-NewPointsOfPlayer)
@@ -449,92 +455,92 @@ moveDisk('Y',T,Y,X,Z,Points,Points) :-
 moveDisk('N',T,Y,T,Y,Points,Points).
 
 %validateMove(+LineOfPlayer,+ColumnOfPlayer,-NewLineOfPlayer,-NewColumnOfPlayer,+LineOfEnemy,+ColumnEnemy,+DirectionOfTravel,+NumberOfTravel,+CarryingDisk,+Board,-StackAfterPlayerLeaves,+StackWherePlayerIs,+SymbolOfComplete,+PointsOfPlayer,+NewPointsOfPlayer,+PrevChoiceOfPlayer)
-validateMove(Line,Column,NewLine,NewColumn, LineF,ColumnF,Dir,Nmb,Dsk,Brd,NewPrevStack,Stack,StackSymbol,Points,NewPoints,PrevChoice):-
+validateMove(Line,Column,NewLine,NewColumn, LineF,ColumnF,Dir,Nmb,Dsk,Brd,NewPrevStack,Stack,StackSymbol,Points,NewPoints,PrevChoice,Stream):-
         calcCoord(Dir,Nmb,Line,Column,NewLine,NewColumn),
         getElementM(NewLine,NewColumn,Brd,NextStack),
-        isPlayer(NewLine,NewColumn, LineF,ColumnF),!,
-        canLand(NextStack,Dsk),!,
+        isPlayer(NewLine,NewColumn, LineF,ColumnF,Stream),!,
+        canLand(NextStack,Dsk,Stream),!,
         getElementM(Line,Column,Brd,[_H|PrevStack]),
-        canDiskMove(Dsk,PrevStack,NextStack,NewPrevStack,NewNextStack,PrevChoice),!,
-        isMoveOverPlayer(Dsk,Dir,Line,Column,NewLine,NewColumn,LineF,ColumnF),!,
+        canDiskMove(Dsk,PrevStack,NextStack,NewPrevStack,NewNextStack,PrevChoice,Stream),!,
+        isMoveOverPlayer(Dsk,Dir,Line,Column,NewLine,NewColumn,LineF,ColumnF,Stream),!,
         isStackComplete(NewNextStack,Stack,StackSymbol,Points,NewPoints),!.
 
 %isPlayer(+LineToTravelTo,+ColumnToTravelTo, +LineOfEnemy,+ColumnOfEnemy)
-isPlayer(LineF,ColumnF, LineF,ColumnF):-errorLanding1.
-isPlayer(NewLine,NewColumn, LineF,ColumnF):-
+isPlayer(LineF,ColumnF, LineF,ColumnF,Stream):-errorLanding1(Stream).
+isPlayer(NewLine,NewColumn, LineF,ColumnF,_):-
         NewLine \= LineF;
         NewColumn \= ColumnF.
 
 %canLand(+ValueOfStackToTravelTo,+CarryingDisk)        
-canLand(_Y,'N').
-canLand(_Y,'N').
-canLand(Y,'Y'):-integer(Y).
-canLand(Y,'Y'):-Y == '$',errorLanding2.
-canLand(Y,'Y'):-Y == '#',errorLanding2.
+canLand(_Y,'N',_).
+canLand(_Y,'N',_).
+canLand(Y,'Y',_):-integer(Y).
+canLand(Y,'Y',Stream):-Y == '$',errorLanding2(Stream).
+canLand(Y,'Y',Stream):-Y == '#',errorLanding2(Stream).
 
         
-errorLanding1 :-  write('\n\nYou cannot land on top of another player'),fail.
-errorLanding2 :-  write('\n\nYou cannot land on top of a complete stack with a disk'),fail.
+errorLanding1(Stream) :-  format(Stream, '~q.~n', ['You cannot land on top of another player']),fail.
+errorLanding2(Stream) :-  format(Stream, '~q.~n', ['You cannot land on top of a complete stack with a disk']),fail.
 
 %isMoveOverPlayer(+CarryingDisk,+DirectionOfTravel,+LineOfPlayer,+ColumnOfPlayer,+NewLineOfPlayer,+NewColumnOfPlayer,+LineOfEnemy,+ColumnEnemy)
-isMoveOverPlayer('N',_Dir,_Line,_Column,_NewLine,_NewColumn,_LineF,_ColumnF).
+isMoveOverPlayer('N',_Dir,_Line,_Column,_NewLine,_NewColumn,_LineF,_ColumnF,_).
 
-isMoveOverPlayer('Y',_Dir,Line,Column,_NewLine,_NewColumn,LineF,ColumnF) :-
+isMoveOverPlayer('Y',_Dir,Line,Column,_NewLine,_NewColumn,LineF,ColumnF,_) :-
         Line \= LineF,
         Column \= ColumnF.
 
-isMoveOverPlayer('Y',Dir,_Line,ColumnF,_NewLine,_NewColumn,_LineF,ColumnF) :-
+isMoveOverPlayer('Y',Dir,_Line,ColumnF,_NewLine,_NewColumn,_LineF,ColumnF,_) :-
         Dir \= 'U',
         Dir \= 'D'.
 
-isMoveOverPlayer('Y',Dir,LineF,_Column,_NewLine,_NewColumn,LineF,_ColumnF) :-
+isMoveOverPlayer('Y',Dir,LineF,_Column,_NewLine,_NewColumn,LineF,_ColumnF,_) :-
         Dir \= 'L',
         Dir \= 'R'.
 
-isMoveOverPlayer('Y','U',_Line,ColumnF,NewLine,_NewColumn,LineF,ColumnF) :-
+isMoveOverPlayer('Y','U',_Line,ColumnF,NewLine,_NewColumn,LineF,ColumnF,Stream) :-
         (NewLine < LineF ->
-         errorMoving;
+         errorMoving(Stream);
          true).
 
-isMoveOverPlayer('Y','D',_Line,ColumnF,NewLine,_NewColumn,LineF,ColumnF) :-
+isMoveOverPlayer('Y','D',_Line,ColumnF,NewLine,_NewColumn,LineF,ColumnF,Stream) :-
         (NewLine > LineF ->
-         errorMoving;
+         errorMoving(Stream);
          true).
 
-isMoveOverPlayer('Y','L',LineF,_Column,_NewLine,NewColumn,LineF,ColumnF) :-
+isMoveOverPlayer('Y','L',LineF,_Column,_NewLine,NewColumn,LineF,ColumnF,Stream) :-
         (NewColumn < ColumnF ->
-         errorMoving;
+         errorMoving(Stream);
          true).
 
-isMoveOverPlayer('Y','R',LineF,_Column,_NewLine,NewColumn,LineF,ColumnF) :-
+isMoveOverPlayer('Y','R',LineF,_Column,_NewLine,NewColumn,LineF,ColumnF,Stream) :-
         (NewColumn > ColumnF ->
-         errorMoving;
+         errorMoving(Stream);
          true).
 
-errorMoving :-
-        write('\n\nYou cannot move over a player while carrying a disk'), fail.
+errorMoving(Stream) :-
+        format(Stream, '~q.~n', ['You cannot move over a player while carrying a disk']), fail.
 
 %canDiskMove(+CarryingDisk,+ValueOfStackWherePlayerIs,+ValueOfStackWherePlayerIsHeaded,-StackAfterPlayerLeaves,-StackAfterPlayerArrives,+PreviousChoice)
-canDiskMove('N',PrevStack,NextStack,PrevStack,NextStack,_PrevChoice).
+canDiskMove('N',PrevStack,NextStack,PrevStack,NextStack,_PrevChoice,_).
 
 
-canDiskMove('Y',PrevStack,NextStack,NewPrevStack,NewNextStack,PrevChoice):-
+canDiskMove('Y',PrevStack,NextStack,NewPrevStack,NewNextStack,PrevChoice,Stream):-
         (PrevChoice \= 'Y'->
         (PrevStack == 1 ->
         (integer(NextStack) ->
          NewNextStack is NextStack +1, NewPrevStack is 0;
-         errorDropingDisk);
-         errorTakingDisk);
-         errorTakingDiskAgain).
+         errorDropingDisk(Stream));
+         errorTakingDisk(Stream));
+         errorTakingDiskAgain(Stream)).
         
-errorTakingDisk :-
-        write('\n\nYou cannot take a disk from a stack unless the disk number in that stack is 1'), fail.
+errorTakingDisk(Stream) :-
+        format(Stream, '~q.~n', ['You cannot take a disk from a stack unless the disk number in that stack is 1']), fail.
 
-errorDropingDisk :-
-         write('\n\nYou cannot drop a disk on a complete stack'), fail.
+errorDropingDisk(Stream) :-
+         format(Stream, '~q.~n', ['You cannot drop a disk on a complete stack']), fail.
 
-errorTakingDiskAgain :-
-         write('\n\nYou cannot take a disk from the same stack two times in a row'), fail.
+errorTakingDiskAgain(Stream) :-
+         format(Stream, '~q.~n', ['nYou cannot take a disk from the same stack two times in a row']), fail.
                 
 %isStackComplete(-StackBeingAnalised,+StackOfPlayer,+StackSymbol,+PointsOfPlayer,-NewPointsOfPlayer)
 isStackComplete(3,StackSymbol,StackSymbol,Points,NewPoints):-
