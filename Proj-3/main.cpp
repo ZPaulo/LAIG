@@ -15,13 +15,30 @@ using std::exception;
 
 
 int main(int argc, char* argv[]){
-	/*
+	
 	socketConnect();
-	char *s = "comando(1, 2).\n";
-	envia(s, strlen(s));
-	char ans[128];
+	string x,y;
+	
+	
+
+	cout<<"Lines: ";cin>>x;
+	x.append(".\n");
+	char *a=new char[x.size()+1];
+	a[x.size()]=0;
+	memcpy(a,x.c_str(),x.size());
+	envia(a, strlen(a));
+	char ans[128],xxx[128];
 	recebe(ans);
-	*/
+
+	cout<<"Columns: ";cin>>y;
+	y.append(".\n");
+	char *b=new char[y.size()+1];
+	b[y.size()]=0;
+	memcpy(b,y.c_str(),y.size());
+	envia(b, strlen(b));
+	recebe(xxx);
+
+	quit();
 	CGFapplication app = CGFapplication();
 
 	try {

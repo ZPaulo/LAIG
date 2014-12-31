@@ -1368,6 +1368,8 @@ void ANFScene::init()
 		parser.animations[i]->doReset = true;
 
 
+	
+
 }
 
 void ANFScene::update(unsigned long t)
@@ -1421,7 +1423,7 @@ void ANFScene::display()
 	else
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-
+	
 	if(parser.graph->nodes[parser.graph->rootID])
 	{
 		drawGraph(parser.graph->rootID,parser.graph->nodes[parser.graph->rootID]->apperanceRef,false);
