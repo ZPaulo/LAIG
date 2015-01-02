@@ -280,10 +280,12 @@ public:
 				glPopMatrix();
 				glPushMatrix();
 				glTranslatef(coords[i][a][0],0,coords[i][a][2]);
+				dsk.diskAppearance->apply();
 				for(unsigned int k = 0; k < coords[i][a][1];k++){
+					glPushMatrix();
 					glTranslatef(0,(k+1)*0.5,0);
-					dsk.diskAppearance->apply();
 					dsk.draw();
+					glPopMatrix();
 
 				}
 				glPopName();
