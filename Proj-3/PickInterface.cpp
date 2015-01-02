@@ -13,10 +13,12 @@ void PickInterface::processMouse(int button, int state, int x, int y)
 	// do picking on mouse press (GLUT_DOWN)
 	// this could be more elaborate, e.g. only performing picking when there is a click (DOWN followed by UP) on the same place
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
-		performPicking(x,y);
+		performPicking(x,y,true);
+	if(button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN)
+		performPicking(x,y,false);
 }
 
-void PickInterface::performPicking(int x, int y) 
+void PickInterface::performPicking(int x, int y, bool disk) 
 {
 	// Sets the buffer to be used for selection and activate selection mode
 	glSelectBuffer (BUFSIZE, selectBuf);
@@ -63,10 +65,10 @@ void PickInterface::performPicking(int x, int y)
 	// revert to render mode, get the picking results and process them
 	GLint hits;
 	hits = glRenderMode(GL_RENDER);
-	processHits(hits, selectBuf);
+	processHits(hits, selectBuf,disk);
 }
 
-void PickInterface::processHits (GLint hits, GLuint buffer[]) 
+void PickInterface::processHits (GLint hits, GLuint buffer[],bool disk) 
 {
 	GLuint *ptr = buffer;
 	GLuint mindepth = 0xFFFFFFFF;
@@ -98,12 +100,33 @@ void PickInterface::processHits (GLint hits, GLuint buffer[])
 		printf("\n");
 		if(nselected == 2){
 			float pos[4];
-			pos[0] = ((PickScene *) scene)->elements.brd.coords[selected[0]][selected[1]][0]+2.5;
-			pos[1] = ((PickScene *) scene)->elements.brd.coords[selected[0]][selected[1]][1]+3;
-			pos[2] = ((PickScene *) scene)->elements.brd.coords[selected[0]][selected[1]][2]+2.5;
+			pos[0] = ((PickScene *) scene)->elements->brd.coords[selected[0]][selected[1]][0]+2.5;
+			pos[1] = ((PickScene *) scene)->elements->brd.coords[selected[0]][selected[1]][1]+3;
+			pos[2] = ((PickScene *) scene)->elements->brd.coords[selected[0]][selected[1]][2]+2.5;
 			pos[3] = 1;
 			printf("coord %f %f %f\n",pos[0],pos[1],pos[2]);
 			((PickScene *) scene)->setSel(pos,true);
+
+			int *pl = &((PickScene *) scene)->elements->activePl;
+
+			if(disk){
+				((PickScene *) scene)->elements->brd.coords[((PickScene *) scene)->elements->brd.plIndex[*pl][0]][((PickScene *) scene)->elements->brd.plIndex[*pl][1]][1]--;
+				((PickScene *) scene)->elements->brd.coords[selected[0]][selected[1]][1]++;
+			}
+
+			((PickScene *) scene)->elements->brd.plIndex[*pl][0] = selected[0];
+			((PickScene *) scene)->elements->brd.plIndex[*pl][1] = selected[1];
+
+			
+			if(*pl == 0)
+				*pl = 1;
+			else
+				*pl = 0;
+
+
+
+
+
 		}
 		else
 		{

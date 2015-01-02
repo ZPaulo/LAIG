@@ -14,8 +14,9 @@ public:
 	void setSel(float pos[4],bool on);
 	~PickScene();
 private:
-	CGFlight* lightSel;
-	Game elements;
+	CGFlight *light0;
+	CGFlight *lightSel;
+	Game *elements;
 	CGFappearance* materialAppearance;
 };
 

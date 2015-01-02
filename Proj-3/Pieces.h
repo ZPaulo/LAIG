@@ -21,10 +21,19 @@ public:
 		cil.stacks=20;
 	}
 	void draw(){
+		glPushMatrix();
+		glTranslatef(2.5,0.5,2.5);
+		glRotatef(90,1,0,0);
 		cil.draw();
+		glPopMatrix();
 	}
 	void draw(Texture *t){
+
+		glPushMatrix();
+		glTranslatef(2.5,0.5,2.5);
+		glRotatef(90,1,0,0);
 		cil.draw(t);
+		glPopMatrix();
 	}
 };
 class PlayerP
@@ -45,12 +54,12 @@ public:
 	}
 	void draw(){
 		glPushMatrix();
+
 		glTranslated(2.5,0,2.5);
 
 		glPushMatrix();
 		glScaled(1,5,1);
 		glRotatef(-90,1,0,0);
-		glTranslated(0,-1.,0);
 		cil.draw();
 		glPopMatrix();
 
@@ -77,7 +86,7 @@ public:
 		rec1.xy1[0] = 0; rec1.xy1[1] = 0; rec1.xy2[0] = 1; rec1.xy2[1] = 1;
 		glPushMatrix();
 
-		glTranslated(2.5,0,2.5);
+		glTranslated(2.5,0.25,2.5);
 		glScaled(5,0.5,5);
 		glPushMatrix();
 		glTranslated(-0.5,-0.5,0.5);
@@ -120,7 +129,7 @@ public:
 		rec1.xy1[0] = 0; rec1.xy1[1] = 0; rec1.xy2[0] = 1; rec1.xy2[1] = 1;
 		glPushMatrix();
 
-		glTranslated(5,0,5);
+		glTranslated(5,0.5,5);
 		glScaled(10,1,10);
 		glPushMatrix();
 		glTranslated(-0.5,-0.5,0.5);
@@ -167,13 +176,15 @@ private:
 	CGFappearance *appBr;
 	CGFappearance *appPr;
 	Cube cubo;
-	
+
 
 public:
 	vector<vector<vector<float>>> coords;
+
+	vector<vector<float>> plIndex;
+
 	TowerP dsk;
-	PlayerP pl1;
-	PlayerP pl2;
+	PlayerP pl;
 	Board(){
 		size = 0;
 	}
@@ -194,66 +205,90 @@ public:
 
 		appPr->setTexture(preto);
 		appPr->setTextureWrap(GL_REPEAT,GL_REPEAT);
-		
+
+		for(unsigned int i = 0; i < size; i++)
+		{
+			vector<vector<float>> line;
+
+			for(unsigned int j = 0; j < size; j++)
+			{
+				vector<float> crd;
+				crd.push_back(j*5.5);
+				crd.push_back(1);
+				crd.push_back(i*5.5);
+				line.push_back(crd);
+			}
+			coords.push_back(line);
+		}
+
+		vector<float> pl1Index;
+		pl1Index.push_back(0);
+		pl1Index.push_back(size-1);
+
+		vector<float> pl2Index;
+		pl2Index.push_back(size-1);
+		pl2Index.push_back(0);
+
+		plIndex.push_back(pl1Index);
+		plIndex.push_back(pl2Index);
+
+
+
 	}
 	void draw(){
-		int change=0;
+
 		glPushMatrix();
-		glTranslatef(0,3,(size-1)*5.5);
+		glTranslatef(coords[plIndex[0][0]][plIndex[0][1]][0],(coords[plIndex[0][0]][plIndex[0][1]][1]+1)*0.5,coords[plIndex[0][0]][plIndex[0][1]][2]);
+		glPushName(0);
+		pl.draw();
+		glPopName();
+		glPopMatrix();
+
+		glPushMatrix();
+		glTranslatef(coords[plIndex[1][0]][plIndex[1][1]][0],(coords[plIndex[1][0]][plIndex[1][1]][1]+1)*0.5,coords[plIndex[1][0]][plIndex[1][1]][2]);
 		glPushName(1);
-		pl1.draw();
+		pl.draw();
 		glPopName();
 		glPopMatrix();
-		glPushMatrix();
-		glTranslatef((size-1)*5.5,3,0);
-		glPushName(2);
-		pl2.draw();
-		glPopName();
-		glPopMatrix();
-		glPushName(-1);		// Load a default name
+
+		int change=0;
+		glPushName(-1);	
 
 		for(int i=0;i<size;i++){
 			if(i%2==0)
 				change=0;
 			else 
 				change=1;
-			glPushMatrix();
-			glTranslated(0,0,i*5.5);
+
 			glLoadName(i);
-			vector<vector<float>> line;
 			for(int a=0;a<size;a++){
 				glPushMatrix();
-				glTranslated(a*5.5,0,0);
-				vector<float> crd;
-				crd.push_back(a*5.5);
-				crd.push_back(0);
-				crd.push_back(i*5.5);
-				line.push_back(crd);
-				
+				glTranslated(a*5.5,0,i*5.5);
+
 				glPushName(a);
-				
-					if(a%2==change){
+
+				if(a%2==change){
 					//branco
 					appBr->apply();
 					cubo.draw();
 				}
 				else{
 					//preto
-					//appPr->apply();
+					appPr->apply();
 					cubo.draw();
 				}
-				
-				glPushMatrix();
-				glTranslatef(2.5,0.7,2.5);
-				glRotatef(90,1,0,0);
-				dsk.diskAppearance->apply();
-				dsk.draw();
 				glPopMatrix();
+				glPushMatrix();
+				glTranslatef(coords[i][a][0],0,coords[i][a][2]);
+				for(unsigned int k = 0; k < coords[i][a][1];k++){
+					glTranslatef(0,(k+1)*0.5,0);
+					dsk.diskAppearance->apply();
+					dsk.draw();
+
+				}
 				glPopName();
 				glPopMatrix();
 			}
-			coords.push_back(line);
-			glPopMatrix();
 		}
 	}
 	void draw(Texture *t);

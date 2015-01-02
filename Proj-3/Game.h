@@ -7,9 +7,11 @@ class Game
 {
 public:
 	Board brd;
+	int activePl;
 	Game(){}
 	Game(int size){
-		brd = Board(size,"textures/Border.jpg","textures/Border.jpg"); 
+		brd = Board(size,"textures/Border.jpg","textures/Border.jpg");
+		activePl = 0;
 	}
 };
 

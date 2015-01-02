@@ -16,7 +16,7 @@ using std::exception;
 
 int main(int argc, char* argv[]){
 	
-	socketConnect();
+	/*socketConnect();
 	string x,y;
 	
 	
@@ -38,7 +38,7 @@ int main(int argc, char* argv[]){
 	envia(b, strlen(b));
 	recebe(xxx);
 
-	quit();
+	quit();*/
 	CGFapplication app = CGFapplication();
 
 	try {

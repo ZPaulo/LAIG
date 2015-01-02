@@ -24,22 +24,26 @@ void PickScene::init()
 	glLightModelf(GL_LIGHT_MODEL_TWO_SIDE, GL_FALSE);
 	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, CGFlight::background_ambient);  // Define ambient light
 
+	float pos[4] = {2.5,7,2.5,1};
+
+	light0 = new CGFlight(GL_LIGHT0, pos);
 
 
 	// Defines a default normal
 	glNormal3f(0,0,1);
 
-	elements = Game(5);
+	elements = new Game(5);
 
 }
 
 void PickScene::setSel(float pos[4],bool on)
 {
-	lightSel = new CGFlight(GL_LIGHT0, pos);
-	glLightf(GL_LIGHT0,GL_SPOT_CUTOFF,50);
-	glLightf(GL_LIGHT0,GL_SPOT_EXPONENT,10);
+	
+	lightSel = new CGFlight(GL_LIGHT1, pos);
+	glLightf(GL_LIGHT1,GL_SPOT_CUTOFF,50);
+	glLightf(GL_LIGHT1,GL_SPOT_EXPONENT,10);
 	float dir[3] = {0,-1,0};
-	glLightfv(GL_LIGHT0,GL_SPOT_DIRECTION,dir);
+	glLightfv(GL_LIGHT1,GL_SPOT_DIRECTION,dir);
 
 	if(on)
 		lightSel->enable();
@@ -64,7 +68,8 @@ void PickScene::display()
 	CGFscene::activeCamera->applyView();
 
 	// Draw (and update) light
-	//light0->draw();
+	light0->enable();
+	light0->draw();
 
 	// Draw axis
 	axis.draw();
@@ -80,7 +85,7 @@ void PickScene::display()
 	// picking example, the important parts are the gl*Name functions
 	// and the code in the associted PickInterface class
 
-	elements.brd.draw();
+	elements->brd.draw();
 
 	// ---- END feature demos
 
@@ -90,6 +95,8 @@ void PickScene::display()
 
 PickScene::~PickScene()
 {
+	delete(light0);
 	delete(materialAppearance);
 	delete(lightSel);
+	delete(elements);
 }
