@@ -59,7 +59,6 @@ void PickScene::setSel(float pos[4],bool on)
 void PickScene::update(unsigned long t)
 {
 	elements->update(t);
-
 }
 
 void PickScene::display() 
@@ -113,6 +112,7 @@ void PickScene::display()
 	// picking example, the important parts are the gl*Name functions
 	// and the code in the associted PickInterface class
 
+//	elements->init();
 	glPushMatrix();
 	glTranslatef(0,10,0);
 	elements->plText->draw(elements->activePl);

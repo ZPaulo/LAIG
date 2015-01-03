@@ -288,11 +288,11 @@ public:
 		appPr->setTexture(preto);
 		appPr->setTextureWrap(GL_REPEAT,GL_REPEAT);
 
-		for(unsigned int i = 0; i < size; i++)
+		for(int i = 0; i < size; i++)
 		{
 			vector<vector<float>> line;
 
-			for(unsigned int j = 0; j < size; j++)
+			for(int j = 0; j < size; j++)
 			{
 				vector<float> crd;
 				crd.push_back(j*5.5);
