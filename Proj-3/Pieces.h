@@ -12,17 +12,57 @@ class TowerP
 public:
 	Cylinder cil;
 	CGFappearance* diskAppearance;
+	bool moving;
+	unsigned long t0;
+	float vx,vy,vz;
+	float pos[3], ori[3],dest[3];
+
 	TowerP(){
 		diskAppearance = new CGFappearance();
+		t0 = 0;
+		moving = false;
 		cil.base = 2.5;
 		cil.top = 2.5;
 		cil.height = 0.5;
 		cil.slices=20; 
 		cil.stacks=20;
 	}
+
+	void update(unsigned long t){
+		if (!moving)
+			return;
+		if (t0 == 0)
+			t0 = t;
+		unsigned long dt = t - t0;
+		if (dt < 500) {
+			pos[0] = ori[0] + (dt / 500.0) * vx;
+			pos[1] = ori[1] + (dt / 500.0) * vy;
+			pos[2] = ori[2] + (dt / 500.0) * vz;
+		} else {
+			moving = false;
+			pos[0] = dest[0];
+			pos[1] = dest[1];
+			pos[2] = dest[2];
+		}
+	}
+
+	void move(float x, float y, float z) {
+		t0 = 0;
+		moving = true;
+		ori[0] = pos[0];
+		ori[1] = pos[1];
+		ori[2] = pos[2];
+		vx = x - pos[0];
+		vy = y - pos[1];
+		vz = z - pos[2];
+		dest[0] = x;
+		dest[1] = y;
+		dest[2] = z;
+	}
+
 	void draw(){
 		glPushMatrix();
-		glTranslatef(2.5,0.5,2.5);
+		glTranslatef(2.5+pos[0],(pos[1]+1)*0.5,2.5+pos[2]);
 		glRotatef(90,1,0,0);
 		cil.draw();
 		glPopMatrix();
@@ -41,7 +81,14 @@ class PlayerP
 public:
 	Cylinder cil;
 	Sphere sp;
+	bool moving;
+	unsigned long t0;
+	float vx,vy,vz;
+	float pos[3], ori[3],dest[3];
+
 	PlayerP(){
+		t0 = 0;
+		moving = false;
 		cil.base = 1.5;
 		cil.top = 0;
 		cil.height = 1;
@@ -52,10 +99,44 @@ public:
 		sp.slices=20;
 		sp.stacks=20;
 	}
+
+	void update(unsigned long t){
+		if (!moving)
+			return;
+		if (t0 == 0)
+			t0 = t;
+		unsigned long dt = t - t0;
+		if (dt < 500) {
+			pos[0] = ori[0] + (dt / 500.0) * vx;
+			pos[1] = ori[1] + (dt / 500.0) * vy;
+			pos[2] = ori[2] + (dt / 500.0) * vz;
+		} else {
+			moving = false;
+			pos[0] = dest[0];
+			pos[1] = dest[1];
+			pos[2] = dest[2];
+		}
+	}
+
+	void move(float x, float y, float z) {
+		t0 = 0;
+		moving = true;
+		ori[0] = pos[0];
+		ori[1] = pos[1];
+		ori[2] = pos[2];
+		vx = x - pos[0];
+		vy = y - pos[1];
+		vz = z - pos[2];
+		dest[0] = x;
+		dest[1] = y;
+		dest[2] = z;
+	}
+
+
 	void draw(){
 		glPushMatrix();
 
-		glTranslated(2.5,0,2.5);
+		glTranslatef(pos[0]+2.5,(pos[1]+1)*0.5,pos[2]+2.5);
 
 		glPushMatrix();
 		glScaled(1,5,1);
@@ -69,7 +150,7 @@ public:
 	}
 	void draw(Texture *t){
 		glPushMatrix();
-		glTranslated(0,-1.,0);
+		//glTranslated(0,-1.,0);
 		glScaled(1,5,1);
 		cil.draw(t);
 		glPopMatrix();
@@ -180,11 +261,12 @@ private:
 
 public:
 	vector<vector<vector<float>>> coords;
-
 	vector<vector<float>> plIndex;
 
-	TowerP dsk;
-	PlayerP pl;
+
+	vector<TowerP*> dsk;
+	PlayerP pl1;
+	PlayerP pl2;
 	Board(){
 		size = 0;
 	}
@@ -216,6 +298,14 @@ public:
 				crd.push_back(j*5.5);
 				crd.push_back(1);
 				crd.push_back(i*5.5);
+
+				TowerP* Mdsk = new TowerP();
+
+				Mdsk->pos[0] = crd[0];
+				Mdsk->pos[1] = crd[1];
+				Mdsk->pos[2] = crd[2];
+				dsk.push_back(Mdsk);
+
 				line.push_back(crd);
 			}
 			coords.push_back(line);
@@ -229,8 +319,19 @@ public:
 		pl2Index.push_back(size-1);
 		pl2Index.push_back(0);
 
+
 		plIndex.push_back(pl1Index);
 		plIndex.push_back(pl2Index);
+
+		pl1.pos[0] = coords[plIndex[0][0]][plIndex[0][1]][0];
+		pl1.pos[1] = coords[plIndex[0][0]][plIndex[0][1]][1];
+		pl1.pos[2] = coords[plIndex[0][0]][plIndex[0][1]][2];
+
+
+		pl2.pos[0] = coords[plIndex[1][0]][plIndex[1][1]][0];
+		pl2.pos[1] = coords[plIndex[1][0]][plIndex[1][1]][1];
+		pl2.pos[2] = coords[plIndex[1][0]][plIndex[1][1]][2];
+
 
 
 
@@ -238,16 +339,14 @@ public:
 	void draw(){
 
 		glPushMatrix();
-		glTranslatef(coords[plIndex[0][0]][plIndex[0][1]][0],(coords[plIndex[0][0]][plIndex[0][1]][1]+1)*0.5,coords[plIndex[0][0]][plIndex[0][1]][2]);
 		glPushName(0);
-		pl.draw();
+		pl1.draw();
 		glPopName();
 		glPopMatrix();
 
 		glPushMatrix();
-		glTranslatef(coords[plIndex[1][0]][plIndex[1][1]][0],(coords[plIndex[1][0]][plIndex[1][1]][1]+1)*0.5,coords[plIndex[1][0]][plIndex[1][1]][2]);
 		glPushName(1);
-		pl.draw();
+		pl2.draw();
 		glPopName();
 		glPopMatrix();
 
@@ -262,10 +361,12 @@ public:
 
 			glLoadName(i);
 			for(int a=0;a<size;a++){
+				
+				glPushName(a);
+
+				dsk[a+i*size]->draw();
 				glPushMatrix();
 				glTranslated(a*5.5,0,i*5.5);
-
-				glPushName(a);
 
 				if(a%2==change){
 					//branco
@@ -278,16 +379,6 @@ public:
 					cubo.draw();
 				}
 				glPopMatrix();
-				glPushMatrix();
-				glTranslatef(coords[i][a][0],0,coords[i][a][2]);
-				dsk.diskAppearance->apply();
-				for(unsigned int k = 0; k < coords[i][a][1];k++){
-					glPushMatrix();
-					glTranslatef(0,(k+1)*0.5,0);
-					dsk.draw();
-					glPopMatrix();
-
-				}
 				glPopName();
 				glPopMatrix();
 			}

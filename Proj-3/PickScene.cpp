@@ -24,9 +24,6 @@ void PickScene::init()
 	glLightModelf(GL_LIGHT_MODEL_TWO_SIDE, GL_FALSE);
 	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, CGFlight::background_ambient);  // Define ambient light
 
-	float pos[4] = {2.5,7,2.5,1};
-
-	light0 = new CGFlight(GL_LIGHT0, pos);
 
 
 	// Defines a default normal
@@ -34,22 +31,35 @@ void PickScene::init()
 
 	elements = new Game(5);
 
+	drawingMode = 0;
+
+
 }
 
 void PickScene::setSel(float pos[4],bool on)
 {
-	
-	lightSel = new CGFlight(GL_LIGHT1, pos);
+
+	elements->lights[1]->light = new CGFlight(GL_LIGHT1, pos);
 	glLightf(GL_LIGHT1,GL_SPOT_CUTOFF,50);
 	glLightf(GL_LIGHT1,GL_SPOT_EXPONENT,10);
 	float dir[3] = {0,-1,0};
 	glLightfv(GL_LIGHT1,GL_SPOT_DIRECTION,dir);
 
 	if(on)
-		lightSel->enable();
+		elements->lights[1]->light->enable();
 	else
-		lightSel->disable();
-	lightSel->update();
+		elements->lights[1]->light->disable();
+	elements->lights[1]->light->update();
+
+	unsigned long updatePeriod=10;
+	setUpdatePeriod(updatePeriod);
+
+}
+
+void PickScene::update(unsigned long t)
+{
+	elements->update(t);
+
 }
 
 void PickScene::display() 
@@ -60,16 +70,29 @@ void PickScene::display()
 	// Clear image and depth buffer everytime we update the scene
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
+
 	// Initialize Model-View matrix as identity (no transformation
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	// Apply transformations corresponding to the camera position relative to the origin
-	CGFscene::activeCamera->applyView();
+	if(elements->activeCam >= elements->cams.size())
+		CGFscene::activeCamera->applyView();
+	else{
+		elements->cams[elements->activeCam]->apply();
+	}
 
-	// Draw (and update) light
-	light0->enable();
-	light0->draw();
+	CGFapplication::activeApp->forceRefresh();
+
+	for(unsigned int i=0;i<elements->lights.size() && i<8;i++)
+	{
+		if(i != 1){
+			if(elements->lights[i]->enabled)
+				elements->lights[i]->light->enable();
+			else
+				elements->lights[i]->light->disable();
+			elements->lights[i]->light->update();
+		}
+	}
 
 	// Draw axis
 	axis.draw();
@@ -77,7 +100,12 @@ void PickScene::display()
 
 	// ---- END Background, camera and axis setup
 
-
+	if(drawingMode == 0)
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	else if(drawingMode == 2)
+		glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+	else
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	// scale down a bit	
 	glScalef(0.4, 0.4, 0.4);
@@ -85,6 +113,10 @@ void PickScene::display()
 	// picking example, the important parts are the gl*Name functions
 	// and the code in the associted PickInterface class
 
+	glPushMatrix();
+	glTranslatef(0,10,0);
+	elements->plText->draw(elements->activePl);
+	glPopMatrix();
 	elements->brd.draw();
 
 	// ---- END feature demos
@@ -95,8 +127,6 @@ void PickScene::display()
 
 PickScene::~PickScene()
 {
-	delete(light0);
 	delete(materialAppearance);
-	delete(lightSel);
 	delete(elements);
 }

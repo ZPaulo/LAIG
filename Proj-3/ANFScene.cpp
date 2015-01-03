@@ -1378,10 +1378,10 @@ void ANFScene::display()
 	// Clear image and depth buffer everytime we update the scene
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 	CGFscene::activeCamera->applyView();
-	/*if(parser.activeCam >= parser.cameras.size())
+	if(parser.activeCam >= parser.cameras.size())
 		CGFscene::activeCamera->applyView();
 	else
-		parser.cameras[parser.activeCam]->apply();*/
+		parser.cameras[parser.activeCam]->apply();
 
 	CGFapplication::activeApp->forceRefresh();
 

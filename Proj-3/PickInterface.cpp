@@ -107,25 +107,11 @@ void PickInterface::processHits (GLint hits, GLuint buffer[],bool disk)
 			printf("coord %f %f %f\n",pos[0],pos[1],pos[2]);
 			((PickScene *) scene)->setSel(pos,true);
 
-			int *pl = &((PickScene *) scene)->elements->activePl;
+			int pl = ((PickScene *) scene)->elements->activePl;
+			float oldP[2] ={((PickScene *) scene)->elements->brd.plIndex[pl][0],((PickScene *) scene)->elements->brd.plIndex[pl][1]};
+			float newP[2] = {selected[0],selected[1]};
 
-			if(disk){
-				((PickScene *) scene)->elements->brd.coords[((PickScene *) scene)->elements->brd.plIndex[*pl][0]][((PickScene *) scene)->elements->brd.plIndex[*pl][1]][1]--;
-				((PickScene *) scene)->elements->brd.coords[selected[0]][selected[1]][1]++;
-			}
-
-			((PickScene *) scene)->elements->brd.plIndex[*pl][0] = selected[0];
-			((PickScene *) scene)->elements->brd.plIndex[*pl][1] = selected[1];
-
-			
-			if(*pl == 0)
-				*pl = 1;
-			else
-				*pl = 0;
-
-
-
-
+			bool valid = ((PickScene *) scene)->elements->calculateMove(oldP,newP,disk);
 
 		}
 		else
@@ -140,4 +126,94 @@ void PickInterface::processHits (GLint hits, GLuint buffer[],bool disk)
 		float pos[4] = {0,0,0,1};
 		((PickScene *) scene)->setSel(pos,false);
 	}
+}
+
+
+PickInterface::PickInterface()
+{
+}
+void PickInterface::initGUI()
+{
+	GLUI_Panel *geral =addPanel("Opcoes", 1);
+	addColumnToPanel(geral);
+	GLUI_Panel *jogadaPanel = addPanelToPanel(geral,"Movimentos", 1);
+	addButtonToPanel(jogadaPanel,"Undo",9);
+	addButtonToPanel(jogadaPanel,"End Turn",10);
+	addColumnToPanel(geral);
+	GLUI_Panel *luzesPanel = addPanelToPanel(geral,"Luzes", 1);
+
+	for(unsigned int i=0;i<((PickScene *) scene)->elements->lights.size();i++){
+
+		string str=((PickScene *) scene)->elements->lights[i]->id;
+		char * writable = new char[str.size() + 1];
+		copy(str.begin(), str.end(), writable);
+		writable[str.size()] = '\0';
+
+
+		if(((PickScene *) scene)->elements->lights[i]->enabled==true){
+			addCheckboxToPanel(luzesPanel,writable,NULL,i)->set_int_val(1);
+		}
+		else{
+			addCheckboxToPanel(luzesPanel,writable,NULL,i)->set_int_val(0);
+		}
+		delete[] writable;
+
+	}
+
+	addColumnToPanel(geral);
+	GLUI_Panel *camerasPanel = addPanelToPanel(geral,"Camaras", 1);
+	GLUI_RadioGroup *cameraList = addRadioGroupToPanel(camerasPanel,&(((PickScene *) scene)->elements->activeCam));
+
+	for(unsigned int i=0;i<((PickScene *) scene)->elements->cams.size();i++){
+
+		string str=((PickScene *) scene)->elements->cams[i]->id;
+		char * writable = new char[str.size() + 1];
+		copy(str.begin(), str.end(), writable);
+		writable[str.size()] = '\0';
+
+		if(i == ((PickScene *) scene)->elements->activeCam)
+			addRadioButtonToGroup(cameraList, writable)->set_int_val(1);
+		else
+			addRadioButtonToGroup(cameraList, writable);
+
+		delete[] writable;
+
+	}
+	addRadioButtonToGroup(cameraList, "Default");
+
+	addColumnToPanel(geral);
+	GLUI_Panel *drawPanel = addPanelToPanel(geral,"Draw Mode", 1);
+	GLUI_RadioGroup *drawList = addRadioGroupToPanel(drawPanel,&(((PickScene *) scene)->drawingMode));
+	addRadioButtonToGroup(drawList, "Fill");
+	addRadioButtonToGroup(drawList, "Line");
+	addRadioButtonToGroup(drawList, "Point");
+
+
+
+}
+
+void PickInterface::processGUI(GLUI_Control *ctrl)
+{
+	if(ctrl->user_id >=0 && ctrl->user_id < 8)
+		if( ctrl->get_int_val() == 1)
+			((PickScene *) scene)->elements->lights[ctrl->user_id]->enabled = true;
+		else 
+			((PickScene *) scene)->elements->lights[ctrl->user_id]->enabled = false;
+	else
+		if(ctrl->user_id == 10){
+			if(((PickScene *) scene)->elements->validMove()){
+
+				int *pl = &((PickScene *) scene)->elements->activePl;
+
+				if(*pl == 0)
+					*pl = 1;
+				else
+					*pl = 0;
+			}
+
+		}
+		else if(ctrl->user_id == 9){
+			((PickScene *) scene)->elements->undo();
+		}
+
 }

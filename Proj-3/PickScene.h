@@ -11,12 +11,14 @@ class PickScene : public CGFscene
 public:
 	void init();
 	void display();
+	void update(unsigned long t);
 	void setSel(float pos[4],bool on);
+	int drawingMode;
 	~PickScene();
 private:
-	CGFlight *light0;
-	CGFlight *lightSel;
 	Game *elements;
+
+
 	CGFappearance* materialAppearance;
 };
 

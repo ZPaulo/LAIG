@@ -4,10 +4,16 @@
 #include "CGFinterface.h"
 
 class PickInterface: public CGFinterface {
-	public:
-		virtual void processMouse(int button, int state, int x, int y);	
-		void performPicking(int x, int y, bool disk);
-		void processHits(GLint hits, GLuint buffer[], bool disk); 
+public:
+	virtual void processMouse(int button, int state, int x, int y);	
+	void performPicking(int x, int y, bool disk);
+	void processHits(GLint hits, GLuint buffer[], bool disk); 
+
+	PickInterface();
+	virtual void initGUI();
+	virtual void processGUI(GLUI_Control *ctrl);
+
+
 };
 
 
