@@ -14,6 +14,8 @@ server:-
         socket_server_open(Port, Socket),
         socket_server_accept(Socket, _Client, Stream, [type(text)]),
         write('Accepted connection'), nl,
+        write(Stream),nl,
+       
         start(Stream),
         socket_server_close(Socket).
 
@@ -28,14 +30,17 @@ server:-
 
 
 start(Stream):- 
+        
         createBoardInput(Lines,Columns,Stream),
         createBoard(Brd,Lines,Columns),
         
         selectGameModeInput(Mode,AIInt,Stream),
         printBoard(Brd),
         format(Stream, '~q.~n', [Brd]),
+        flush_output(Stream),
         write('Press enter to start'),
-        format(Stream, '~q.~n', ['Press enter to start']),
+        write(Stream,'Press enter to start\n'),
+         flush_output(Stream),
         ((Mode == 'AI-AI';Mode == 'AI-H')->
          get_char(Stream,_);!),
         Column is Columns-1,
@@ -45,28 +50,32 @@ start(Stream):-
 %selectGameModeInput(-PlayerVsPlayer,-LevelOfIntelligence)
 selectGameModeInput(Mode,AIInt,Stream):-
         write('In which mode do you want to play?(ex: H-H or AI-H)\n'),
-        format(Stream, '~q.~n', ['Mode: H-H or AI-H?']),
-        get_char(Stream,_),
+        write(Stream,'In which mode do you want to play?(ex: H-H or AI-H)\n'),
         flush_output(Stream),
-        read_line(Stream,[X1,X2|Xs]),
+        read(Stream,[X1,X2|Xs]),
+        
+        write([X1,X2|Xs]),nl,
         name(Mode,[X1,X2|Xs]),
          write('How should AI be?(Random or Smart)\n'),
+         write(Stream,'How should AI be?(Random or Smart)\n'),
          flush_output(Stream),
-         format(Stream, '~q.~n', ['Random or Smart?']),
          read_line(Stream,Int),
-         flush_output(Stream),
          name(AIInt,Int).
+
 
 %createBoardInput(-Number of Lines,-Number of Columns)
 createBoardInput(Lines,Columns,Stream):-
+       
         write('How many lines will the board have?\n'),
-        format(Stream, '~q.~n', ['Size-Lines']),
+        write(Stream,'How many lines will the board have?\n'),
+        flush_output(Stream),
         read(Stream,Lines),
-        flush_output(Stream),
+        
         write('How many columns will the board have?\n'),
-        format(Stream, '~q.~n', ['Size-Columns']),
+        write(Stream,'How many columns will the board have?\n'),
+       flush_output(Stream),
         read(Stream,Columns),
-        flush_output(Stream),
+        
         integer(Lines),
         integer(Columns),
         Lines > 1,
@@ -192,8 +201,9 @@ replaceL(0,X, [_H|T], [X|T]):-!.
 gameOver(Pl,Stream) :-
         nl,
         write('Player '), write(Pl), write(' has won!!!'),
-         format(Stream, '~q.~n', ['Winnner']),
-          format(Stream, '~q.~n', [Pl]).
+         write(Stream,'Winnner'),
+          format(Stream, '~q.~n', [Pl]),
+          flush_output(Stream).
 
 %game(+Player,+LineOfX,+ColumnOfX,+LineOfY,+ColumnOfY,+Board,+PointsOfX,+PointsOfY,+PrevChoiceOfX,+PrevChoiceOfY,+Mode,+BoardSize,+AILevel)
 game('X',LineX,ColumnX,LineY,ColumnY,Brd,PointsX,PointsY,PrevChoiceX,PrevChoiceY,Mode,BrdSize,AILevel,Stream):-
@@ -242,6 +252,7 @@ gameLogic(Pl,Symbol,Line,Column,NewLine,NewColumn,LineE,ColumnE,Brd,BrdR,Points,
         move(Pl,Line,Column,NewLine,NewColumn,Brd,BrdR,NewPrevStack,NewNextStack),
         printBoard(BrdR);
         format(Stream, '~q.~n', [BrdR]),
+        flush_output(Stream),
         gameLogic(Pl,Symbol,Line,Column,NewLine,NewColumn,LineE,ColumnE,Brd,BrdR,Points,NewPoints,PrevChoice,'H',BrdSize,AILevel,Stream)).
 
 gameLogic(Pl,Symbol,Line,Column,NewLine,NewColumn,LineE,ColumnE,Brd,BrdR,Points,NewPoints,PrevChoice,'AI',[MaxLine,MaxColumn|[]],'Random',Stream):-
@@ -250,6 +261,7 @@ gameLogic(Pl,Symbol,Line,Column,NewLine,NewColumn,LineE,ColumnE,Brd,BrdR,Points,
         move(Pl,Line,Column,NewLine,NewColumn,Brd,BrdR,NewPrevStack,NewNextStack),
         printBoard(BrdR),
         format(Stream, '~q.~n', [BrdR]),
+        flush_output(Stream),
         advance(Dir,Nmb,Dsk,Stream); 
         gameLogic(Pl,Symbol,Line,Column,NewLine,NewColumn,LineE,ColumnE,Brd,BrdR,Points,NewPoints,PrevChoice,'AI',[MaxLine,MaxColumn|[]],'Random',Stream)).
 
@@ -260,9 +272,11 @@ gameLogic(Pl,Symbol,Line,Column,NewLine,NewColumn,LineE,ColumnE,Brd,BrdR,Points,
         move(Pl,Line,Column,NewLine,NewColumn,Brd,BrdR,NewPrevStack,NewNextStack),
         printBoard(BrdR),
         format(Stream, '~q.~n', [BrdR]),
+        flush_output(Stream),
         write('Player '),write(Pl),write('s turn (AI)\n'),
-        format(Stream, '~q.~n', ['Player turn (AI): ']),
+        write(Stream,'Player turn (AI): '),
         format(Stream, '~q.~n', [Pl]),
+        flush_output(Stream),
         advance(Dir,Nmb,Dsk,Stream).
 
 
@@ -394,16 +408,20 @@ processFirstElement([H|_T],P,Y):-
 
 %advance(+DirectionOfTravel,+NumberOfTravel,+CarryingDisk)
 advance(Dir,Nmb,Dsk,Stream):-
-        format(Stream, '~q.~n', ['Direction: ']),
+        write(Stream,'Direction: '),
         format(Stream, '~q.~n', [Dir]),
+        flush_output(Stream),
         
-        format(Stream, '~q.~n', ['Number of movement: ']),
+        write(Stream,'Number of movement: '),
         format(Stream, '~q.~n', [Nmb]),
-        nl,
-        format(Stream, '~q.~n', ['Disk?']),
+        flush_output(Stream),
+        
+        write(Stream,'Disk?'),
         format(Stream, '~q.~n', [Dsk]),
-        nl,
+        flush_output(Stream),
+        
         format(Stream, '~q.~n', ['Press enter to continue']),
+        flush_output(Stream),
         get_char(Stream,_).
 
 %printPoints(+PointsOfX,+PointsOfY)
@@ -412,9 +430,11 @@ printPoints(PointsX,PointsY,Stream) :-
         write(PointsX),write(' points'),
         write('\nPlayer Y has '),
         write(PointsY),write(' points'),nl,nl,
-        format(Stream, '~q.~n', ['Points: ']),
-        format(Stream, '~q.~n', [PointsX]),
-        format(Stream, '~q.~n', [PointsY]).
+        
+        write(Stream,'Points: '),
+        write(Stream,PointsX),
+        format(Stream, '~q.~n', [PointsY]),
+        flush_output(Stream).
 
 
 
@@ -423,16 +443,20 @@ readInput(Pl,Dir,Nmb,Dsk,Stream) :-
         nl, 
       
         write('Player '),write(Pl),write('s turn\n'),
-        format(Stream, '~q.~n', ['Player Turn: ']),
+        write(Stream,'Player Turn: '),
         format(Stream, '~q.~n', [Pl]),
+        flush_output(Stream),
+        
         write('In which direction do you wish to move? (L,D,U or R)\n'),
         format(Stream, '~q.~n', ['Direction: (L,D,U or R)']),
         flush_output(Stream),
         get_char(Stream,Dir),
+        
         write('How many houses are you traveling? (integer)\n'),
         format(Stream, '~q.~n', ['How many houses are you traveling? (integer)']),
         flush_output(Stream),
         get_code(Stream,X),
+        
         Nmb is X-48,
         write('Do you want to carry a disk? (Y or N)\n'),
         format(Stream, '~q.~n', ['Do you want to carry a disk? (Y or N)']),
@@ -479,8 +503,8 @@ canLand(Y,'Y',Stream):-Y == '$',errorLanding2(Stream).
 canLand(Y,'Y',Stream):-Y == '#',errorLanding2(Stream).
 
         
-errorLanding1(Stream) :-  format(Stream, '~q.~n', ['You cannot land on top of another player']),fail.
-errorLanding2(Stream) :-  format(Stream, '~q.~n', ['You cannot land on top of a complete stack with a disk']),fail.
+errorLanding1(Stream) :-  format(Stream, '~q.~n', ['You cannot land on top of another player']),flush_output(Stream),fail.
+errorLanding2(Stream) :-  format(Stream, '~q.~n', ['You cannot land on top of a complete stack with a disk']),flush_output(Stream),fail.
 
 %isMoveOverPlayer(+CarryingDisk,+DirectionOfTravel,+LineOfPlayer,+ColumnOfPlayer,+NewLineOfPlayer,+NewColumnOfPlayer,+LineOfEnemy,+ColumnEnemy)
 isMoveOverPlayer('N',_Dir,_Line,_Column,_NewLine,_NewColumn,_LineF,_ColumnF,_).
@@ -518,7 +542,7 @@ isMoveOverPlayer('Y','R',LineF,_Column,_NewLine,NewColumn,LineF,ColumnF,Stream) 
          true).
 
 errorMoving(Stream) :-
-        format(Stream, '~q.~n', ['You cannot move over a player while carrying a disk']), fail.
+        format(Stream, '~q.~n', ['You cannot move over a player while carrying a disk']),flush_output(Stream), fail.
 
 %canDiskMove(+CarryingDisk,+ValueOfStackWherePlayerIs,+ValueOfStackWherePlayerIsHeaded,-StackAfterPlayerLeaves,-StackAfterPlayerArrives,+PreviousChoice)
 canDiskMove('N',PrevStack,NextStack,PrevStack,NextStack,_PrevChoice,_).
@@ -534,13 +558,13 @@ canDiskMove('Y',PrevStack,NextStack,NewPrevStack,NewNextStack,PrevChoice,Stream)
          errorTakingDiskAgain(Stream)).
         
 errorTakingDisk(Stream) :-
-        format(Stream, '~q.~n', ['You cannot take a disk from a stack unless the disk number in that stack is 1']), fail.
+        format(Stream, '~q.~n', ['You cannot take a disk from a stack unless the disk number in that stack is 1']),flush_output(Stream), fail.
 
 errorDropingDisk(Stream) :-
-         format(Stream, '~q.~n', ['You cannot drop a disk on a complete stack']), fail.
+         format(Stream, '~q.~n', ['You cannot drop a disk on a complete stack']),flush_output(Stream), fail.
 
 errorTakingDiskAgain(Stream) :-
-         format(Stream, '~q.~n', ['nYou cannot take a disk from the same stack two times in a row']), fail.
+         format(Stream, '~q.~n', ['nYou cannot take a disk from the same stack two times in a row']),flush_output(Stream), fail.
                 
 %isStackComplete(-StackBeingAnalised,+StackOfPlayer,+StackSymbol,+PointsOfPlayer,-NewPointsOfPlayer)
 isStackComplete(3,StackSymbol,StackSymbol,Points,NewPoints):-

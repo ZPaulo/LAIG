@@ -32,7 +32,7 @@ void PickScene::init()
 	// Defines a default normal
 	glNormal3f(0,0,1);
 
-	elements = new Game(5);
+	//elements = new Game(5);
 
 }
 
@@ -85,7 +85,7 @@ void PickScene::display()
 	// picking example, the important parts are the gl*Name functions
 	// and the code in the associted PickInterface class
 
-	elements->brd.draw();
+	elements->init();
 
 	// ---- END feature demos
 

@@ -1,13 +1,16 @@
+#ifndef SOCKET_H
+#define SOCKET_H
+
 #include <winsock2.h>
 #include <iostream>
 
-#define IPADDRESS "127.0.0.1"
-#define PORT 60070
-
 using namespace std;
 
-SOCKET m_socket;
 
+class Socket{
+private:
+	SOCKET m_socket;
+public:
 bool socketConnect() {// Initialize Winsock.
     WSADATA wsaData;
     int iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
@@ -50,6 +53,7 @@ bool socketConnect() {// Initialize Winsock.
 
 void envia(char *s, int len) {
 	int bytesSent = send(m_socket, s, len, 0);
+	cout<<"sent: "<<s<<endl;
 	if(bytesSent == SOCKET_ERROR)
 		printf("Client: send() error %ld.\n", WSAGetLastError());
 }
@@ -74,14 +78,5 @@ void quit() {
 	char ans[128];
 	recebe(ans);
 }
-/*
-int main() {
-	socketConnect();
-	char *s = "comando(1, 2).\n";
-	envia(s, strlen(s));
-	char ans[128];
-	recebe(ans);
-	quit();
-	getchar();
-	return 0;
-}*/
+};
+#endif
