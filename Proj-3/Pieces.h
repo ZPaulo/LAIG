@@ -265,7 +265,7 @@ public:
 	vector<vector<vector<float>>> coords;
 	vector<vector<float>> plIndex;
 
-	
+
 	int activePl;
 	vector<TowerP*> dsk;
 	PlayerP pl1;
@@ -277,17 +277,22 @@ public:
 		size=s;
 
 		float ambient[4]; float diffuse[4]; float specular[4];
+		ambient[0] = 0.5; ambient[1] = 0.5; ambient[2] = 0.5; ambient[3] = 1; 
+		diffuse[0] = 0.5; diffuse[1] = 0.5; diffuse[2] = 0.5; diffuse[3] = 1;
+		specular[0] = 0.5; specular[1] = 0.5; specular[2] = 0.5; specular[3] = 1;
+
+		appBr = new CGFappearance(ambient,diffuse,specular,1);
+		appPr = new CGFappearance(ambient,diffuse,specular,1);
+
 		ambient[0] = 0.5; ambient[1] = 0.5; ambient[2] = 0.5; ambient[3] = 0.5; 
 		diffuse[0] = 0.5; diffuse[1] = 0.5; diffuse[2] = 0.5; diffuse[3] = 0.5;
 		specular[0] = 0.5; specular[1] = 0.5; specular[2] = 0.5; specular[3] = 0.5;
 
-		appBr = new CGFappearance(ambient,diffuse,specular,1);
-		appPr = new CGFappearance(ambient,diffuse,specular,1);
 		nonActive = new CGFappearance(ambient,diffuse,specular,0.5);
 
 		ambient[0] = 0.77; ambient[1] = 0; ambient[2] = 0; ambient[3] = 1; 
 		diffuse[0] = 0.77; diffuse[1] = 0; diffuse[2] = 0; diffuse[3] = 1;
-		specular[0] = 0.5; specular[1] = 0.5; specular[2] = 0.5; specular[3] = 0.5;
+		specular[0] = 0.5; specular[1] = 0.5; specular[2] = 0.5; specular[3] =1;
 
 		active = new CGFappearance(ambient,diffuse,specular,1);
 
@@ -379,9 +384,10 @@ public:
 
 			glLoadName(i);
 			for(int a=0;a<size;a++){
-				
+
 				glPushName(a);
 
+				appBr->apply();
 				dsk[a+i*size]->draw();
 				glPushMatrix();
 				glTranslated(a*(size+0.5),0,i*(size+0.5));

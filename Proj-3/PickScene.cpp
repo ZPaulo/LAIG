@@ -25,6 +25,8 @@ void PickScene::init()
 	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, CGFlight::background_ambient);  // Define ambient light
 
 
+	glEnable (GL_BLEND);
+	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	// Defines a default normal
 	glNormal3f(0,0,1);
@@ -32,6 +34,9 @@ void PickScene::init()
 	elements = new Game(5);
 
 	drawingMode = 0;
+	difficulty = 0;
+	versus = 0;
+	start = true;
 
 	nextTurn = false;
 	wA = 180;
@@ -126,21 +131,21 @@ void PickScene::display()
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 
-
+	if(!start){
 
 		glTranslatef(elements->size+0.5,0,elements->size+0.5);
 		glRotatef(inc+startAng,0,1,0);
 		glTranslatef(-(elements->size+0.5),0,-(elements->size+0.5));
 
 
-	// scale down a bit	
-	glScalef(0.4, 0.4, 0.4);
-	glPushMatrix();
-	glTranslatef(0,10,0);
-	elements->plText->draw(elements->activePl);
-	glPopMatrix();
-	elements->brd.draw();
-
+		// scale down a bit	
+		glScalef(0.4, 0.4, 0.4);
+		glPushMatrix();
+		glTranslatef(0,10,0);
+		elements->plText->draw(elements->activePl);
+		glPopMatrix();
+		elements->brd.draw();
+	}
 	// ---- END feature demos
 
 	// glutSwapBuffers() will swap pointers so that the back buffer becomes the front buffer and vice-versa

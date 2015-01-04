@@ -14,7 +14,8 @@ public:
 	void update(unsigned long t);
 	void setSel(float pos[4],bool on);
 	int drawingMode;
-	bool nextTurn;
+	bool nextTurn,start;
+	int difficulty,versus;
 	~PickScene();
 private:
 	Game *elements;

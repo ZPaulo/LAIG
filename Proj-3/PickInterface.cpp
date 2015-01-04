@@ -135,10 +135,12 @@ PickInterface::PickInterface()
 void PickInterface::initGUI()
 {
 	GLUI_Panel *geral =addPanel("Opcoes", 1);
+
 	addColumnToPanel(geral);
 	GLUI_Panel *jogadaPanel = addPanelToPanel(geral,"Movimentos", 1);
 	addButtonToPanel(jogadaPanel,"Undo",9);
 	addButtonToPanel(jogadaPanel,"End Turn",10);
+
 	addColumnToPanel(geral);
 	GLUI_Panel *luzesPanel = addPanelToPanel(geral,"Luzes", 1);
 
@@ -180,6 +182,21 @@ void PickInterface::initGUI()
 
 	}
 	addRadioButtonToGroup(cameraList, "Default");
+	addColumnToPanel(geral);
+	GLUI_Panel *inicioPanel = addPanelToPanel(geral,"Inicio", 1);
+	GLUI_RadioGroup *difficulty = addRadioGroupToPanel(inicioPanel,&(((PickScene *) scene)->difficulty));
+	addRadioButtonToGroup(difficulty, "Facil");
+	addRadioButtonToGroup(difficulty, "Dificil");
+
+	addColumnToPanel(inicioPanel);
+
+	GLUI_RadioGroup *versus = addRadioGroupToPanel(inicioPanel,&(((PickScene *) scene)->versus));
+	addRadioButtonToGroup(versus, "H-H");
+	addRadioButtonToGroup(versus, "AI-H");
+	addRadioButtonToGroup(versus, "H-AI");
+	addRadioButtonToGroup(versus, "AI-AI");
+
+	addButtonToPanel(inicioPanel,"Start",11);
 
 	addColumnToPanel(geral);
 	GLUI_Panel *drawPanel = addPanelToPanel(geral,"Draw Mode", 1);
@@ -187,7 +204,6 @@ void PickInterface::initGUI()
 	addRadioButtonToGroup(drawList, "Fill");
 	addRadioButtonToGroup(drawList, "Line");
 	addRadioButtonToGroup(drawList, "Point");
-
 
 
 }
@@ -199,22 +215,25 @@ void PickInterface::processGUI(GLUI_Control *ctrl)
 			((PickScene *) scene)->elements->lights[ctrl->user_id]->enabled = true;
 		else 
 			((PickScene *) scene)->elements->lights[ctrl->user_id]->enabled = false;
-	else
-		if(ctrl->user_id == 10){
-			if(((PickScene *) scene)->elements->validMove()){
-				((PickScene *) scene)->nextTurn = true;
-				((PickScene *) scene)->t0 = 0;
-				int *pl = &((PickScene *) scene)->elements->activePl;
 
-				if(*pl == 0)
-					*pl = 1;
-				else
-					*pl = 0;
-			}
+	if(ctrl->user_id == 10){
+		if(((PickScene *) scene)->elements->validMove()){
+			((PickScene *) scene)->nextTurn = true;
+			((PickScene *) scene)->t0 = 0;
+			int *pl = &((PickScene *) scene)->elements->activePl;
 
+			if(*pl == 0)
+				*pl = 1;
+			else
+				*pl = 0;
 		}
-		else if(ctrl->user_id == 9){
-			((PickScene *) scene)->elements->undo();
-		}
+
+	}
+	if(ctrl->user_id == 9){
+		((PickScene *) scene)->elements->undo();
+	}
+	if(ctrl->user_id == 11){
+		((PickScene *) scene)->start = false;
+	}
 
 }
