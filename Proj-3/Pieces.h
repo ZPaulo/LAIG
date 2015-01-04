@@ -358,9 +358,9 @@ public:
 			for(int j = 0; j < size; j++)
 			{
 				vector<float> crd;
-				crd.push_back(j*5.5);
+				crd.push_back(j*(size+0.5));
 				crd.push_back(1);
-				crd.push_back(i*5.5);
+				crd.push_back(i*(size+0.5));
 
 				TowerP* Mdsk = new TowerP();
 
