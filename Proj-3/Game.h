@@ -3,6 +3,8 @@
 
 #include "Pieces.h"
 #include "TextObject.h"
+#include <sstream>
+#include <iostream>
 
 class LightG
 {
@@ -15,11 +17,14 @@ public:
 class Move
 {
 public:
-	char direction;
 	float oldP[2];
 	float newP[2];
+	float enemP[2];
 	bool disk;
-	int number;
+	int number,stack;	
+	char direction;
+	int points;
+	string brd;
 };
 
 class Game
@@ -118,7 +123,7 @@ public:
 			return false;
 		else{
 			if(tempPlays.size() == 0){
-				//validar jogada em prolog
+
 				//se for valido
 				Move m;
 				m.oldP[0] = oldP[0];
@@ -127,7 +132,8 @@ public:
 				m.newP[0] = newP[0];
 				m.newP[1] = newP[1];
 				m.disk = disk;
-
+				m.points = playerInfo[activePl+1];
+				constructBoard(m);
 				tempPlays.push_back(m);
 
 
@@ -254,6 +260,77 @@ public:
 			inc = 0;
 		}
 	}
+
+	void constructBoard(Move m){
+		float nPos[2];
+		float pos[2];
+		pos[0] = m.oldP[0];
+		pos[1] = m.oldP[1];
+		char nonC,actC;
+		int non;
+		if(activePl){
+			non = 0;
+			nonC = 'X';
+			actC = 'Y';
+		}
+		else{ 
+			non = 1;
+			nonC = 'Y';
+			actC = 'X';
+		}
+
+		if((m.oldP[0] == m.newP[0]) && (m.newP[1] > m.oldP[1])){
+			m.direction = 'R';
+			m.number = m.newP[1] - m.oldP[1];
+		}
+		else if((m.oldP[0] == m.newP[0]) && (m.newP[1] < m.oldP[1])){
+			m.direction = 'L';
+			m.number =  m.oldP[1] - m.newP[1];
+		}
+		else if((m.oldP[1] == m.newP[1]) && (m.newP[0] < m.oldP[0])){
+			m.direction = 'U';
+			m.number = m.newP[0] - m.oldP[0];
+		}
+		else if((m.oldP[1] == m.newP[1]) && (m.newP[0] > m.oldP[0])){
+			m.direction = 'D';
+			m.number =  m.oldP[0] - m.newP[0];
+		}
+
+		nPos[0] = brd.plIndex[non][0];
+		nPos[1] = brd.plIndex[non][1];
+
+		m.enemP[0] = nPos[0];
+		m.enemP[1] = nPos[1];
+
+		string str = "[";
+		for(int i = 0; i < size;i++){
+			str += "[";
+			for(int j = 0; j < size;j++){
+				ostringstream os;
+				if(i == pos[0] && j == pos[1]){
+					m.stack = brd.coords[i][j][1];
+					os << "[" << actC << "|" << brd.coords[i][j][1] << "]";
+				}
+				else if(i == nPos[0] && j == nPos[1]){
+					os << "[" << nonC << "|" << brd.coords[i][j][1] << "]";
+				}
+				else
+					os << brd.coords[i][j][1];
+
+				str += os.str();
+				if(j != size-1)
+					str += ",";
+			}
+			str += "]";
+			if(i != size-1)
+				str += ",";
+		}
+		str += "]";
+		m.brd = str;
+
+	}
+
+
 
 };
 
