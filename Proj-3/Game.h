@@ -78,19 +78,8 @@ public:
 		playerInfo.push_back(0);
 		versus = 0;
 		difficulty = 0;
-		activeCam = 2;
+		activeCam = 0;
 
-		COrtho *c1 = new COrtho;
-		c1->id = "Top view";
-		c1->direction = "y";
-		c1->near1 = -60;
-		c1->far1 = 70;
-		c1->left = 0;
-		c1->right = 15;
-		c1->top = 5;
-		c1->bottom = -15;
-
-		cams.push_back(c1);
 
 		CPerspective *c2 = new CPerspective();
 		c2->id = "Perspective view";
@@ -98,13 +87,13 @@ public:
 		c2->far1 = 70;
 		c2->angle = 140;
 
-		c2->pos[0] = 20;
-		c2->pos[1] = 10;
-		c2->pos[2] = 20;
+		c2->pos[0] = size/2;
+		c2->pos[1] = size+3;
+		c2->pos[2] = -size*2;
 
-		c2->target[0] = 0;
-		c2->target[1] = 0;
-		c2->target[2] = 0;
+		c2->target[0] = size/2;
+		c2->target[1] = size/2;
+		c2->target[2] = size;
 
 		cams.push_back(c2);
 

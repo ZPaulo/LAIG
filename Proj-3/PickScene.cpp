@@ -31,7 +31,7 @@ void PickScene::init()
 	// Defines a default normal
 	glNormal3f(0,0,1);
 
-	elements = new Game(5);
+	elements = new Game(7);
 
 	drawingMode = 0;
 	start = true;
@@ -105,7 +105,7 @@ void PickScene::display()
 	}
 
 	// Draw axis
-	axis.draw();
+	//axis.draw();
 
 
 	// ---- END Background, camera and axis setup

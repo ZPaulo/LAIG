@@ -288,6 +288,7 @@ public:
 	}
 	Board(int s,string branco,string preto,string ice, string wood, string activeice,string nonactiveice,string activewood,string nonactivewood){
 		size=s;
+		appea = 0;
 
 		float ambient[4]; float diffuse[4]; float specular[4];
 		ambient[0] = 0.5; ambient[1] = 0.5; ambient[2] = 0.5; ambient[3] = 1; 
@@ -297,9 +298,9 @@ public:
 		appBr = new CGFappearance(ambient,diffuse,specular,1);
 		appPr = new CGFappearance(ambient,diffuse,specular,1);
 
-		ambient[0] = 0.8; ambient[1] = 0.8; ambient[2] = 0.8; ambient[3] = 1; 
-		diffuse[0] = 0.8; diffuse[1] = 0.8; diffuse[2] = 0.8; diffuse[3] = 1;
-		specular[0] = 0.8; specular[1] = 0.8; specular[2] = 0.8; specular[3] = 1;
+		ambient[0] = 0.8; ambient[1] = 0.8; ambient[2] = 0.8; ambient[3] = 0.7; 
+		diffuse[0] = 0.8; diffuse[1] = 0.8; diffuse[2] = 0.8; diffuse[3] = 0.7;
+		specular[0] = 0.8; specular[1] = 0.8; specular[2] = 0.8; specular[3] = 0.7;
 
 		appIce = new CGFappearance(ambient,diffuse,specular,1);
 		activeIce = new CGFappearance(ambient,diffuse,specular,1);
