@@ -258,15 +258,26 @@ private:
 	int size;
 	CGFappearance *appBr;
 	CGFappearance *appPr;
+	CGFappearance *appIce;
+	CGFappearance *appWood;
+
 	CGFappearance *active;
 	CGFappearance *nonActive;
+
+	CGFappearance *activeIce;
+	CGFappearance *nonActiveIce;
+
+	CGFappearance *activeWood;
+	CGFappearance *nonActiveWood;
+
 	Cube cubo;
 
 
 public:
+
 	vector<vector<vector<float>>> coords;
 	vector<vector<float>> plIndex;
-
+	int appea;
 
 	int activePl;
 	vector<TowerP*> dsk;
@@ -275,7 +286,7 @@ public:
 	Board(){
 		size = 0;
 	}
-	Board(int s,string branco,string preto){
+	Board(int s,string branco,string preto,string ice, string wood, string activeice,string nonactiveice,string activewood,string nonactivewood){
 		size=s;
 
 		float ambient[4]; float diffuse[4]; float specular[4];
@@ -286,9 +297,25 @@ public:
 		appBr = new CGFappearance(ambient,diffuse,specular,1);
 		appPr = new CGFappearance(ambient,diffuse,specular,1);
 
-		ambient[0] = 0.5; ambient[1] = 0.5; ambient[2] = 0.5; ambient[3] = 0.5; 
-		diffuse[0] = 0.5; diffuse[1] = 0.5; diffuse[2] = 0.5; diffuse[3] = 0.5;
-		specular[0] = 0.5; specular[1] = 0.5; specular[2] = 0.5; specular[3] = 0.5;
+		ambient[0] = 0.8; ambient[1] = 0.8; ambient[2] = 0.8; ambient[3] = 1; 
+		diffuse[0] = 0.8; diffuse[1] = 0.8; diffuse[2] = 0.8; diffuse[3] = 1;
+		specular[0] = 0.8; specular[1] = 0.8; specular[2] = 0.8; specular[3] = 1;
+
+		appIce = new CGFappearance(ambient,diffuse,specular,1);
+		activeIce = new CGFappearance(ambient,diffuse,specular,1);
+		nonActiveIce = new CGFappearance(ambient,diffuse,specular,1);
+
+		ambient[0] = 0.4; ambient[1] = 0.4; ambient[2] = 0.4; ambient[3] = 1; 
+		diffuse[0] = 0.4; diffuse[1] = 0.4; diffuse[2] = 0.4; diffuse[3] = 1;
+		specular[0] = 0.4; specular[1] = 0.4; specular[2] = 0.4; specular[3] = 1;
+
+		appWood = new CGFappearance(ambient,diffuse,specular,1);
+		activeWood = new CGFappearance(ambient,diffuse,specular,1);
+		nonActiveWood = new CGFappearance(ambient,diffuse,specular,1);
+
+		ambient[0] = 0.5; ambient[1] = 0.5; ambient[2] = 0.5; ambient[3] = 1; 
+		diffuse[0] = 0.5; diffuse[1] = 0.5; diffuse[2] = 0.5; diffuse[3] = 1;
+		specular[0] = 0.5; specular[1] = 0.5; specular[2] = 0.5; specular[3] = 1;
 
 		nonActive = new CGFappearance(ambient,diffuse,specular,0.5);
 
@@ -304,6 +331,24 @@ public:
 
 		appPr->setTexture(preto);
 		appPr->setTextureWrap(GL_REPEAT,GL_REPEAT);
+
+		appIce->setTexture(ice);
+		appIce->setTextureWrap(GL_REPEAT,GL_REPEAT);
+
+		appWood->setTexture(wood);
+		appWood->setTextureWrap(GL_REPEAT,GL_REPEAT);
+
+		activeIce->setTexture(activeice);
+		activeIce->setTextureWrap(GL_REPEAT,GL_REPEAT);
+
+		nonActiveIce->setTexture(nonactiveice);
+		nonActiveIce->setTextureWrap(GL_REPEAT,GL_REPEAT);
+
+		activeWood->setTexture(activewood);
+		activeWood->setTextureWrap(GL_REPEAT,GL_REPEAT);
+
+		nonActiveWood->setTexture(nonactivewood);
+		nonActiveWood->setTextureWrap(GL_REPEAT,GL_REPEAT);
 
 		for(int i = 0; i < size; i++)
 		{
@@ -357,26 +402,56 @@ public:
 
 		glPushMatrix();
 		glPushName(0);
-		if(activePl)
-			active->apply();
-		else
-			nonActive->apply();
+		if(activePl){
+			if(appea==0)
+				active->apply();
+			else if(appea==1)
+				activeIce->apply();
+			else
+				activeWood->apply();
+		}
+		else{
+			if(appea==0)
+				nonActive->apply();
+			else if(appea==1)
+				nonActiveIce->apply();
+			else
+				nonActiveWood->apply();
+		}
 		pl1.draw();
 		glPopName();
 		glPopMatrix();
 
 		glPushMatrix();
 		glPushName(1);
-		if(activePl)
-			nonActive->apply();
-		else
-			active->apply();
+		if(activePl){
+			if(appea==0)
+				nonActive->apply();
+			else if(appea==1)
+				nonActiveIce->apply();
+			else
+				nonActiveWood->apply();
+		}
+		else{
+			if(appea==0)
+				active->apply();
+			else if(appea==1)
+				activeIce->apply();
+			else
+				activeWood->apply();
+		}
 		pl2.draw();
 		glPopName();
 		glPopMatrix();
 
 		glPushMatrix();
-		appBr->apply();
+		if(appea==0)
+			appBr->apply();
+		else if(appea==1)
+			appIce->apply();
+		else
+			appWood->apply();
+		
 		for(int j=0;j<size;j++){
 			for(int k=0;k<size;k++)
 				dsk[k+j*size]->draw();
@@ -399,12 +474,22 @@ public:
 				glPushName(a);
 				if(a%2==change){
 					//branco
-					appBr->apply();
+					if(appea==0)
+						appBr->apply();
+					else if(appea==1)
+						appIce->apply();
+					else
+						appWood->apply();
 					cubo.draw();
 				}
 				else{
 					//preto
-					appPr->apply();
+					if(appea==0)
+						appPr->apply();
+					else if(appea==1)
+						appIce->apply();
+					else
+						appWood->apply();
 					cubo.draw();
 				}
 				glPopMatrix();

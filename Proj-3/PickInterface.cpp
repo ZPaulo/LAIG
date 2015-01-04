@@ -229,7 +229,12 @@ void PickInterface::initGUI()
 	addRadioButtonToGroup(drawList, "Line");
 	addRadioButtonToGroup(drawList, "Point");
 
-
+	addColumnToPanel(geral);
+	GLUI_Panel *app = addPanelToPanel(geral,"Appearence", 1);
+	GLUI_RadioGroup *appea = addRadioGroupToPanel(app,&(((PickScene *) scene)->elements->brd.appea));
+	addRadioButtonToGroup(appea, "Default");
+	addRadioButtonToGroup(appea, "Ice");
+	addRadioButtonToGroup(appea, "Wood");
 }
 
 void PickInterface::processGUI(GLUI_Control *ctrl)

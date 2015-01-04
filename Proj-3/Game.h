@@ -49,7 +49,7 @@ public:
 
 	float wA, inc,startAng;
 	unsigned long t0R;
-
+	
 	Game(){}
 	Game(int size){
 		won = false;
@@ -58,7 +58,7 @@ public:
 		this->size = size;
 		this->tempoMax = 0;
 		inicia = true;
-		brd = Board(size,"textures/Border.jpg","textures/Border.jpg");
+		brd = Board(size,"textures/Border.jpg","textures/Border.jpg","textures/ice.jpg","textures/wood.jpg","textures/activeice.jpg","textures/nonactiveice.jpg","textures/activewood.jpg","textures/nonactivewood.jpg");
 		activePl = 0;
 		t0 = 0;
 
