@@ -170,6 +170,7 @@ public:
 				o8<<m->points;send=o8.str();send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
 				send="n.\n";memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
 				
+
 				memset(mensagem,0,255);
 				as->recebe(mensagem);
 				if(mensagem=="no\n"){

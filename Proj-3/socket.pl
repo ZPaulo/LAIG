@@ -34,12 +34,12 @@ serverLoop(Stream) :-
 
 
 parse_input(validate,Stream) :-
-        read(Stream,Line),write(Line),nl,
         read(Stream,Column),write(Column),nl,
-        read(Stream,NewLine),write(NewLine),nl,
+        read(Stream,Line),write(Line),nl,
         read(Stream,NewColumn),write(NewColumn),nl,
-        read(Stream,LineE),write(LineE),nl,
+        read(Stream,NewLine),write(NewLine),nl,
         read(Stream,ColumnE),write(ColumnE),nl,
+        read(Stream,LineE),write(LineE),nl,
         read(Stream,Dir),write(Dir),nl,
         read(Stream,Nmb),write(Nmb),nl,
         read(Stream,Dsk),write(Dsk),nl,
@@ -48,7 +48,7 @@ parse_input(validate,Stream) :-
         read(Stream,Points),write(Points),nl,
         read(Stream,PrevChoice),write(PrevChoice),nl,
         
-        validateMove(Line,Column,NewLine,NewColumn, LineE,ColumnE,Dir,Nmb,Dsk,Brd,_,_,Symbol,Points,NewPoints,PrevChoice,Stream)->
+        validateMove(Line,Column,_,_, LineE,ColumnE,Dir,Nmb,Dsk,Brd,_,_,Symbol,Points,NewPoints,PrevChoice,Stream)->
                 (write(Stream,'yes\n'), flush_output(Stream), format(Stream,'~q~n',[NewPoints]),flush_output(Stream));
                 (write(Stream,'no\n'),  flush_output(Stream)).
 
@@ -542,7 +542,7 @@ moveDisk('N',T,Y,T,Y,Points,Points).
 %validateMove(+LineOfPlayer,+ColumnOfPlayer,-NewLineOfPlayer,-NewColumnOfPlayer,+LineOfEnemy,+ColumnEnemy,+DirectionOfTravel,+NumberOfTravel,+CarryingDisk,+Board,-StackAfterPlayerLeaves,+StackWherePlayerIs,+SymbolOfComplete,+PointsOfPlayer,+NewPointsOfPlayer,+PrevChoiceOfPlayer)
 validateMove(Line,Column,NewLine,NewColumn, LineF,ColumnF,Dir,Nmb,Dsk,Brd,NewPrevStack,Stack,StackSymbol,Points,NewPoints,PrevChoice,Stream):-
         calcCoord(Dir,Nmb,Line,Column,NewLine,NewColumn),
-        getElementM(NewLine,NewColumn,Brd,NextStack),
+        getElementM(NewColumn,NewLine,Brd,NextStack),
         isPlayer(NewLine,NewColumn, LineF,ColumnF,Stream),!,
         canLand(NextStack,Dsk,Stream),!,
         getElementM(Line,Column,Brd,[_H|PrevStack]),
