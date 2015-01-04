@@ -140,7 +140,7 @@ public:
 				m->points = playerInfo[activePl+1];
 
 				m=constructBoard(m);
-				//validateMoveU(Line,Column,NewLine,NewColumn,/ LineE,ColumnE,Dir,Nmb,Dsk,Brd,/Symbol/,Points,PrevChoice)
+			
 				string send="validate.\n";memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255);
 
 				stringstream oo,o1,o2,o3,o4,o5,o6,o7,o8; 
@@ -154,17 +154,17 @@ public:
 				o7<<m->number;send=o7.str();send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
 
 				if(m->disk==true)
-					send="y.\n";
+				send="y.\n";
 				else
-					send="n.\n";
+				send="n.\n";
 				memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
 
 				send=m->brd;send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255);
 
 				if(playerInfo[0]==0)
-					send="[36].\n";
+				send="[36].\n";
 				else
-					send="[35].\n";
+				send="[35].\n";
 				memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255);
 				o8<<m->points;send=o8.str();send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
 				send="n.\n";memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
@@ -176,38 +176,36 @@ public:
 				memset(mensagem,0,255);
 				as->recebe(mensagem);
 				if(strcmp(mensagem,"no\r") == 0){
-					return false;
+				return false;
 				}
 				else{
-
-					//neste ponto mensagem=pontos
-					tempPlays.push_back(m);
+				tempPlays.push_back(m);
 
 
 
 
-					brd.plIndex[activePl][0] = newP[0];
-					brd.plIndex[activePl][1] = newP[1];
+				brd.plIndex[activePl][0] = newP[0];
+				brd.plIndex[activePl][1] = newP[1];
 
-					if(disk){
-						brd.coords[oldP[0]][oldP[1]][1]--;
-						brd.coords[newP[0]][newP[1]][1]++;
-						brd.dsk[oldP[0]*size+oldP[1]]->move( brd.coords[newP[0]][newP[1]][0],brd.coords[newP[0]][newP[1]][1],brd.coords[newP[0]][newP[1]][2]);
+				if(disk){
+					brd.coords[oldP[0]][oldP[1]][1]--;
+					brd.coords[newP[0]][newP[1]][1]++;
+					brd.dsk[oldP[0]*size+oldP[1]]->move( brd.coords[newP[0]][newP[1]][0],brd.coords[newP[0]][newP[1]][1],brd.coords[newP[0]][newP[1]][2]);
 
-						if(activePl)
-							brd.pl2.move(brd.coords[newP[0]][newP[1]][0],(brd.coords[newP[0]][newP[1]][1]+1)*0.5,brd.coords[newP[0]][newP[1]][2]);
-						else
-							brd.pl1.move(brd.coords[newP[0]][newP[1]][0],(brd.coords[newP[0]][newP[1]][1]+1)*0.5,brd.coords[newP[0]][newP[1]][2]);
-
-					}
+					if(activePl)
+						brd.pl2.move(brd.coords[newP[0]][newP[1]][0],(brd.coords[newP[0]][newP[1]][1]+1)*0.5,brd.coords[newP[0]][newP[1]][2]);
 					else
-						if(activePl)
-							brd.pl2.move(brd.coords[newP[0]][newP[1]][0],brd.coords[newP[0]][newP[1]][1],brd.coords[newP[0]][newP[1]][2]);
-						else
-							brd.pl1.move(brd.coords[newP[0]][newP[1]][0],brd.coords[newP[0]][newP[1]][1],brd.coords[newP[0]][newP[1]][2]);
+						brd.pl1.move(brd.coords[newP[0]][newP[1]][0],(brd.coords[newP[0]][newP[1]][1]+1)*0.5,brd.coords[newP[0]][newP[1]][2]);
 
-					return true;
 				}
+				else
+					if(activePl)
+						brd.pl2.move(brd.coords[newP[0]][newP[1]][0],brd.coords[newP[0]][newP[1]][1],brd.coords[newP[0]][newP[1]][2]);
+					else
+						brd.pl1.move(brd.coords[newP[0]][newP[1]][0],brd.coords[newP[0]][newP[1]][1],brd.coords[newP[0]][newP[1]][2]);
+
+				return true;
+			}
 
 
 			}

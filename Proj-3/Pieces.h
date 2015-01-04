@@ -375,6 +375,14 @@ public:
 		glPopName();
 		glPopMatrix();
 
+		glPushMatrix();
+		appBr->apply();
+		for(int j=0;j<size;j++){
+			for(int k=0;k<size;k++)
+				dsk[k+j*size]->draw();
+		}
+		glPopMatrix();
+
 		int change=0;
 		glPushName(-1);	
 
@@ -386,14 +394,9 @@ public:
 
 			glLoadName(i);
 			for(int a=0;a<size;a++){
-
-				glPushName(a);
-
-				appBr->apply();
-				dsk[a+i*size]->draw();
 				glPushMatrix();
 				glTranslated(a*(size+0.5),0,i*(size+0.5));
-
+				glPushName(a);
 				if(a%2==change){
 					//branco
 					appBr->apply();
@@ -406,7 +409,6 @@ public:
 				}
 				glPopMatrix();
 				glPopName();
-				glPopMatrix();
 			}
 		}
 	}
