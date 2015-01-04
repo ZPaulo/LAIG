@@ -4,7 +4,6 @@
 #include "CGFapplication.h"
 #include "PickInterface.h"
 #include "PickScene.h"
-#include "socket.h"
 
 using std::cout;
 using std::exception;

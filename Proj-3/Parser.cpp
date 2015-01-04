@@ -255,7 +255,7 @@ void CPerspective::apply(){
 	glPushMatrix();
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(angle, ratio, near, far );
+	gluPerspective(angle, ratio, near1, far1 );
 	glPopMatrix();
 
 	gluLookAt(pos[0],pos[1],pos[2],target[0],target[1],target[2],0,1,0);
@@ -267,7 +267,7 @@ void COrtho::apply(){
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 
-	glOrtho(left * ratio,right*ratio ,bottom,top, near, far);
+	glOrtho(left * ratio,right*ratio ,bottom,top, near1, far1);
 	if(direction == "x")
 		glRotatef(-90,0,1,0);
 	if(direction == "y")

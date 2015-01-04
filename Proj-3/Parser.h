@@ -52,7 +52,7 @@ public:
 class CPerspective : public Camera
 {
 public:
-	float near, far, angle, pos[3], target[3];
+	float near1, far1, angle, pos[3], target[3];
 	void apply();
 };
 
@@ -60,7 +60,7 @@ class COrtho : public Camera
 {
 public:
 	string direction;
-	float near,far,left,right, top, bottom;
+	float near1,far1,left,right, top, bottom;
 	void apply();
 };
 

@@ -3,6 +3,7 @@
 
 #include "Pieces.h"
 #include "TextObject.h"
+#include "socket.h"
 #include <sstream>
 #include <iostream>
 
@@ -22,7 +23,7 @@ public:
 	float enemP[2];
 	bool disk;
 	int number,stack;	
-	char direction;
+	string direction;
 	int points;
 	string brd;
 };
@@ -31,12 +32,14 @@ class Game
 {
 public:
 	Board brd;
+	Socket *as;
+	char mensagem[255];
 	int activePl;
 	vector<int> playerInfo; // 0 is active player, 1 is points of player 1 and 2 is points of player 2
 	vector<Camera*> cams;
 	vector<LightG*> lights;
 	vector<Move*> listPlays;
-	vector<Move> tempPlays;
+	vector<Move*> tempPlays;
 	int tempoMax;
 	unsigned long t0;
 	bool inicia,nextTurn;
@@ -49,6 +52,8 @@ public:
 
 	Game(){}
 	Game(int size,int tempoMax){
+		as=new Socket();
+		as->socketConnect();
 		this->size = size;
 		this->tempoMax = tempoMax*1000;
 		inicia = true;
@@ -76,19 +81,19 @@ public:
 		COrtho *c1 = new COrtho;
 		c1->id = "Top view";
 		c1->direction = "y";
-		c1->near = -60;
-		c1->far = 70;
+		c1->near1 = -60;
+		c1->far1 = 70;
 		c1->left = 0;
 		c1->right = 15;
-		c1-> top = 5;
+		c1->top = 5;
 		c1->bottom = -15;
 
 		cams.push_back(c1);
 
 		CPerspective *c2 = new CPerspective();
 		c2->id = "Perspective view";
-		c2->near = 0;
-		c2->far = 70;
+		c2->near1 = 0;
+		c2->far1 = 70;
 		c2->angle = 140;
 
 		c2->pos[0] = 20;
@@ -125,16 +130,59 @@ public:
 			if(tempPlays.size() == 0){
 
 				//se for valido
-				Move m;
-				m.oldP[0] = oldP[0];
-				m.oldP[1] = oldP[1];
+				Move *m=new Move();
+				m->oldP[0] = oldP[0];
+				m->oldP[1] = oldP[1];
 
-				m.newP[0] = newP[0];
-				m.newP[1] = newP[1];
-				m.disk = disk;
-				m.points = playerInfo[activePl+1];
-				constructBoard(m);
+				m->newP[0] = newP[0];
+				m->newP[1] = newP[1];
+				m->disk = disk;
+				m->points = playerInfo[activePl+1];
+				
+				m=constructBoard(m);
+				cout<<m->points;
+				//validateMoveU(Line,Column,NewLine,NewColumn,/ LineE,ColumnE,Dir,Nmb,Dsk,Brd,/Symbol/,Points,PrevChoice)
+				string send="validate.\n";memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255);
+
+				stringstream oo,o1,o2,o3,o4,o5,o6,o7,o8; 
+				oo<<m->oldP[0];send=oo.str();send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
+				o1<<m->oldP[1];send=o1.str();send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
+				o2<<m->newP[0];send=o2.str();send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
+				o3<<m->newP[1];send=o3.str();send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
+				o4<<m->enemP[0];send=o4.str();send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
+				o5<<m->enemP[1];send=o5.str();send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
+				send=m->direction;send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
+				o7<<m->number;send=o7.str();send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
+				
+				if(m->disk==true)
+					send="y.\n";
+				else
+					send="n.\n";
+				memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
+
+				send=m->brd;send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255);
+				
+				if(playerInfo[0]==0)
+					send="[36].\n";
+				else
+					send="[35].\n";
+				memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255);
+				o8<<m->points;send=o8.str();send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
+				send="n.\n";memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
+				
+				memset(mensagem,0,255);
+				as->recebe(mensagem);
+				if(mensagem=="no\n"){
+
+				}
+				else{
+					memset(mensagem,0,255);
+					as->recebe(mensagem);
+					//neste ponto mensagem=pontos
+				}
 				tempPlays.push_back(m);
+
+				
 
 
 				brd.plIndex[activePl][0] = newP[0];
@@ -164,7 +212,7 @@ public:
 	void validMove(){
 		if(tempPlays.size()> 0){
 			Move *m = new Move();
-			m = &tempPlays[tempPlays.size()-1];
+			m = tempPlays[tempPlays.size()-1];
 			listPlays.push_back(m);
 			tempPlays.clear();
 			brd.activePl = activePl;
@@ -180,21 +228,21 @@ public:
 	bool undo(){
 		if(tempPlays.size() > 0)
 		{
-			Move m = tempPlays[tempPlays.size()-1];
+			Move *m = tempPlays[tempPlays.size()-1];
 
-			if(m.disk){
-				brd.coords[m.newP[0]][m.newP[1]][1]--;
-				brd.coords[m.oldP[0]][m.oldP[1]][1]++;
-				brd.dsk[m.oldP[0]*size+m.oldP[1]]->move( brd.coords[m.oldP[0]][m.oldP[1]][0],brd.coords[m.oldP[0]][m.oldP[1]][1],brd.coords[m.oldP[0]][m.oldP[1]][2]);
+			if(m->disk){
+				brd.coords[m->newP[0]][m->newP[1]][1]--;
+				brd.coords[m->oldP[0]][m->oldP[1]][1]++;
+				brd.dsk[m->oldP[0]*size+m->oldP[1]]->move( brd.coords[m->oldP[0]][m->oldP[1]][0],brd.coords[m->oldP[0]][m->oldP[1]][1],brd.coords[m->oldP[0]][m->oldP[1]][2]);
 			}
 
-			brd.plIndex[activePl][0] = m.oldP[0];
-			brd.plIndex[activePl][1] = m.oldP[1];
+			brd.plIndex[activePl][0] = m->oldP[0];
+			brd.plIndex[activePl][1] = m->oldP[1];
 
 			if(activePl)
-				brd.pl2.move(brd.coords[m.oldP[0]][m.oldP[1]][0],brd.coords[m.oldP[0]][m.oldP[1]][1],brd.coords[m.oldP[0]][m.oldP[1]][2]);
+				brd.pl2.move(brd.coords[m->oldP[0]][m->oldP[1]][0],brd.coords[m->oldP[0]][m->oldP[1]][1],brd.coords[m->oldP[0]][m->oldP[1]][2]);
 			else
-				brd.pl1.move(brd.coords[m.oldP[0]][m.oldP[1]][0],brd.coords[m.oldP[0]][m.oldP[1]][1],brd.coords[m.oldP[0]][m.oldP[1]][2]);
+				brd.pl1.move(brd.coords[m->oldP[0]][m->oldP[1]][0],brd.coords[m->oldP[0]][m->oldP[1]][1],brd.coords[m->oldP[0]][m->oldP[1]][2]);
 
 			tempPlays.pop_back();
 			return true;
@@ -261,11 +309,13 @@ public:
 		}
 	}
 
-	void constructBoard(Move m){
+	Move* constructBoard(Move *n){
+		Move *m=new Move();
+		m=n;
 		float nPos[2];
 		float pos[2];
-		pos[0] = m.oldP[0];
-		pos[1] = m.oldP[1];
+		pos[0] = m->oldP[0];
+		pos[1] = m->oldP[1];
 		char nonC,actC;
 		int non;
 		if(activePl){
@@ -279,28 +329,28 @@ public:
 			actC = 'X';
 		}
 
-		if((m.oldP[0] == m.newP[0]) && (m.newP[1] > m.oldP[1])){
-			m.direction = 'R';
-			m.number = m.newP[1] - m.oldP[1];
+		if((m->oldP[0] == m->newP[0]) && (m->newP[1] > m->oldP[1])){
+			m->direction = "r";
+			m->number = m->newP[1] - m->oldP[1];
 		}
-		else if((m.oldP[0] == m.newP[0]) && (m.newP[1] < m.oldP[1])){
-			m.direction = 'L';
-			m.number =  m.oldP[1] - m.newP[1];
+		else if((m->oldP[0] == m->newP[0]) && (m->newP[1] < m->oldP[1])){
+			m->direction = "l";
+			m->number =  m->oldP[1] - m->newP[1];
 		}
-		else if((m.oldP[1] == m.newP[1]) && (m.newP[0] < m.oldP[0])){
-			m.direction = 'U';
-			m.number = m.newP[0] - m.oldP[0];
+		else if((m->oldP[1] == m->newP[1]) && (m->newP[0] < m->oldP[0])){
+			m->direction = "u";
+			m->number = m->newP[0] - m->oldP[0];
 		}
-		else if((m.oldP[1] == m.newP[1]) && (m.newP[0] > m.oldP[0])){
-			m.direction = 'D';
-			m.number =  m.oldP[0] - m.newP[0];
+		else if((m->oldP[1] == m->newP[1]) && (m->newP[0] > m->oldP[0])){
+			m->direction = "d";
+			m->number =  m->oldP[0] - m->newP[0];
 		}
 
 		nPos[0] = brd.plIndex[non][0];
 		nPos[1] = brd.plIndex[non][1];
 
-		m.enemP[0] = nPos[0];
-		m.enemP[1] = nPos[1];
+		m->enemP[0] = nPos[0];
+		m->enemP[1] = nPos[1];
 
 		string str = "[";
 		for(int i = 0; i < size;i++){
@@ -308,7 +358,7 @@ public:
 			for(int j = 0; j < size;j++){
 				ostringstream os;
 				if(i == pos[0] && j == pos[1]){
-					m.stack = brd.coords[i][j][1];
+					m->stack = brd.coords[i][j][1];
 					os << "[" << actC << "|" << brd.coords[i][j][1] << "]";
 				}
 				else if(i == nPos[0] && j == nPos[1]){
@@ -326,8 +376,8 @@ public:
 				str += ",";
 		}
 		str += "]";
-		m.brd = str;
-
+		m->brd = str;
+		return m;
 	}
 
 
