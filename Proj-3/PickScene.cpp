@@ -31,30 +31,19 @@ void PickScene::init()
 	// Defines a default normal
 	glNormal3f(0,0,1);
 
-	elements = new Game(5);
+	elements = new Game(5,10);
 
 	drawingMode = 0;
 	start = true;
-
-	nextTurn = false;
-	wA = 180;
-	t0 = 0;
-	inc = 0;
-	startAng = 0;
 }
 
 void PickScene::restart()
 {
 
-	elements = new Game(5);
+	elements = new Game(5,10);
 
 	drawingMode = 0;
 
-	nextTurn = false;
-	wA = 180;
-	t0 = 0;
-	inc = 0;
-	startAng = 0;
 }
 
 void PickScene::setSel(float pos[4],bool on)
@@ -80,20 +69,6 @@ void PickScene::setSel(float pos[4],bool on)
 void PickScene::update(unsigned long t)
 {
 	elements->update(t);
-
-	if (!nextTurn)
-		return;
-	if (t0 == 0)
-		t0 = t;
-	unsigned long dt = t - t0;
-	if (dt < 500) {
-		inc = (dt / 500.0) * wA;
-	} else {
-		nextTurn = false;
-		startAng += 180;
-		inc = 0;
-	}
-
 
 }
 
@@ -146,7 +121,7 @@ void PickScene::display()
 	if(!start){
 
 		glTranslatef(elements->size+0.5,0,elements->size+0.5);
-		glRotatef(inc+startAng,0,1,0);
+		glRotatef(elements->inc+elements->startAng,0,1,0);
 		glTranslatef(-(elements->size+0.5),0,-(elements->size+0.5));
 
 
@@ -154,7 +129,7 @@ void PickScene::display()
 		glScalef(0.4, 0.4, 0.4);
 		glPushMatrix();
 		glTranslatef(0,10,0);
-		elements->plText->draw(elements->activePl);
+		elements->plText->draw(elements->playerInfo);
 		glPopMatrix();
 		elements->brd.draw();
 	}

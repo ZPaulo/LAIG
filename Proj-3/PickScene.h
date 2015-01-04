@@ -15,12 +15,10 @@ public:
 	void update(unsigned long t);
 	void setSel(float pos[4],bool on);
 	int drawingMode;
-	bool nextTurn,start;
+	bool start;
 	~PickScene();
 private:
 	Game *elements;
-	float wA, inc,startAng;
-	unsigned long t0;
 
 
 	CGFappearance* materialAppearance;

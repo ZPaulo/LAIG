@@ -27,18 +27,43 @@ class Game
 public:
 	Board brd;
 	int activePl;
+	vector<int> playerInfo; // 0 is active player, 1 is points of player 1 and 2 is points of player 2
 	vector<Camera*> cams;
 	vector<LightG*> lights;
 	vector<Move*> listPlays;
 	vector<Move> tempPlays;
+	int tempoMax;
+	unsigned long t0;
+	bool inicia,nextTurn;
 	int activeCam;
 	TextObject* plText;
 	int size,difficulty,versus;
+
+	float wA, inc,startAng;
+	unsigned long t0R;
+
 	Game(){}
-	Game(int size){
+	Game(int size,int tempoMax){
 		this->size = size;
+		this->tempoMax = tempoMax*1000;
+		inicia = true;
 		brd = Board(size,"textures/Border.jpg","textures/Border.jpg");
 		activePl = 0;
+		t0 = 0;
+
+
+		nextTurn = false;
+		wA = 180;
+		t0R = 0;
+		inc = 0;
+		startAng = 0;
+
+		playerInfo.push_back(0);
+		playerInfo.push_back(0);
+		playerInfo.push_back(0);
+		playerInfo.push_back(0);
+		playerInfo.push_back(0);
+		playerInfo.push_back(0);
 		versus = 0;
 		difficulty = 0;
 		activeCam = 2;
@@ -88,55 +113,6 @@ public:
 
 		plText = new TextObject();
 	}
-	/*
-	void init(){
-		Socket as;
-		as.socketConnect();
-
-		char mensagem[255];
-
-		string num;
-
-		//How many lines will the board have
-		as.recebe(mensagem);
-		num="7.\n";
-		memcpy(mensagem,num.c_str(),num.size());
-		as.envia(mensagem,num.size());
-
-		//How many columns will the board have?
-		as.recebe(mensagem);
-		num="7.\n";
-		memcpy(mensagem,num.c_str(),num.size());
-		as.envia(mensagem,num.size());
-
-		//Modo d3 jogo H-H Ai-H
-		as.recebe(mensagem);
-		num="h-h.\n";
-		memcpy(mensagem,num.c_str(),num.size());
-		as.envia(mensagem,strlen(mensagem));
-
-		//Random or Smart
-		as.recebe(mensagem);
-		num="Smart.\n";
-		memcpy(mensagem,num.c_str(),num.size());
-		as.envia(mensagem,strlen(mensagem));
-
-		cout<<"ooooo\n";
-		brd=Board(7,"textures/Border.jpg","textures/Border.jpg");
-		activePl=0;
-
-
-
-		//get board
-		char board[255];
-		as.recebe(board);
-
-		//'Press enter to start'
-		string x="\n";
-		memcpy(board,x.c_str(),x.size());
-		as.envia(board,strlen(board));
-	}
-	*/
 	bool calculateMove(float oldP[2], float newP[2], bool disk){
 		if(oldP[0] != newP[0] && oldP[1] != newP[1])
 			return false;
@@ -179,18 +155,19 @@ public:
 			}
 		}
 	}
-	bool validMove(){
+	void validMove(){
 		if(tempPlays.size()> 0){
 			Move *m = new Move();
 			m = &tempPlays[tempPlays.size()-1];
 			listPlays.push_back(m);
 			tempPlays.clear();
 			brd.activePl = activePl;
-			return true;
 		}
 		else{
-			printf("You must move your piece before ending turn\n\n");
-			return false;
+			Move *m = NULL;
+			listPlays.push_back(m);
+			tempPlays.clear();
+			brd.activePl = activePl;
 		}
 	}
 
@@ -222,6 +199,37 @@ public:
 	}
 
 	void update(unsigned long t){
+
+
+		//counter for each play
+		if(inicia){ // inicio de uma nova jogada
+			t0 = t;
+			inicia = false;
+		}
+		unsigned long dt = t - t0;
+		if (dt >= tempoMax) {
+			printf("Acabou o tempo, proximo jogador\n\n");
+
+			validMove();
+			nextTurn = true;
+			t0R = 0;
+
+			if(activePl)
+				activePl = 0;
+			else
+				activePl = 1;
+
+			playerInfo[0] = activePl;
+			inicia = true;
+		}
+		else{
+			playerInfo[3] = dt/1000;
+			playerInfo[4] = (dt / 100) % 10;
+			playerInfo[5] = (dt / 10) % 10;
+			printf("%d\n",dt);
+		}
+
+
 		if(activePl)
 			brd.pl2.update(t);
 		else
@@ -229,6 +237,21 @@ public:
 
 		for(unsigned int i = 0; i < brd.dsk.size();i++){
 			brd.dsk[i]->update(t);
+		}
+
+		//Switch point of view
+		if (!nextTurn)
+			return;
+		if (t0R == 0)
+			t0R = t;
+		unsigned long dtR = t - t0R;
+		if (dtR < 500) {
+			inc = (dtR / 500.0) * wA;
+		} else {
+			inicia = true;
+			nextTurn = false;
+			startAng += 180;
+			inc = 0;
 		}
 	}
 

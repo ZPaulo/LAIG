@@ -1356,7 +1356,7 @@ void ANFScene::init()
 	for(unsigned int i = 0; i < parser.animations.size();i++)
 		parser.animations[i]->doReset = true;
 
-	elements = Game(5);
+	//elements = Game(5,5);
 
 	
 	obj=new ExampleObject();

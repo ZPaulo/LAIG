@@ -217,16 +217,18 @@ void PickInterface::processGUI(GLUI_Control *ctrl)
 			((PickScene *) scene)->elements->lights[ctrl->user_id]->enabled = false;
 
 	if(ctrl->user_id == 10){
-		if(((PickScene *) scene)->elements->validMove()){
-			((PickScene *) scene)->nextTurn = true;
-			((PickScene *) scene)->t0 = 0;
-			int *pl = &((PickScene *) scene)->elements->activePl;
+		((PickScene *) scene)->elements->validMove();
+		((PickScene *) scene)->elements->nextTurn = true;
+		((PickScene *) scene)->elements->t0R = 0;
+		int *pl = &((PickScene *) scene)->elements->activePl;
 
-			if(*pl == 0)
-				*pl = 1;
-			else
-				*pl = 0;
-		}
+		if(*pl == 0)
+			*pl = 1;
+		else
+			*pl = 0;
+		((PickScene *) scene)->elements->playerInfo[0] = *pl;
+
+
 
 	}
 	if(ctrl->user_id == 9){
