@@ -141,7 +141,7 @@ public:
 				m->disk = disk;
 				m->points = playerInfo[activePl+1];
 
-				m=constructBoard(m);
+				m=constructBoard(m,true);
 
 				string send="validate.\n";memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255);
 
@@ -217,8 +217,12 @@ public:
 			}
 		}
 	}
-		bool randomMove(){
-		Move *m;
+	bool randomMove(){
+		Move *m = new Move();
+		m->oldP[0] = brd.plIndex[activePl][0];
+		m->oldP[1] = brd.plIndex[activePl][1];
+
+		m = constructBoard(m,false);
 		//write
 		string send="random.\n";memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255);
 		stringstream oo,o1,o2,o3,o4,o5; 
@@ -233,13 +237,15 @@ public:
 			send="[36].\n";
 		else
 			send="[35].\n";
+		m->points = playerInfo[activePl+1];
 		memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255);
 		o5<<m->points;send=o5.str();send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
 		send="n.\n";memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
 
 		//read
-		
+
 		advance();
+		return true;
 	}
 	bool smartMove(){
 		Move *m;
@@ -263,23 +269,8 @@ public:
 
 		//read
 		advance();
-
-	}
-	void validMove(){
-		if(tempPlays.size()> 0){
-			Move *m = new Move();
-			m = tempPlays[tempPlays.size()-1];
-			listPlays.push_back(m);
-			tempPlays.clear();
-			brd.activePl = activePl;
-		}
-		else{
-			Move *m = NULL;
-			listPlays.push_back(m);
-			tempPlays.clear();
-			brd.activePl = activePl;
-		}
-	}
+			return true;
+	}	
 	void advance(){
 		memcpy(mensagem,0,255);
 		as->recebe(mensagem);
@@ -417,7 +408,7 @@ public:
 		}
 	}
 
-	Move* constructBoard(Move *n){
+	Move* constructBoard(Move *n,bool human){
 		Move *m=new Move();
 		m=n;
 		float nPos[2];
@@ -437,23 +428,24 @@ public:
 			actC = 'X';
 		}
 
-		if((m->oldP[0] == m->newP[0]) && (m->newP[1] > m->oldP[1])){
-			m->direction = "r";
-			m->number = m->newP[1] - m->oldP[1];
+		if(human){
+			if((m->oldP[0] == m->newP[0]) && (m->newP[1] > m->oldP[1])){
+				m->direction = "r";
+				m->number = m->newP[1] - m->oldP[1];
+			}
+			else if((m->oldP[0] == m->newP[0]) && (m->newP[1] < m->oldP[1])){
+				m->direction = "l";
+				m->number =  m->oldP[1] - m->newP[1];
+			}
+			else if((m->oldP[1] == m->newP[1]) && (m->newP[0] < m->oldP[0])){
+				m->direction = "u";
+				m->number =   m->oldP[0] - m->newP[0];
+			}
+			else if((m->oldP[1] == m->newP[1]) && (m->newP[0] > m->oldP[0])){
+				m->direction = "d";
+				m->number =  m->newP[0]- m->oldP[0];
+			}
 		}
-		else if((m->oldP[0] == m->newP[0]) && (m->newP[1] < m->oldP[1])){
-			m->direction = "l";
-			m->number =  m->oldP[1] - m->newP[1];
-		}
-		else if((m->oldP[1] == m->newP[1]) && (m->newP[0] < m->oldP[0])){
-			m->direction = "u";
-			m->number =   m->oldP[0] - m->newP[0];
-		}
-		else if((m->oldP[1] == m->newP[1]) && (m->newP[0] > m->oldP[0])){
-			m->direction = "d";
-			m->number =  m->newP[0]- m->oldP[0];
-		}
-
 		nPos[0] = brd.plIndex[non][0];
 		nPos[1] = brd.plIndex[non][1];
 
@@ -487,8 +479,6 @@ public:
 		m->brd = str;
 		return m;
 	}
-
-
 
 };
 

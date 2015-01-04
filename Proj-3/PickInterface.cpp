@@ -108,10 +108,16 @@ void PickInterface::processHits (GLint hits, GLuint buffer[],bool disk)
 			((PickScene *) scene)->setSel(pos,true);
 
 			int pl = ((PickScene *) scene)->elements->activePl;
-			float oldP[2] ={((PickScene *) scene)->elements->brd.plIndex[pl][0],((PickScene *) scene)->elements->brd.plIndex[pl][1]};
-			float newP[2] = {selected[0],selected[1]};
+			if((pl == 0 && (((PickScene *) scene)->elements->versus == 0 || ((PickScene *) scene)->elements->versus == 2)) || (pl == 1 && (((PickScene *) scene)->elements->versus == 0 || ((PickScene *) scene)->elements->versus == 1))){
+				float oldP[2] ={((PickScene *) scene)->elements->brd.plIndex[pl][0],((PickScene *) scene)->elements->brd.plIndex[pl][1]};
+				float newP[2] = {selected[0],selected[1]};
 
-			bool valid = ((PickScene *) scene)->elements->calculateMove(oldP,newP,disk);
+				bool valid = ((PickScene *) scene)->elements->calculateMove(oldP,newP,disk);
+			}
+			else if(((PickScene *) scene)->elements->difficulty)
+				((PickScene *) scene)->elements->smartMove();
+			else
+				((PickScene *) scene)->elements->randomMove();
 
 			if( ((PickScene *) scene)->elements->won)
 				((PickScene *) scene)->start = true;
