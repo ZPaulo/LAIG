@@ -125,7 +125,7 @@ public:
 
 		plText = new TextObject();
 	}
-	bool calculateMove(float oldP[2], float newP[2], bool disk){
+	bool calculateMove(float oldP[2], float newP[2], bool disk, bool AI){
 		if(oldP[0] != newP[0] && oldP[1] != newP[1])
 			return false;
 		else{
@@ -143,46 +143,8 @@ public:
 
 				m=constructBoard(m,true);
 
-				string send="validate.\n";memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255);
-
-				stringstream oo,o1,o2,o3,o4,o5,o6,o7,o8; 
-				oo<<m->oldP[0];send=oo.str();send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
-				o1<<m->oldP[1];send=o1.str();send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
-				o2<<m->newP[0];send=o2.str();send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
-				o3<<m->newP[1];send=o3.str();send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
-				o4<<m->enemP[0];send=o4.str();send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
-				o5<<m->enemP[1];send=o5.str();send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
-				send=m->direction;send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
-				o7<<m->number;send=o7.str();send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
-
-				if(m->disk==true)
-					send="y.\n";
-				else
-					send="n.\n";
-				memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
-
-				send=m->brd;send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255);
-
-				if(playerInfo[0]==0)
-					send="[36].\n";
-				else
-					send="[35].\n";
-				memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255);
-				o8<<m->points;send=o8.str();send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
-				send="n.\n";memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
-
-
-				memset(mensagem,0,255);
-				as->recebe(mensagem);
-
-				memset(mensagem,0,255);
-				as->recebe(mensagem);
-				if(strcmp(mensagem,"no\r") == 0){
-					return false;
-				}
-				else{
+				if(AI){
 					tempPlays.push_back(m);
-					playerInfo[activePl+1] = mensagem[0]-48;
 
 					brd.plIndex[activePl][0] = newP[0];
 					brd.plIndex[activePl][1] = newP[1];
@@ -212,19 +174,96 @@ public:
 
 					return true;
 				}
+				else{
+					string send="validate.\n";memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255);
+
+					stringstream oo,o1,o2,o3,o4,o5,o6,o7,o8; 
+					oo<<m->oldP[0];send=oo.str();send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
+					o1<<m->oldP[1];send=o1.str();send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
+					o2<<m->newP[0];send=o2.str();send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
+					o3<<m->newP[1];send=o3.str();send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
+					o4<<m->enemP[0];send=o4.str();send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
+					o5<<m->enemP[1];send=o5.str();send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
+					send=m->direction;send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
+					o7<<m->number;send=o7.str();send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
+
+					if(m->disk==true)
+						send="y.\n";
+					else
+						send="n.\n";
+					memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
+
+					send=m->brd;send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255);
+
+					if(playerInfo[0]==0)
+						send="[36].\n";
+					else
+						send="[35].\n";
+					memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255);
+					o8<<m->points;send=o8.str();send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
+					send="n.\n";memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
+
+
+					memset(mensagem,0,255);
+					as->recebe(mensagem);
+
+					memset(mensagem,0,255);
+					as->recebe(mensagem);
+					if(strcmp(mensagem,"no\r") == 0){
+						return false;
+					}
+					else{
+						tempPlays.push_back(m);
+						playerInfo[activePl+1] = mensagem[0]-48;
+
+						brd.plIndex[activePl][0] = newP[0];
+						brd.plIndex[activePl][1] = newP[1];
+
+						if(disk){
+							brd.coords[oldP[0]][oldP[1]][1]--;
+							brd.coords[newP[0]][newP[1]][1]++;
+							brd.dsk[oldP[0]*size+oldP[1]]->move( brd.coords[newP[0]][newP[1]][0],brd.coords[newP[0]][newP[1]][1],brd.coords[newP[0]][newP[1]][2]);
+
+							if(activePl)
+								brd.pl2.move(brd.coords[newP[0]][newP[1]][0],(brd.coords[newP[0]][newP[1]][1]+1)*0.5,brd.coords[newP[0]][newP[1]][2]);
+							else
+								brd.pl1.move(brd.coords[newP[0]][newP[1]][0],(brd.coords[newP[0]][newP[1]][1]+1)*0.5,brd.coords[newP[0]][newP[1]][2]);
+
+						}
+						else
+							if(activePl)
+								brd.pl2.move(brd.coords[newP[0]][newP[1]][0],brd.coords[newP[0]][newP[1]][1],brd.coords[newP[0]][newP[1]][2]);
+							else
+								brd.pl1.move(brd.coords[newP[0]][newP[1]][0],brd.coords[newP[0]][newP[1]][1],brd.coords[newP[0]][newP[1]][2]);
+
+
+						if(playerInfo[activePl+1] == 4){
+							won = true;
+							printf("Player %d has won!!!!\n",activePl+1);
+						}
+
+						return true;
+					}
+				}
 
 
 			}
 		}
 	}
-	bool randomMove(){
+	bool AIMove(bool random){
 		Move *m = new Move();
 		m->oldP[0] = brd.plIndex[activePl][0];
 		m->oldP[1] = brd.plIndex[activePl][1];
 
 		m = constructBoard(m,false);
 		//write
-		string send="random.\n";memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255);
+		string send;
+		if(random){
+			send="random.\n";memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255);
+		}
+		else{
+			send="smart.\n";memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255);
+		}
 		stringstream oo,o1,o2,o3,o4,o5; 
 		oo<<size;send=oo.str();send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
 		o1<<m->oldP[0];send=o1.str();send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
@@ -244,68 +283,60 @@ public:
 
 		//read
 
-		advance();
+		advance(m);
 		return true;
 	}
-	bool smartMove(){
-		Move *m;
-		//write
-		string send="smart.\n";memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255);
-		stringstream oo,o1,o2,o3,o4,o5; 
-		oo<<size;send=oo.str();send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
-		o1<<m->oldP[0];send=o1.str();send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
-		o2<<m->oldP[1];send=o2.str();send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
-		o3<<m->enemP[0];send=o3.str();send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
-		o4<<m->enemP[1];send=o4.str();send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
-		send=m->brd;send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255);
-
-		if(playerInfo[0]==0)
-			send="[36].\n";
-		else
-			send="[35].\n";
-		memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255);
-		o5<<m->points;send=o5.str();send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
-		send="n.\n";memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
-
-		//read
-		advance();
-			return true;
-	}	
-	void advance(){
-		memcpy(mensagem,0,255);
+	void advance(Move *m){
+		memset(mensagem,0,255);
 		as->recebe(mensagem);
-		while(strcmp(mensagem,"Move Accepted\n")!=0){
-			memcpy(mensagem,0,255);
-			as->recebe(mensagem);
-		}
+
 		//points
-		memcpy(mensagem,0,255);
+		memset(mensagem,0,255);
 		as->recebe(mensagem);
+		playerInfo[activePl+1] = mensagem[0]-48;
 
-		memcpy(mensagem,0,255);
 		//Direction
-		as->recebe(mensagem);
 		memset(mensagem,0,255);
 		as->recebe(mensagem);
-		memset(mensagem,0,255);
+		char dir = mensagem[0];
+
 
 		//Number
-		as->recebe(mensagem);
 		memset(mensagem,0,255);
 		as->recebe(mensagem);
-		memset(mensagem,0,255);
+		int num = mensagem[0]-48;
+
+		switch (dir)
+		{ 
+		case 'u':
+			m->newP[1] = m->oldP[1];
+			m->newP[0] = m->oldP[0] - num;
+			break;
+		case 'd':
+			m->newP[1] = m->oldP[1];
+			m->newP[0] = m->oldP[0] + num;
+			break;
+		case 'l':
+			m->newP[0] = m->oldP[0];
+			m->newP[1] = m->oldP[1] - num;
+			break;
+		case 'r':
+			m->newP[0] = m->oldP[0];
+			m->newP[1] = m->oldP[1] + num;
+			break;
+		default:
+			break;
+		}
+
 
 		//Disk
-		as->recebe(mensagem);
 		memset(mensagem,0,255);
 		as->recebe(mensagem);
-		memset(mensagem,0,255);
+		if(mensagem[0] == 'y')
+			calculateMove(m->oldP,m->newP,true,true);
+		else
+			calculateMove(m->oldP,m->newP,false,true);
 
-		//Press enter to continue
-		as->recebe(mensagem);
-		string x="1.\n";
-		memcpy(mensagem,x.c_str(),x.size());
-		as->envia(mensagem,x.size());
 
 	}
 	void validMove(){

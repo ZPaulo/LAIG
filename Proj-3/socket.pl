@@ -466,24 +466,14 @@ processFirstElement([H|_T],P,Y):-
 
 %advance(+DirectionOfTravel,+NumberOfTravel,+CarryingDisk)
 advance(Dir,Nmb,Dsk,Stream):-
-        write(Stream,'Direction\n'),
-        flush_output(Stream),
         format(Stream, '~q.~n', [Dir]),
         flush_output(Stream),
         
-        write(Stream,'Number of movement\n'),
-        flush_output(Stream),
         format(Stream, '~q.~n', [Nmb]),
         flush_output(Stream),
         
-        write(Stream,'Disk?\n'),
-        flush_output(Stream),
         format(Stream, '~q.~n', [Dsk]),
-        flush_output(Stream),
-        
-        format(Stream, '~q.~n', ['Press enter to continue']),
-        flush_output(Stream),
-        get_char(Stream,_).
+        flush_output(Stream).
 
 %printPoints(+PointsOfX,+PointsOfY)
 printPoints(PointsX,PointsY,Stream) :-

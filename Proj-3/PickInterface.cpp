@@ -88,7 +88,7 @@ void PickInterface::processHits (GLint hits, GLuint buffer[],bool disk)
 		for (int j=0; j < num; j++) 
 			ptr++;
 	}
-
+	int pl = ((PickScene *) scene)->elements->activePl;
 	// if there were hits, the one selected is in "selected", and it consist of nselected "names" (integer ID's)
 	if (selected!=NULL)
 	{
@@ -107,17 +107,17 @@ void PickInterface::processHits (GLint hits, GLuint buffer[],bool disk)
 			printf("coord %f %f %f\n",pos[0],pos[1],pos[2]);
 			((PickScene *) scene)->setSel(pos,true);
 
-			int pl = ((PickScene *) scene)->elements->activePl;
+			
 			if((pl == 0 && (((PickScene *) scene)->elements->versus == 0 || ((PickScene *) scene)->elements->versus == 2)) || (pl == 1 && (((PickScene *) scene)->elements->versus == 0 || ((PickScene *) scene)->elements->versus == 1))){
 				float oldP[2] ={((PickScene *) scene)->elements->brd.plIndex[pl][0],((PickScene *) scene)->elements->brd.plIndex[pl][1]};
 				float newP[2] = {selected[0],selected[1]};
 
-				bool valid = ((PickScene *) scene)->elements->calculateMove(oldP,newP,disk);
+				bool valid = ((PickScene *) scene)->elements->calculateMove(oldP,newP,disk,false);
 			}
 			else if(((PickScene *) scene)->elements->difficulty)
-				((PickScene *) scene)->elements->smartMove();
+				((PickScene *) scene)->elements->AIMove(false);
 			else
-				((PickScene *) scene)->elements->randomMove();
+				((PickScene *) scene)->elements->AIMove(true);
 
 			if( ((PickScene *) scene)->elements->won)
 				((PickScene *) scene)->start = true;
@@ -134,6 +134,17 @@ void PickInterface::processHits (GLint hits, GLuint buffer[],bool disk)
 		printf("Nothing selected while picking \n");	
 		float pos[4] = {0,0,0,1};
 		((PickScene *) scene)->setSel(pos,false);
+
+		if((pl == 0 && (((PickScene *) scene)->elements->versus == 0 || ((PickScene *) scene)->elements->versus == 2)) || (pl == 1 && (((PickScene *) scene)->elements->versus == 0 || ((PickScene *) scene)->elements->versus == 1))){
+		}
+		else if(((PickScene *) scene)->elements->difficulty)
+				((PickScene *) scene)->elements->AIMove(false);
+			else
+				((PickScene *) scene)->elements->AIMove(true);
+
+			if( ((PickScene *) scene)->elements->won)
+				((PickScene *) scene)->start = true;
+
 	}
 }
 
