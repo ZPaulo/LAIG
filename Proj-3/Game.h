@@ -51,12 +51,12 @@ public:
 	unsigned long t0R;
 
 	Game(){}
-	Game(int size,int tempoMax){
+	Game(int size){
 		won = false;
 		as=new Socket();
 		as->socketConnect();
 		this->size = size;
-		this->tempoMax = tempoMax*1000;
+		this->tempoMax = 0;
 		inicia = true;
 		brd = Board(size,"textures/Border.jpg","textures/Border.jpg");
 		activePl = 0;
@@ -69,6 +69,7 @@ public:
 		inc = 0;
 		startAng = 0;
 
+		playerInfo.push_back(0);
 		playerInfo.push_back(0);
 		playerInfo.push_back(0);
 		playerInfo.push_back(0);
@@ -141,7 +142,7 @@ public:
 				m->points = playerInfo[activePl+1];
 
 				m=constructBoard(m);
-			
+
 				string send="validate.\n";memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255);
 
 				stringstream oo,o1,o2,o3,o4,o5,o6,o7,o8; 
@@ -155,17 +156,17 @@ public:
 				o7<<m->number;send=o7.str();send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
 
 				if(m->disk==true)
-				send="y.\n";
+					send="y.\n";
 				else
-				send="n.\n";
+					send="n.\n";
 				memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
 
 				send=m->brd;send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255);
 
 				if(playerInfo[0]==0)
-				send="[36].\n";
+					send="[36].\n";
 				else
-				send="[35].\n";
+					send="[35].\n";
 				memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255);
 				o8<<m->points;send=o8.str();send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
 				send="n.\n";memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
@@ -177,40 +178,40 @@ public:
 				memset(mensagem,0,255);
 				as->recebe(mensagem);
 				if(strcmp(mensagem,"no\r") == 0){
-				return false;
+					return false;
 				}
 				else{
-				tempPlays.push_back(m);
-				playerInfo[activePl+1] = mensagem[0]-48;
+					tempPlays.push_back(m);
+					playerInfo[activePl+1] = mensagem[0]-48;
 
-				brd.plIndex[activePl][0] = newP[0];
-				brd.plIndex[activePl][1] = newP[1];
+					brd.plIndex[activePl][0] = newP[0];
+					brd.plIndex[activePl][1] = newP[1];
 
-				if(disk){
-					brd.coords[oldP[0]][oldP[1]][1]--;
-					brd.coords[newP[0]][newP[1]][1]++;
-					brd.dsk[oldP[0]*size+oldP[1]]->move( brd.coords[newP[0]][newP[1]][0],brd.coords[newP[0]][newP[1]][1],brd.coords[newP[0]][newP[1]][2]);
+					if(disk){
+						brd.coords[oldP[0]][oldP[1]][1]--;
+						brd.coords[newP[0]][newP[1]][1]++;
+						brd.dsk[oldP[0]*size+oldP[1]]->move( brd.coords[newP[0]][newP[1]][0],brd.coords[newP[0]][newP[1]][1],brd.coords[newP[0]][newP[1]][2]);
 
-					if(activePl)
-						brd.pl2.move(brd.coords[newP[0]][newP[1]][0],(brd.coords[newP[0]][newP[1]][1]+1)*0.5,brd.coords[newP[0]][newP[1]][2]);
+						if(activePl)
+							brd.pl2.move(brd.coords[newP[0]][newP[1]][0],(brd.coords[newP[0]][newP[1]][1]+1)*0.5,brd.coords[newP[0]][newP[1]][2]);
+						else
+							brd.pl1.move(brd.coords[newP[0]][newP[1]][0],(brd.coords[newP[0]][newP[1]][1]+1)*0.5,brd.coords[newP[0]][newP[1]][2]);
+
+					}
 					else
-						brd.pl1.move(brd.coords[newP[0]][newP[1]][0],(brd.coords[newP[0]][newP[1]][1]+1)*0.5,brd.coords[newP[0]][newP[1]][2]);
+						if(activePl)
+							brd.pl2.move(brd.coords[newP[0]][newP[1]][0],brd.coords[newP[0]][newP[1]][1],brd.coords[newP[0]][newP[1]][2]);
+						else
+							brd.pl1.move(brd.coords[newP[0]][newP[1]][0],brd.coords[newP[0]][newP[1]][1],brd.coords[newP[0]][newP[1]][2]);
 
+
+					if(playerInfo[activePl+1] == 4){
+						won = true;
+						printf("Player %d has won!!!!\n",activePl+1);
+					}
+
+					return true;
 				}
-				else
-					if(activePl)
-						brd.pl2.move(brd.coords[newP[0]][newP[1]][0],brd.coords[newP[0]][newP[1]][1],brd.coords[newP[0]][newP[1]][2]);
-					else
-						brd.pl1.move(brd.coords[newP[0]][newP[1]][0],brd.coords[newP[0]][newP[1]][1],brd.coords[newP[0]][newP[1]][2]);
-
-				
-				if(playerInfo[activePl+1] == 4){
-					won = true;
-					printf("Player %d has won!!!!\n",activePl+1);
-				}
-
-				return true;
-			}
 
 
 			}
@@ -261,34 +262,35 @@ public:
 
 	void update(unsigned long t){
 
-
 		//counter for each play
-		if(inicia){ // inicio de uma nova jogada
-			t0 = t;
-			inicia = false;
+		if(tempoMax != 0){
+			if(inicia){ // inicio de uma nova jogada
+				t0 = t;
+				inicia = false;
+			}
+			unsigned long dt = t - t0;
+			if (dt >= (tempoMax*1000)) {
+				printf("Acabou o tempo, proximo jogador\n\n");
+
+				validMove();
+				nextTurn = true;
+				t0R = 0;
+
+				if(activePl)
+					activePl = 0;
+				else
+					activePl = 1;
+
+				playerInfo[0] = activePl;
+				inicia = true;
+			}
+			else{
+				playerInfo[3] = dt/10000;
+				playerInfo[4] = (dt / 1000) % 10;
+				playerInfo[5] = (dt / 100) % 10;
+				playerInfo[6] = (dt / 10) % 10;
+			}
 		}
-		unsigned long dt = t - t0;
-		if (dt >= tempoMax) {
-			printf("Acabou o tempo, proximo jogador\n\n");
-
-			validMove();
-			nextTurn = true;
-			t0R = 0;
-
-			if(activePl)
-				activePl = 0;
-			else
-				activePl = 1;
-
-			playerInfo[0] = activePl;
-			inicia = true;
-		}
-		else{
-			playerInfo[3] = dt/1000;
-			playerInfo[4] = (dt / 100) % 10;
-			playerInfo[5] = (dt / 10) % 10;
-		}
-
 
 		if(activePl)
 			brd.pl2.update(t);

@@ -191,6 +191,10 @@ void PickInterface::initGUI()
 	addRadioButtonToGroup(difficulty, "Facil");
 	addRadioButtonToGroup(difficulty, "Dificil");
 
+	GLUI_Spinner *spinner = addSpinnerToPanel( inicioPanel,"Time",GLUI_SPINNER_INT,&(((PickScene *) scene)->elements->tempoMax));
+	spinner->set_speed(0.5);
+	spinner->set_int_limits(0,20,GLUI_LIMIT_WRAP);
+
 	addColumnToPanel(inicioPanel);
 
 	GLUI_RadioGroup *versus = addRadioGroupToPanel(inicioPanel,&(((PickScene *) scene)->elements->versus));

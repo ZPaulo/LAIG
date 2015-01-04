@@ -28,9 +28,10 @@ void TextObject::draw(vector<int> playerInfo)
 	glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, 'E');
 	glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, ' ');
 	glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, playerInfo[3]+48);
-	glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, ':');
 	glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, playerInfo[4]+48);
+	glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, ':');
 	glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, playerInfo[5]+48);
+	glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, playerInfo[6]+48);
 	glPopMatrix();
 
 

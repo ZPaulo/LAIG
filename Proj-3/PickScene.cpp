@@ -31,7 +31,7 @@ void PickScene::init()
 	// Defines a default normal
 	glNormal3f(0,0,1);
 
-	elements = new Game(5,10);
+	elements = new Game(5);
 
 	drawingMode = 0;
 	start = true;
@@ -40,7 +40,7 @@ void PickScene::init()
 void PickScene::restart()
 {
 
-	elements = new Game(5,10);
+	elements = new Game(5);
 
 	drawingMode = 0;
 
