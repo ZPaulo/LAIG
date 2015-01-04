@@ -253,7 +253,7 @@ void CPerspective::apply(){
 	float ratio = ((float) CGFapplication::width)/((float) CGFapplication::height);
 
 	glPushMatrix();
-	glMatrixMode(GL_PROJECTION);
+	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	gluPerspective(angle, ratio, near1, far1 );
 	glPopMatrix();

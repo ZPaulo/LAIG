@@ -138,9 +138,8 @@ public:
 				m->newP[1] = newP[1];
 				m->disk = disk;
 				m->points = playerInfo[activePl+1];
-				
+
 				m=constructBoard(m);
-				cout<<m->points;
 				//validateMoveU(Line,Column,NewLine,NewColumn,/ LineE,ColumnE,Dir,Nmb,Dsk,Brd,/Symbol/,Points,PrevChoice)
 				string send="validate.\n";memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255);
 
@@ -153,7 +152,7 @@ public:
 				o5<<m->enemP[1];send=o5.str();send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
 				send=m->direction;send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
 				o7<<m->number;send=o7.str();send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
-				
+
 				if(m->disk==true)
 					send="y.\n";
 				else
@@ -161,7 +160,7 @@ public:
 				memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
 
 				send=m->brd;send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255);
-				
+
 				if(playerInfo[0]==0)
 					send="[36].\n";
 				else
@@ -169,47 +168,48 @@ public:
 				memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255);
 				o8<<m->points;send=o8.str();send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
 				send="n.\n";memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
-				
+
 
 				memset(mensagem,0,255);
 				as->recebe(mensagem);
-				if(mensagem=="no\n"){
 
+				memset(mensagem,0,255);
+				as->recebe(mensagem);
+				if(strcmp(mensagem,"no\r") == 0){
+					return false;
 				}
 				else{
-					memset(mensagem,0,255);
-					as->recebe(mensagem);
+
 					//neste ponto mensagem=pontos
+					tempPlays.push_back(m);
+
+
+
+
+					brd.plIndex[activePl][0] = newP[0];
+					brd.plIndex[activePl][1] = newP[1];
+
+					if(disk){
+						brd.coords[oldP[0]][oldP[1]][1]--;
+						brd.coords[newP[0]][newP[1]][1]++;
+						brd.dsk[oldP[0]*size+oldP[1]]->move( brd.coords[newP[0]][newP[1]][0],brd.coords[newP[0]][newP[1]][1],brd.coords[newP[0]][newP[1]][2]);
+
+						if(activePl)
+							brd.pl2.move(brd.coords[newP[0]][newP[1]][0],(brd.coords[newP[0]][newP[1]][1]+1)*0.5,brd.coords[newP[0]][newP[1]][2]);
+						else
+							brd.pl1.move(brd.coords[newP[0]][newP[1]][0],(brd.coords[newP[0]][newP[1]][1]+1)*0.5,brd.coords[newP[0]][newP[1]][2]);
+
+					}
+					else
+						if(activePl)
+							brd.pl2.move(brd.coords[newP[0]][newP[1]][0],brd.coords[newP[0]][newP[1]][1],brd.coords[newP[0]][newP[1]][2]);
+						else
+							brd.pl1.move(brd.coords[newP[0]][newP[1]][0],brd.coords[newP[0]][newP[1]][1],brd.coords[newP[0]][newP[1]][2]);
+
+					return true;
 				}
 
 
-
-				tempPlays.push_back(m);
-
-				
-
-
-				brd.plIndex[activePl][0] = newP[0];
-				brd.plIndex[activePl][1] = newP[1];
-
-				if(disk){
-					brd.coords[oldP[0]][oldP[1]][1]--;
-					brd.coords[newP[0]][newP[1]][1]++;
-					brd.dsk[oldP[0]*size+oldP[1]]->move( brd.coords[newP[0]][newP[1]][0],brd.coords[newP[0]][newP[1]][1],brd.coords[newP[0]][newP[1]][2]);
-
-					if(activePl)
-						brd.pl2.move(brd.coords[newP[0]][newP[1]][0],(brd.coords[newP[0]][newP[1]][1]+1)*0.5,brd.coords[newP[0]][newP[1]][2]);
-					else
-						brd.pl1.move(brd.coords[newP[0]][newP[1]][0],(brd.coords[newP[0]][newP[1]][1]+1)*0.5,brd.coords[newP[0]][newP[1]][2]);
-
-				}
-				else
-					if(activePl)
-						brd.pl2.move(brd.coords[newP[0]][newP[1]][0],brd.coords[newP[0]][newP[1]][1],brd.coords[newP[0]][newP[1]][2]);
-					else
-						brd.pl1.move(brd.coords[newP[0]][newP[1]][0],brd.coords[newP[0]][newP[1]][1],brd.coords[newP[0]][newP[1]][2]);
-
-				return true;
 			}
 		}
 	}
@@ -284,7 +284,6 @@ public:
 			playerInfo[3] = dt/1000;
 			playerInfo[4] = (dt / 100) % 10;
 			playerInfo[5] = (dt / 10) % 10;
-			printf("%d\n",dt);
 		}
 
 
@@ -343,11 +342,11 @@ public:
 		}
 		else if((m->oldP[1] == m->newP[1]) && (m->newP[0] < m->oldP[0])){
 			m->direction = "u";
-			m->number = m->newP[0] - m->oldP[0];
+			m->number =   m->oldP[0] - m->newP[0];
 		}
 		else if((m->oldP[1] == m->newP[1]) && (m->newP[0] > m->oldP[0])){
 			m->direction = "d";
-			m->number =  m->oldP[0] - m->newP[0];
+			m->number =  m->newP[0]- m->oldP[0];
 		}
 
 		nPos[0] = brd.plIndex[non][0];
@@ -363,10 +362,10 @@ public:
 				ostringstream os;
 				if(i == pos[0] && j == pos[1]){
 					m->stack = brd.coords[i][j][1];
-					os << "[" << actC << "|" << brd.coords[i][j][1] << "]";
+					os << "['" << actC << "'|" << brd.coords[i][j][1] << "]";
 				}
 				else if(i == nPos[0] && j == nPos[1]){
-					os << "[" << nonC << "|" << brd.coords[i][j][1] << "]";
+					os << "['" << nonC << "'|" << brd.coords[i][j][1] << "]";
 				}
 				else
 					os << brd.coords[i][j][1];
