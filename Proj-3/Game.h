@@ -217,6 +217,106 @@ public:
 			}
 		}
 	}
+		bool randomMove(){
+		Move *m;
+		//write
+		string send="random.\n";memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255);
+		stringstream oo,o1,o2,o3,o4,o5; 
+		oo<<size;send=oo.str();send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
+		o1<<m->oldP[0];send=o1.str();send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
+		o2<<m->oldP[1];send=o2.str();send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
+		o3<<m->enemP[0];send=o3.str();send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
+		o4<<m->enemP[1];send=o4.str();send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
+		send=m->brd;send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255);
+
+		if(playerInfo[0]==0)
+			send="[36].\n";
+		else
+			send="[35].\n";
+		memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255);
+		o5<<m->points;send=o5.str();send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
+		send="n.\n";memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
+
+		//read
+		
+		advance();
+	}
+	bool smartMove(){
+		Move *m;
+		//write
+		string send="smart.\n";memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255);
+		stringstream oo,o1,o2,o3,o4,o5; 
+		oo<<size;send=oo.str();send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
+		o1<<m->oldP[0];send=o1.str();send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
+		o2<<m->oldP[1];send=o2.str();send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
+		o3<<m->enemP[0];send=o3.str();send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
+		o4<<m->enemP[1];send=o4.str();send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
+		send=m->brd;send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255);
+
+		if(playerInfo[0]==0)
+			send="[36].\n";
+		else
+			send="[35].\n";
+		memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255);
+		o5<<m->points;send=o5.str();send.append(".\n");memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
+		send="n.\n";memcpy(mensagem,send.c_str(),send.size());as->envia(mensagem,send.size());memset(mensagem,0,255); oo.clear();
+
+		//read
+		advance();
+
+	}
+	void validMove(){
+		if(tempPlays.size()> 0){
+			Move *m = new Move();
+			m = tempPlays[tempPlays.size()-1];
+			listPlays.push_back(m);
+			tempPlays.clear();
+			brd.activePl = activePl;
+		}
+		else{
+			Move *m = NULL;
+			listPlays.push_back(m);
+			tempPlays.clear();
+			brd.activePl = activePl;
+		}
+	}
+	void advance(){
+		memcpy(mensagem,0,255);
+		as->recebe(mensagem);
+		while(strcmp(mensagem,"Move Accepted\n")!=0){
+			memcpy(mensagem,0,255);
+			as->recebe(mensagem);
+		}
+		//points
+		memcpy(mensagem,0,255);
+		as->recebe(mensagem);
+
+		memcpy(mensagem,0,255);
+		//Direction
+		as->recebe(mensagem);
+		memset(mensagem,0,255);
+		as->recebe(mensagem);
+		memset(mensagem,0,255);
+
+		//Number
+		as->recebe(mensagem);
+		memset(mensagem,0,255);
+		as->recebe(mensagem);
+		memset(mensagem,0,255);
+
+		//Disk
+		as->recebe(mensagem);
+		memset(mensagem,0,255);
+		as->recebe(mensagem);
+		memset(mensagem,0,255);
+
+		//Press enter to continue
+		as->recebe(mensagem);
+		string x="1.\n";
+		memcpy(mensagem,x.c_str(),x.size());
+		as->envia(mensagem,x.size());
+
+	}
 	void validMove(){
 		if(tempPlays.size()> 0){
 			Move *m = new Move();
