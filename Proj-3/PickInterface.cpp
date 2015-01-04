@@ -202,7 +202,8 @@ void PickInterface::processGUI(GLUI_Control *ctrl)
 	else
 		if(ctrl->user_id == 10){
 			if(((PickScene *) scene)->elements->validMove()){
-
+				((PickScene *) scene)->nextTurn = true;
+				((PickScene *) scene)->t0 = 0;
 				int *pl = &((PickScene *) scene)->elements->activePl;
 
 				if(*pl == 0)

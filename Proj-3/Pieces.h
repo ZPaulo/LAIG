@@ -256,6 +256,8 @@ private:
 	int size;
 	CGFappearance *appBr;
 	CGFappearance *appPr;
+	CGFappearance *active;
+	CGFappearance *nonActive;
 	Cube cubo;
 
 
@@ -263,7 +265,8 @@ public:
 	vector<vector<vector<float>>> coords;
 	vector<vector<float>> plIndex;
 
-
+	
+	int activePl;
 	vector<TowerP*> dsk;
 	PlayerP pl1;
 	PlayerP pl2;
@@ -280,6 +283,13 @@ public:
 
 		appBr = new CGFappearance(ambient,diffuse,specular,1);
 		appPr = new CGFappearance(ambient,diffuse,specular,1);
+		nonActive = new CGFappearance(ambient,diffuse,specular,0.5);
+
+		ambient[0] = 0.77; ambient[1] = 0; ambient[2] = 0; ambient[3] = 1; 
+		diffuse[0] = 0.77; diffuse[1] = 0; diffuse[2] = 0; diffuse[3] = 1;
+		specular[0] = 0.5; specular[1] = 0.5; specular[2] = 0.5; specular[3] = 0.5;
+
+		active = new CGFappearance(ambient,diffuse,specular,1);
 
 		appBr->setTexture(branco);
 		appBr->setTextureWrap(GL_REPEAT,GL_REPEAT);
@@ -340,12 +350,20 @@ public:
 
 		glPushMatrix();
 		glPushName(0);
+		if(activePl)
+			active->apply();
+		else
+			nonActive->apply();
 		pl1.draw();
 		glPopName();
 		glPopMatrix();
 
 		glPushMatrix();
 		glPushName(1);
+		if(activePl)
+			nonActive->apply();
+		else
+			active->apply();
 		pl2.draw();
 		glPopName();
 		glPopMatrix();
@@ -366,7 +384,7 @@ public:
 
 				dsk[a+i*size]->draw();
 				glPushMatrix();
-				glTranslated(a*5.5,0,i*5.5);
+				glTranslated(a*(size+0.5),0,i*(size+0.5));
 
 				if(a%2==change){
 					//branco

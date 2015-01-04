@@ -184,6 +184,7 @@ public:
 			m = &tempPlays[tempPlays.size()-1];
 			listPlays.push_back(m);
 			tempPlays.clear();
+			brd.activePl = activePl;
 			return true;
 		}
 		else{

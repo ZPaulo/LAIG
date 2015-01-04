@@ -33,7 +33,11 @@ void PickScene::init()
 
 	drawingMode = 0;
 
-
+	nextTurn = false;
+	wA = 180;
+	t0 = 0;
+	inc = 0;
+	startAng = 0;
 }
 
 void PickScene::setSel(float pos[4],bool on)
@@ -59,6 +63,21 @@ void PickScene::setSel(float pos[4],bool on)
 void PickScene::update(unsigned long t)
 {
 	elements->update(t);
+
+	if (!nextTurn)
+		return;
+	if (t0 == 0)
+		t0 = t;
+	unsigned long dt = t - t0;
+	if (dt < 500) {
+		inc = (dt / 500.0) * wA;
+	} else {
+		nextTurn = false;
+		startAng += 180;
+		inc = 0;
+	}
+
+
 }
 
 void PickScene::display() 
@@ -106,13 +125,16 @@ void PickScene::display()
 	else
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
+
+
+
+		glTranslatef(elements->size+0.5,0,elements->size+0.5);
+		glRotatef(inc+startAng,0,1,0);
+		glTranslatef(-(elements->size+0.5),0,-(elements->size+0.5));
+
+
 	// scale down a bit	
 	glScalef(0.4, 0.4, 0.4);
-
-	// picking example, the important parts are the gl*Name functions
-	// and the code in the associted PickInterface class
-
-//	elements->init();
 	glPushMatrix();
 	glTranslatef(0,10,0);
 	elements->plText->draw(elements->activePl);
