@@ -11,11 +11,11 @@ class PickScene : public CGFscene
 public:
 	void init();
 	void display();
+	void restart();
 	void update(unsigned long t);
 	void setSel(float pos[4],bool on);
 	int drawingMode;
 	bool nextTurn,start;
-	int difficulty,versus;
 	~PickScene();
 private:
 	Game *elements;

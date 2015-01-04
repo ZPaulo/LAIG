@@ -33,13 +33,14 @@ public:
 	vector<Move> tempPlays;
 	int activeCam;
 	TextObject* plText;
-	int size;
+	int size,difficulty,versus;
 	Game(){}
 	Game(int size){
 		this->size = size;
 		brd = Board(size,"textures/Border.jpg","textures/Border.jpg");
 		activePl = 0;
-
+		versus = 0;
+		difficulty = 0;
 		activeCam = 2;
 
 		COrtho *c1 = new COrtho;

@@ -184,13 +184,13 @@ void PickInterface::initGUI()
 	addRadioButtonToGroup(cameraList, "Default");
 	addColumnToPanel(geral);
 	GLUI_Panel *inicioPanel = addPanelToPanel(geral,"Inicio", 1);
-	GLUI_RadioGroup *difficulty = addRadioGroupToPanel(inicioPanel,&(((PickScene *) scene)->difficulty));
+	GLUI_RadioGroup *difficulty = addRadioGroupToPanel(inicioPanel,&(((PickScene *) scene)->elements->difficulty));
 	addRadioButtonToGroup(difficulty, "Facil");
 	addRadioButtonToGroup(difficulty, "Dificil");
 
 	addColumnToPanel(inicioPanel);
 
-	GLUI_RadioGroup *versus = addRadioGroupToPanel(inicioPanel,&(((PickScene *) scene)->versus));
+	GLUI_RadioGroup *versus = addRadioGroupToPanel(inicioPanel,&(((PickScene *) scene)->elements->versus));
 	addRadioButtonToGroup(versus, "H-H");
 	addRadioButtonToGroup(versus, "AI-H");
 	addRadioButtonToGroup(versus, "H-AI");
@@ -233,7 +233,10 @@ void PickInterface::processGUI(GLUI_Control *ctrl)
 		((PickScene *) scene)->elements->undo();
 	}
 	if(ctrl->user_id == 11){
-		((PickScene *) scene)->start = false;
+		if(!((PickScene *) scene)->start)
+			((PickScene *) scene)->restart();
+		else
+			((PickScene *) scene)->start = false;
 	}
 
 }

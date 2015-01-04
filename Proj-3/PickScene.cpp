@@ -34,9 +34,21 @@ void PickScene::init()
 	elements = new Game(5);
 
 	drawingMode = 0;
-	difficulty = 0;
-	versus = 0;
 	start = true;
+
+	nextTurn = false;
+	wA = 180;
+	t0 = 0;
+	inc = 0;
+	startAng = 0;
+}
+
+void PickScene::restart()
+{
+
+	elements = new Game(5);
+
+	drawingMode = 0;
 
 	nextTurn = false;
 	wA = 180;

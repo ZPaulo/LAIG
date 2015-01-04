@@ -3,34 +3,10 @@
 
 void TextObject::draw(int player)
 {
-	// Texto 3D, GLUT
-	// void glutStrokeCharacter(void *font, int character);	// GLUT_STROKE_ROMAN
-	// int glutStrokeWidth(GLUTstrokeFont font, int character);
 
 	// desativa cálculo de iluminação para usar cores diretamente
 	glDisable(GL_LIGHTING);
 
-	/*glPushMatrix();
-	glTranslatef(0,0,1);
-	glScalef(0.05, 0.05, 0.05);
-	glColor3f(0.0,0.0,1.0);		// azul
-	glutStrokeCharacter(GLUT_STROKE_ROMAN, 'P');
-	glutStrokeCharacter(GLUT_STROKE_ROMAN, 'L');
-	glutStrokeCharacter(GLUT_STROKE_ROMAN, 'A');
-	glutStrokeCharacter(GLUT_STROKE_ROMAN, 'Y');
-	glutStrokeCharacter(GLUT_STROKE_ROMAN, 'E');
-	glutStrokeCharacter(GLUT_STROKE_ROMAN, 'R');
-	glutStrokeCharacter(GLUT_STROKE_ROMAN, ' ');
-	if(player)
-		glutStrokeCharacter(GLUT_STROKE_ROMAN, '2');
-	else
-		glutStrokeCharacter(GLUT_STROKE_ROMAN, '1');
-	glPopMatrix();*/
-
-	// Texto BitMap, GLUT
-	// glRasterPos3f(x,y,z);
-	// void glutBitmapCharacter(void *font, int character);	// valores varios...
-	// int glutBitmapWidth(GLUTbitmapFont font, int character);
 
 	glPushMatrix();
 	glColor3f(1.0,1.0,0.0);		// amarelo
@@ -42,6 +18,56 @@ void TextObject::draw(int player)
 	glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, 'E');
 	glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, 'R');
 	glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, ' ');
+	if(player)
+		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, '2');
+	else
+		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, '1');
+	glPopMatrix();
+
+	/*switch (num)
+	{
+	case 0: 
+		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, '0');
+		break;
+	case 1: 
+		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, '1');
+		break;
+	case 2: 
+		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, '2');
+		break;
+	case 3: 
+		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, '3');
+		break;
+	case 4: 
+		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, '4');
+		break;
+	case 5: 
+		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, '5');
+		break;
+	case 6: 
+		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, '6');
+		break;
+	case 7: 
+		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, '7');
+		break;
+	case 8: 
+		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, '8');
+		break;
+	case 9: 
+		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, '9');
+		break;
+	default:
+		break;
+	}*/
+
+
+
+	glPushMatrix();
+	glTranslatef(0,-3,0);
+	glColor3f(1.0,1.0,0.0);		// amarelo
+	glRasterPos3f(5,5,5);
+	glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, 'P');
+	glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, '/');
 	if(player)
 		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, '2');
 	else

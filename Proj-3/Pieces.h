@@ -81,12 +81,14 @@ class PlayerP
 public:
 	Cylinder cil;
 	Sphere sp;
+	int points;
 	bool moving;
 	unsigned long t0;
 	float vx,vy,vz;
 	float pos[3], ori[3],dest[3];
 
 	PlayerP(){
+		points = 0;
 		t0 = 0;
 		moving = false;
 		cil.base = 1.5;
