@@ -42,7 +42,7 @@ public:
 	vector<Move*> tempPlays;
 	int tempoMax;
 	unsigned long t0;
-	bool inicia,nextTurn;
+	bool inicia,nextTurn,won;
 	int activeCam;
 	TextObject* plText;
 	int size,difficulty,versus;
@@ -52,6 +52,7 @@ public:
 
 	Game(){}
 	Game(int size,int tempoMax){
+		won = false;
 		as=new Socket();
 		as->socketConnect();
 		this->size = size;
@@ -180,9 +181,7 @@ public:
 				}
 				else{
 				tempPlays.push_back(m);
-
-
-
+				playerInfo[activePl+1] = mensagem[0]-48;
 
 				brd.plIndex[activePl][0] = newP[0];
 				brd.plIndex[activePl][1] = newP[1];
@@ -203,6 +202,12 @@ public:
 						brd.pl2.move(brd.coords[newP[0]][newP[1]][0],brd.coords[newP[0]][newP[1]][1],brd.coords[newP[0]][newP[1]][2]);
 					else
 						brd.pl1.move(brd.coords[newP[0]][newP[1]][0],brd.coords[newP[0]][newP[1]][1],brd.coords[newP[0]][newP[1]][2]);
+
+				
+				if(playerInfo[activePl+1] == 4){
+					won = true;
+					printf("Player %d has won!!!!\n",activePl+1);
+				}
 
 				return true;
 			}

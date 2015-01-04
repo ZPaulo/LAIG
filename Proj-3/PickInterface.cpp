@@ -113,6 +113,9 @@ void PickInterface::processHits (GLint hits, GLuint buffer[],bool disk)
 
 			bool valid = ((PickScene *) scene)->elements->calculateMove(oldP,newP,disk);
 
+			if( ((PickScene *) scene)->elements->won)
+				((PickScene *) scene)->start = true;
+
 		}
 		else
 		{
