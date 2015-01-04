@@ -49,7 +49,7 @@ public:
 
 	float wA, inc,startAng;
 	unsigned long t0R;
-	
+
 	Game(){}
 	Game(int size){
 		won = false;
@@ -160,6 +160,17 @@ public:
 						won = true;
 						printf("Player %d has won!!!!\n",activePl+1);
 					}
+
+
+					validMove();
+					nextTurn = true;
+					t0R = 0;
+
+					if(activePl)
+						activePl = 0;
+					else
+						activePl = 1;
+					playerInfo[0] = activePl;
 
 					return true;
 				}
@@ -278,6 +289,12 @@ public:
 	void advance(Move *m){
 		memset(mensagem,0,255);
 		as->recebe(mensagem);
+
+
+		while((strcmp(mensagem,"Move Accepted\r")) != 0){
+			memset(mensagem,0,255);
+			as->recebe(mensagem);
+		}
 
 		//points
 		memset(mensagem,0,255);
