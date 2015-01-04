@@ -134,6 +134,9 @@ public:
 				m.disk = disk;
 				m.points = playerInfo[activePl+1];
 				constructBoard(m);
+
+
+
 				tempPlays.push_back(m);
 
 
