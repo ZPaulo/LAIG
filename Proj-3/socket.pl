@@ -34,12 +34,12 @@ serverLoop(Stream) :-
 
 
 parse_input(validate,Stream) :-
-        read(Stream,Column),write(Column),nl,
         read(Stream,Line),write(Line),nl,
-        read(Stream,NewColumn),write(NewColumn),nl,
+        read(Stream,Column),write(Column),nl,
         read(Stream,NewLine),write(NewLine),nl,
-        read(Stream,ColumnE),write(ColumnE),nl,
+        read(Stream,NewColumn),write(NewColumn),nl,
         read(Stream,LineE),write(LineE),nl,
+        read(Stream,ColumnE),write(ColumnE),nl,
         read(Stream,Dir),write(Dir),nl,
         read(Stream,Nmb),write(Nmb),nl,
         read(Stream,Dsk),write(Dsk),nl,
@@ -57,21 +57,29 @@ parse_input(move(Pl,Line,Column,NewLine,NewColumn,Brd,BrdR,NewPrevStack,NewNextS
                 (write(Stream,'yes\n'), flush_output(Stream), format(Stream,'~q~n',[BrdR]),flush_output(Stream));
                 (write(Stream,'no\n'),  flush_output(Stream)).
 
-parse_input(generateRandomInput(Pl,Line,Column,NewLine,NewColumn, LineE,ColumnE,Dir,Nmb,Dsk,Brd,NewPrevStack,NewNextStack,Symbol,Points,NewPoints,PrevChoice,MaxColumn,MaxLine),Stream):-
-        generateRandomInput(Dir,Nmb,Dsk,MaxColumn,MaxLine),
-        validateMove(Line,Column,NewLine,NewColumn, LineE,ColumnE,Dir,Nmb,Dsk,Brd,NewPrevStack,NewNextStack,Symbol,Points,NewPoints,PrevChoice,Stream)->
-                (write(Stream,'yes\n'), flush_output(Stream), move(Pl,Line,Column,NewLine,NewColumn,Brd,BrdR,NewPrevStack,NewNextStack),format(Stream,'~q~n',[BrdR]), flush_output(Stream));
-                (write(Stream,'no\n'),  flush_output(Stream)).
+parse_input(random,Stream):-
+        read(Stream,Max),write(Max),nl,
+        read(Stream,Line),write(Line),nl,
+        read(Stream,Column),write(Column),nl,
+        read(Stream,LineE),write(LineE),nl,
+        read(Stream,ColumnE),write(ColumnE),nl,
+        read(Stream,Brd),write(Brd),nl,
+        read(Stream,SS),atom_codes(Symbol,SS),write(Symbol),nl,
+        read(Stream,Points),write(Points),nl,
+        read(Stream,PrevChoice),write(PrevChoice),nl,
+        gameLogic(Symbol,Line,Column,LineE,ColumnE,Brd,Points,PrevChoice,[Max,Max|[]],random,Stream).
 
-parse_input(smart(Brd,Line,Column,MaxLine,MaxColumn,Dsk,Dir,Nmb,LineE,ColumnE,Pl,Symbol,Points,PrevChoice),Stream):-      
-        getAvailableMoves(Moves,Brd,Line,Column,MaxLine,MaxColumn),
-        getElementM(Line,Column,Brd,[_H|PrevStack]),
-        chooseValidPlay(Moves,Nmb,Dsk,Dir,Brd,PrevStack,Line,Column,NewLine,NewColumn,LineE,ColumnE,NewPrevStack,NewNextStack,Symbol,Points,NewPoints,PrevChoice,Stream),
-        move(Pl,Line,Column,NewLine,NewColumn,Brd,BrdR,NewPrevStack,NewNextStack),
-        format(Stream,'~q~n',[BrdR]),
-        flush_output(Stream),
-        format(Stream,'~q~n',[NewPoints]),
-        flush_output(Stream).
+parse_input(smart,Stream):- 
+        read(Stream,Max),write(Max),nl,
+        read(Stream,Line),write(Line),nl,
+        read(Stream,Column),write(Column),nl,
+        read(Stream,LineE),write(LineE),nl,
+        read(Stream,ColumnE),write(ColumnE),nl,
+        read(Stream,Brd),write(Brd),nl,
+        read(Stream,SS),atom_codes(Symbol,SS),write(Symbol),nl,
+        read(Stream,Points),write(Points),nl,
+        read(Stream,PrevChoice),write(PrevChoice),nl,     
+        gameLogic(Symbol,Line,Column,LineE,ColumnE,Brd,Points,PrevChoice,[Max,Max|[]],smart,Stream).
         
 
 
@@ -308,31 +316,26 @@ gameLogic(Pl,Symbol,Line,Column,NewLine,NewColumn,LineE,ColumnE,Brd,BrdR,Points,
         flush_output(Stream),
         gameLogic(Pl,Symbol,Line,Column,NewLine,NewColumn,LineE,ColumnE,Brd,BrdR,Points,NewPoints,PrevChoice,h,BrdSize,AILevel,Stream)).
 
-gameLogic(Pl,Symbol,Line,Column,NewLine,NewColumn,LineE,ColumnE,Brd,BrdR,Points,NewPoints,PrevChoice,ai,[MaxLine,MaxColumn|[]],random,Stream):-
+gameLogic(Symbol,Line,Column,LineE,ColumnE,Brd,Points,PrevChoice,[MaxLine,MaxColumn|[]],random,Stream):-
         generateRandomInput(Dir,Nmb,Dsk,MaxColumn,MaxLine),!,
-        (validateMove(Line,Column,NewLine,NewColumn, LineE,ColumnE,Dir,Nmb,Dsk,Brd,NewPrevStack,NewNextStack,Symbol,Points,NewPoints,PrevChoice,Stream)->
+        (validateMove(Line,Column,_,_, LineE,ColumnE,Dir,Nmb,Dsk,Brd,_,_,Symbol,Points,NewPoints,PrevChoice,Stream)->
         write(Stream,'Move Accepted\n'),
-        move(Pl,Line,Column,NewLine,NewColumn,Brd,BrdR,NewPrevStack,NewNextStack),
-        printBoard(BrdR),
-        format(Stream, '~q.~n', [BrdR]),
+        flush_output(Stream),
+        format(Stream,'~q~n',[NewPoints]),
         flush_output(Stream),
         advance(Dir,Nmb,Dsk,Stream); 
-        gameLogic(Pl,Symbol,Line,Column,NewLine,NewColumn,LineE,ColumnE,Brd,BrdR,Points,NewPoints,PrevChoice,ai,[MaxLine,MaxColumn|[]],random,Stream)).
+        gameLogic(Symbol,Line,Column,LineE,ColumnE,Brd,Points,PrevChoice,[MaxLine,MaxColumn|[]],random,Stream)).
 
-gameLogic(Pl,Symbol,Line,Column,NewLine,NewColumn,LineE,ColumnE,Brd,BrdR,Points,NewPoints,PrevChoice,ai,[MaxLine,MaxColumn|[]],'smart',Stream):-
+gameLogic(Symbol,Line,Column,LineE,ColumnE,Brd,Points,PrevChoice,[MaxLine,MaxColumn|[]],smart,Stream):-
         getAvailableMoves(Moves,Brd,Line,Column,MaxLine,MaxColumn),
         getElementM(Line,Column,Brd,[_H|PrevStack]),
-        chooseValidPlay(Moves,Nmb,Dsk,Dir,Brd,PrevStack,Line,Column,NewLine,NewColumn,LineE,ColumnE,NewPrevStack,NewNextStack,Symbol,Points,NewPoints,PrevChoice,Stream),
-        move(Pl,Line,Column,NewLine,NewColumn,Brd,BrdR,NewPrevStack,NewNextStack),
-        printBoard(BrdR),
-        format(Stream, '~q.~n', [BrdR]),
+        chooseValidPlay(Moves,Nmb,Dsk,Dir,Brd,PrevStack,Line,Column,_,_,LineE,ColumnE,_,_,Symbol,Points,NewPoints,PrevChoice,Stream),
+        write(Stream,'Move Accepted\n'),
         flush_output(Stream),
-        write('Player '),write(Pl),write('s turn (AI)\n'),
-        write(Stream,'Player turn\n'),
-        flush_output(Stream),
-        format(Stream, '~q.~n', [Pl]),
+        format(Stream,'~q~n',[NewPoints]),
         flush_output(Stream),
         advance(Dir,Nmb,Dsk,Stream).
+
 
 
 
@@ -341,7 +344,7 @@ chooseValidPlay(Moves,Nmb,Dsk,Dir,Brd,PrevStack,Line,Column,NewLine,NewColumn,Li
         decidePlay(Moves,Play,PrevStack),
         processPlay(Play,Nmb,Dsk,Dir,Line,Column),
         (validateMove(Line,Column,NewLine,NewColumn, LineF,ColumnF,Dir,Nmb,Dsk,Brd,NewPrevStack,NewNextStack,Symbol,Points,NewPoints,PrevChoice,Stream)->
-         (write(Stream,'Accepted'),!);
+         !;
          deleteInvalid(Moves,Play,MovesR),
           chooseValidPlay(MovesR,_Nmb,_Dsk,_Dir,Brd,PrevStack,Line,Column,NewLine,NewColumn,LineF,ColumnF,NewPrevStack,NewNextStack,Symbol,Points,NewPoints,PrevChoice,Stream)).
 
@@ -542,7 +545,7 @@ moveDisk('N',T,Y,T,Y,Points,Points).
 %validateMove(+LineOfPlayer,+ColumnOfPlayer,-NewLineOfPlayer,-NewColumnOfPlayer,+LineOfEnemy,+ColumnEnemy,+DirectionOfTravel,+NumberOfTravel,+CarryingDisk,+Board,-StackAfterPlayerLeaves,+StackWherePlayerIs,+SymbolOfComplete,+PointsOfPlayer,+NewPointsOfPlayer,+PrevChoiceOfPlayer)
 validateMove(Line,Column,NewLine,NewColumn, LineF,ColumnF,Dir,Nmb,Dsk,Brd,NewPrevStack,Stack,StackSymbol,Points,NewPoints,PrevChoice,Stream):-
         calcCoord(Dir,Nmb,Line,Column,NewLine,NewColumn),
-        getElementM(NewColumn,NewLine,Brd,NextStack),
+        getElementM(NewLine,NewColumn,Brd,NextStack),
         isPlayer(NewLine,NewColumn, LineF,ColumnF,Stream),!,
         canLand(NextStack,Dsk,Stream),!,
         getElementM(Line,Column,Brd,[_H|PrevStack]),
